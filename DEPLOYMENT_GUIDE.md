@@ -21,6 +21,7 @@
 ## 📦 서비스 구성
 
 ### Campstation
+
 - Frontend (Vue.js + Nginx)
 - Backend (Spring Boot)
 - PostgreSQL
@@ -29,6 +30,7 @@
 - MailHog
 
 ### PSMO Community
+
 - Frontend (Vue.js + Nginx)
 - Backend (Ktor)
 - PostgreSQL
@@ -37,6 +39,7 @@
 - MailHog
 
 ### Nginx Reverse Proxy
+
 - SSL/TLS 종료
 - 도메인 기반 라우팅
 - Rate Limiting
@@ -157,12 +160,14 @@ docker run --rm -v campstation_postgres_data:/data -v $(pwd):/backup alpine tar 
 ## 📊 시스템 요구사항
 
 ### 최소 사양
+
 - CPU: 4 cores
 - RAM: 8 GB
 - Disk: 50 GB SSD
 - Network: 100 Mbps
 
 ### 권장 사양
+
 - CPU: 8 cores
 - RAM: 16 GB
 - Disk: 100 GB SSD
@@ -171,6 +176,7 @@ docker run --rm -v campstation_postgres_data:/data -v $(pwd):/backup alpine tar 
 ## 🆘 문제 해결
 
 ### 1. Nginx 접속 불가
+
 ```bash
 # Nginx 설정 테스트
 docker compose -f docker-compose.prod.yml exec nginx nginx -t
@@ -180,6 +186,7 @@ docker compose -f docker-compose.prod.yml logs nginx
 ```
 
 ### 2. SSL 인증서 오류
+
 ```bash
 # 인증서 파일 확인
 ls -la infrastructure/nginx/ssl/campstation/
@@ -191,6 +198,7 @@ chmod 600 infrastructure/nginx/ssl/*/privkey.pem
 ```
 
 ### 3. 백엔드 연결 실패
+
 ```bash
 # 헬스체크 확인
 curl http://localhost:8080/api/health  # Campstation
@@ -201,6 +209,7 @@ docker network inspect docker-compose-prod_proxy-network
 ```
 
 ### 4. 데이터베이스 연결 오류
+
 ```bash
 # PostgreSQL 상태 확인
 docker compose -f docker-compose.prod.yml exec campstation-postgres pg_isready -U campstation
@@ -225,6 +234,7 @@ docker compose -f docker-compose.prod.yml up --build -d
 ## 📞 지원
 
 문제가 계속되면 로그를 확인하고:
+
 ```bash
 docker compose -f docker-compose.prod.yml logs > debug_logs.txt
 ```

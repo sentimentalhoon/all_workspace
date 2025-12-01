@@ -41,6 +41,7 @@ sudo certbot certonly --standalone -d mycommunity.duckdns.org
 ### 옵션 2: 기존 인증서가 있는 경우
 
 수동으로 배치:
+
 ```bash
 # 디렉토리 생성
 sudo mkdir -p /etc/letsencrypt/live/mycamp.duckdns.org
@@ -147,6 +148,7 @@ certbot:
 ## ⚠️ 문제 해결
 
 ### 인증서 경로 확인
+
 ```bash
 # 호스트에서 인증서 확인
 sudo ls -la /etc/letsencrypt/live/mycamp.duckdns.org/
@@ -158,6 +160,7 @@ docker compose -f docker-compose.prod.yml exec nginx ls -la /etc/nginx/ssl/psmo/
 ```
 
 ### SSL 인증서 오류
+
 ```bash
 # Nginx 설정 테스트
 docker compose -f docker-compose.prod.yml exec nginx nginx -t
@@ -170,6 +173,7 @@ docker compose -f docker-compose.prod.yml logs nginx
 ```
 
 ### 권한 오류
+
 ```bash
 # 인증서 권한 확인
 sudo ls -l /etc/letsencrypt/live/mycamp.duckdns.org/
