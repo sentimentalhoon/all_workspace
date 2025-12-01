@@ -12,7 +12,5 @@ profiles:
 # Common configuration
 # Profile-specific settings in application-dev.yaml and application-prod.yaml
 
-# CORS configuration
+# CORS configuration - defined in profile-specific files
 # Using /api proxy: Same-origin requests, CORS not strictly needed but kept for flexibility
-cors:
-  allowedOrigins: ${CORS_ALLOWED_ORIGINS}
