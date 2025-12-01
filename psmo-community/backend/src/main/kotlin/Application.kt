@@ -23,6 +23,9 @@ fun Application.module() {
     environment.log.info("Active KTOR_PROFILE: $activeProfile (application-$activeProfile.yaml)")
 
     val allowedOrigins = activeConfig.tryGetStringList("cors.allowedOrigins")
+        ?: activeConfig.tryGetString("cors.allowedOrigins")
+            ?.split(',')
+            ?.mapNotNull { it.trim().takeIf(String::isNotEmpty) }
         ?: listOf("http://localhost:5173", "http://localhost:5174")
 
     val jwtSecret = activeConfig.tryGetString("jwt.secret")
