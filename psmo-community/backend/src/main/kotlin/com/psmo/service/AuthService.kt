@@ -14,7 +14,7 @@ class AuthService(private val jwtConfig: JwtConfig) {
     fun register(request: RegisterRequest): AuthResponse {
         // 이메일 중복 체크
         val existingUser = transaction {
-            Users.select { Users.email eq request.email }.singleOrNull()
+            Users.selectAll().where { Users.email eq request.email }.singleOrNull()
         }
 
         if (existingUser != null) {
@@ -39,7 +39,7 @@ class AuthService(private val jwtConfig: JwtConfig) {
         saveRefreshToken(userId.value, refreshToken)
 
         val user = transaction {
-            Users.select { Users.id eq userId }
+            Users.selectAll().where { Users.id eq userId }
                 .single()
                 .let {
                     UserDto(
@@ -57,7 +57,7 @@ class AuthService(private val jwtConfig: JwtConfig) {
     fun login(request: LoginRequest): AuthResponse {
         // 사용자 조회
         val user = transaction {
-            Users.select { Users.email eq request.email }.singleOrNull()
+            Users.selectAll().where { Users.email eq request.email }.singleOrNull()
         } ?: throw IllegalArgumentException("이메일 또는 비밀번호가 올바르지 않습니다.")
 
         // 비밀번호 확인
@@ -92,7 +92,7 @@ class AuthService(private val jwtConfig: JwtConfig) {
 
         // Refresh token 조회
         val tokenData = transaction {
-            RefreshTokens.select { RefreshTokens.token eq refreshTokenValue }
+            RefreshTokens.selectAll().where { RefreshTokens.token eq refreshTokenValue }
                 .singleOrNull()
         } ?: throw IllegalArgumentException("유효하지 않은 Refresh Token입니다.")
 
@@ -107,7 +107,7 @@ class AuthService(private val jwtConfig: JwtConfig) {
         // 사용자 조회
         val userId = tokenData[RefreshTokens.userId].value
         val user = transaction {
-            Users.select { Users.id eq userId }
+            Users.selectAll().where { Users.id eq userId }
                 .single()
         }
 
@@ -135,7 +135,7 @@ class AuthService(private val jwtConfig: JwtConfig) {
 
     fun getCurrentUser(email: String): UserDto {
         return transaction {
-            Users.select { Users.email eq email }
+            Users.selectAll().where { Users.email eq email }
                 .singleOrNull()
                 ?.let {
                     UserDto(
@@ -150,7 +150,7 @@ class AuthService(private val jwtConfig: JwtConfig) {
 
     fun logout(email: String) {
         transaction {
-            val user = Users.select { Users.email eq email }.singleOrNull()
+            val user = Users.selectAll().where { Users.email eq email }.singleOrNull()
             if (user != null) {
                 RefreshTokens.deleteWhere { RefreshTokens.userId eq user[Users.id] }
             }
