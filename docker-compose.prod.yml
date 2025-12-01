@@ -9,10 +9,8 @@ services:
       - "80:80"
       - "443:443"
     volumes:
-      # SSL 인증서 직접 마운트 (Certbot으로 발급받은 인증서)
-      - /etc/letsencrypt/live/mycamp.duckdns.org:/etc/nginx/ssl/campstation:ro
-      - /etc/letsencrypt/live/mycommunity.duckdns.org:/etc/nginx/ssl/psmo:ro
-      - /etc/letsencrypt/archive:/etc/letsencrypt/archive:ro
+      # SSL 인증서 디렉토리 전체 마운트
+      - /etc/letsencrypt:/etc/letsencrypt:ro
       # 로그
       - nginx_logs:/var/log/nginx
       # Certbot (SSL 갱신용)
