@@ -126,10 +126,10 @@ const prevBanner = () => {
 
     <!-- Main Banner Slider -->
     <section class="banner-slider">
-      <div class="banner" :style="{ background: banners[currentBannerIndex].background }">
+      <div class="banner" :style="{ background: banners[currentBannerIndex]?.background }">
         <div class="banner-content">
-          <h2>{{ banners[currentBannerIndex].title }}</h2>
-          <p>{{ banners[currentBannerIndex].subtitle }}</p>
+          <h2>{{ banners[currentBannerIndex]?.title }}</h2>
+          <p>{{ banners[currentBannerIndex]?.subtitle }}</p>
         </div>
         <div class="banner-controls">
           <button @click="prevBanner" class="banner-arrow">‹</button>
