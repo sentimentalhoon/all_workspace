@@ -94,7 +94,7 @@ services:
       DATABASE_URL: jdbc:postgresql://campstation-postgres:5432/${CAMPSTATION_POSTGRES_DB:-campstation}
       DATABASE_USERNAME: ${CAMPSTATION_POSTGRES_USER:-campstation}
       DATABASE_PASSWORD: ${CAMPSTATION_POSTGRES_PASSWORD:?CAMPSTATION_POSTGRES_PASSWORD is required}
-      JPA_DDL_AUTO: validate
+      JPA_DDL_AUTO: update
       JPA_SHOW_SQL: "false"
       REDIS_HOST: campstation-redis
       REDIS_PORT: 6379
