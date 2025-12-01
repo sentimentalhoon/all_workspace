@@ -1,27 +1,34 @@
 package com.psmo
 
-import io.ktor.server.application.*
-import io.ktor.server.plugins.cors.routing.*
-import io.ktor.server.plugins.contentnegotiation.*
-import io.ktor.serialization.jackson.*
+import com.psmo.config.ProfiledConfigLoader
 import io.ktor.http.*
+import io.ktor.serialization.jackson.*
+import io.ktor.server.application.*
+import io.ktor.server.config.tryGetStringList
+import io.ktor.server.plugins.contentnegotiation.*
+import io.ktor.server.plugins.cors.routing.*
 
 fun main(args: Array<String>) {
     io.ktor.server.netty.EngineMain.main(args)
 }
 
 fun Application.module() {
-    val allowedOrigins = environment.config.propertyOrNull("cors.allowedOrigins")?.getString()
-        ?.split(",")
+    val (activeProfile, activeConfig) = ProfiledConfigLoader.load(environment)
+    environment.log.info("활성 KTOR_PROFILE: $activeProfile (application-$activeProfile.yaml 적용)")
+
+    val allowedOrigins = activeConfig.tryGetStringList("cors.allowedOrigins")
         ?: listOf("http://localhost:5173", "http://localhost:5174")
-    
+
     install(ContentNegotiation) {
         jackson()
     }
-    
+
     install(CORS) {
         allowedOrigins.forEach { origin ->
-            allowHost(origin.removePrefix("http://").removePrefix("https://"), schemes = listOf("http", "https"))
+            allowHost(
+                origin.removePrefix("http://").removePrefix("https://"),
+                schemes = listOf("http", "https")
+            )
         }
         allowHeader(HttpHeaders.ContentType)
         allowHeader(HttpHeaders.Authorization)
@@ -32,6 +39,6 @@ fun Application.module() {
         allowMethod(HttpMethod.Options)
         allowCredentials = true
     }
-    
-    configureRouting()
+
+    configureRouting(activeConfig)
 }

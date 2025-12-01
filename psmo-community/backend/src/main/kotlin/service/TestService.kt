@@ -5,6 +5,8 @@ import com.psmo.database.MinioConfig
 import com.psmo.database.RedisConfig
 import com.psmo.model.TestDataDTO
 import com.psmo.model.TestDataTable
+import io.ktor.server.config.ApplicationConfig
+import io.ktor.server.config.tryGetString
 import io.minio.BucketExistsArgs
 import io.minio.MakeBucketArgs
 import io.minio.PutObjectArgs
@@ -12,16 +14,19 @@ import org.jetbrains.exposed.sql.*
 import org.jetbrains.exposed.sql.transactions.transaction
 import java.io.ByteArrayInputStream
 
-class TestService {
-    private val database by lazy { 
-        DatabaseConfig.connectToDatabase().also { db ->
+class TestService(
+    private val config: ApplicationConfig
+) {
+    private val database by lazy {
+        DatabaseConfig.connectToDatabase(config).also { db ->
             transaction(db) {
                 SchemaUtils.create(TestDataTable)
             }
         }
     }
-    private val jedisPool by lazy { RedisConfig.createJedisPool() }
-    private val minioClient by lazy { MinioConfig.createMinioClient() }
+    private val jedisPool by lazy { RedisConfig.createJedisPool(config) }
+    private val minioClient by lazy { MinioConfig.createMinioClient(config) }
+    private val minioBucket by lazy { config.tryGetString("minio.bucket") ?: "psmo" }
 
     fun testPostgreSQL(): Map<String, Any> = transaction(database) {
         val testData = TestDataDTO(
@@ -77,11 +82,10 @@ class TestService {
     }
 
     fun testMinIO(): Map<String, Any> {
-        val bucketName = "psmo-community"
+        val bucketName = minioBucket
         val fileName = "test-${System.currentTimeMillis()}.txt"
         val content = "Hello MinIO from Kotlin!"
 
-        // Create bucket if not exists
         if (!minioClient.bucketExists(
                 BucketExistsArgs.builder()
                     .bucket(bucketName)
@@ -95,7 +99,6 @@ class TestService {
             )
         }
 
-        // Upload file
         val contentBytes = content.toByteArray()
         minioClient.putObject(
             PutObjectArgs.builder()
@@ -116,14 +119,14 @@ class TestService {
     }
 
     fun testAll(): Map<String, Any> = mapOf(
-        "postgres" to runCatching { testPostgreSQL() }.getOrElse { 
-            mapOf("status" to "error", "message" to it.message) 
+        "postgres" to runCatching { testPostgreSQL() }.getOrElse {
+            mapOf("status" to "error", "message" to it.message)
         },
-        "redis" to runCatching { testRedis() }.getOrElse { 
-            mapOf("status" to "error", "message" to it.message) 
+        "redis" to runCatching { testRedis() }.getOrElse {
+            mapOf("status" to "error", "message" to it.message)
         },
-        "minio" to runCatching { testMinIO() }.getOrElse { 
-            mapOf("status" to "error", "message" to it.message) 
+        "minio" to runCatching { testMinIO() }.getOrElse {
+            mapOf("status" to "error", "message" to it.message)
         }
     )
 }

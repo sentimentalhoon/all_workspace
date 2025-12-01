@@ -26,11 +26,7 @@
         <ol>
           <li>
             <strong>텔레그램 채널 참여:</strong>
-            <a 
-              href="https://t.me/psmocommunity" 
-              target="_blank" 
-              class="telegram-link"
-            >
+            <a href="https://t.me/psmocommunity" target="_blank" class="telegram-link">
               @psmocommunity
             </a>
           </li>
@@ -49,15 +45,15 @@
           </div>
         </div>
         <div class="download-buttons">
-          <a 
-            href="https://play.google.com/store/apps/details?id=org.telegram.messenger" 
+          <a
+            href="https://play.google.com/store/apps/details?id=org.telegram.messenger"
             target="_blank"
             class="download-btn android"
           >
             Android
           </a>
-          <a 
-            href="https://apps.apple.com/app/telegram-messenger/id686449807" 
+          <a
+            href="https://apps.apple.com/app/telegram-messenger/id686449807"
             target="_blank"
             class="download-btn ios"
           >
@@ -82,7 +78,7 @@ onMounted(() => {
   script.setAttribute('data-colorful', '1')
   script.setAttribute('data-color', '667EEA')
   script.setAttribute('data-dark-color', '764BA2')
-  
+
   const container = document.getElementById('telegram-discussion')
   if (container) {
     container.appendChild(script)
