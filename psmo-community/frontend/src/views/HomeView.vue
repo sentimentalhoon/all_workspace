@@ -1,6 +1,4 @@
 <script setup lang="ts">
-import DatabaseTest from '../components/DatabaseTest.vue'
-import HealthCheck from '../components/HealthCheck.vue'
 </script>
 
 <template>
@@ -32,13 +30,7 @@ import HealthCheck from '../components/HealthCheck.vue'
       </div>
     </section>
 
-    <section class="database-section">
-      <DatabaseTest />
-    </section>
 
-    <section class="status-section">
-      <HealthCheck />
-    </section>
   </main>
 </template>
 
@@ -111,12 +103,5 @@ import HealthCheck from '../components/HealthCheck.vue'
   line-height: 1.5;
 }
 
-.database-section {
-  padding: 0 1rem;
-  margin-bottom: 1rem;
-}
 
-.status-section {
-  padding: 0 1rem;
-}
 </style>
