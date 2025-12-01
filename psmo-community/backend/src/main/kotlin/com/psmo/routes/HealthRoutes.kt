@@ -16,15 +16,20 @@ data class HealthResponse(
 
 fun Route.healthRoutes() {
     route("/api") {
-        get("/health") {
-            call.respond(
-                HttpStatusCode.OK,
-                HealthResponse(
-                    status = "UP",
-                    timestamp = LocalDateTime.now().toString(),
-                    service = "psmo-community-backend"
+        route("/health") {
+            get {
+                call.respond(
+                    HttpStatusCode.OK,
+                    HealthResponse(
+                        status = "UP",
+                        timestamp = LocalDateTime.now().toString(),
+                        service = "psmo-community-backend"
+                    )
                 )
-            )
+            }
+            head {
+                call.respond(HttpStatusCode.OK)
+            }
         }
     }
 }
