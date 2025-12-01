@@ -40,6 +40,12 @@ const routes = [
     component: About,
     meta: { title: "설정" },
   },
+  {
+    path: "/baccarat",
+    name: "Baccarat",
+    component: () => import("@/views/Baccarat.vue"),
+    meta: { title: "바카라 게임" },
+  },
 ];
 
 const router = createRouter({

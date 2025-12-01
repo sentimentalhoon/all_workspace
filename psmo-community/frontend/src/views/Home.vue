@@ -3,6 +3,20 @@
     <h1>Welcome to PSMO Community</h1>
     <p class="subtitle">커뮤니티 플랫폼</p>
 
+    <!-- 바카라 게임 링크 추가 -->
+    <div class="quick-links">
+      <router-link to="/baccarat" class="game-card">
+        <div class="game-icon">🎰</div>
+        <h3>바카라 게임</h3>
+        <p>실시간 바카라 게임을 즐겨보세요!</p>
+      </router-link>
+      <router-link to="/community" class="game-card">
+        <div class="game-icon">💬</div>
+        <h3>커뮤니티</h3>
+        <p>자유롭게 소통하고 정보를 공유하세요</p>
+      </router-link>
+    </div>
+
     <div v-if="health" class="health-check">
       <h2>🚀 Backend Status</h2>
       <div class="status-card">
@@ -73,6 +87,46 @@ h1 {
   color: #666;
   font-size: 1.2rem;
   margin-bottom: 3rem;
+}
+
+.quick-links {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 1.5rem;
+  margin-bottom: 3rem;
+  max-width: 800px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.game-card {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  padding: 2rem;
+  border-radius: 16px;
+  text-decoration: none;
+  color: white;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.game-card:hover {
+  transform: translateY(-8px);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.25);
+}
+
+.game-icon {
+  font-size: 3rem;
+  margin-bottom: 1rem;
+}
+
+.game-card h3 {
+  font-size: 1.5rem;
+  margin-bottom: 0.5rem;
+}
+
+.game-card p {
+  opacity: 0.9;
+  font-size: 0.95rem;
 }
 
 .health-check {
