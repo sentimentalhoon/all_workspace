@@ -11,11 +11,35 @@ application {
 }
 
 dependencies {
+    // Ktor Server
     implementation(libs.ktor.server.core)
     implementation(libs.ktor.server.netty)
-    implementation(libs.logback.classic)
-    implementation(libs.ktor.server.core)
+    implementation(libs.ktor.server.auth)
+    implementation(libs.ktor.server.auth.jwt)
+    implementation(libs.ktor.server.content.negotiation)
+    implementation(libs.ktor.serialization.jackson)
     implementation(libs.ktor.server.config.yaml)
+    implementation(libs.ktor.server.status.pages)
+    implementation(libs.ktor.server.call.logging)
+    
+    // Logging
+    implementation(libs.logback.classic)
+    
+    // Database
+    implementation(libs.exposed.core)
+    implementation(libs.exposed.dao)
+    implementation(libs.exposed.jdbc)
+    implementation(libs.exposed.java.time)
+    implementation(libs.postgresql)
+    implementation(libs.hikari)
+    
+    // Redis
+    implementation(libs.redis)
+    
+    // MinIO
+    implementation(libs.minio)
+    
+    // Testing
     testImplementation(libs.ktor.server.test.host)
     testImplementation(libs.kotlin.test.junit)
 }

@@ -71,20 +71,22 @@ services:
   campstation-backend:
     build:
       context: ./campstation/backend
-      dockerfile: Dockerfile
-      target: production
+      dockerfile: Dockerfile.dev
     container_name: campstation-backend-dev
     environment:
       SPRING_PROFILES_ACTIVE: dev
-      SPRING_DATASOURCE_URL: jdbc:postgresql://campstation-postgres:5432/campstation_dev
-      SPRING_DATASOURCE_USERNAME: campstation
-      SPRING_DATASOURCE_PASSWORD: campstation_dev_password
+      DB_HOST: campstation-postgres
+      DB_PORT: 5432
+      DB_NAME: campstation_dev
+      DB_USER: campstation
+      DB_PASSWORD: campstation_dev_password
       REDIS_HOST: campstation-redis
       REDIS_PORT: 6379
       REDIS_PASSWORD: campstation_dev_redis
       MINIO_ENDPOINT: http://campstation-minio:9000
       MINIO_ACCESS_KEY: minioadmin
       MINIO_SECRET_KEY: minioadmin123
+      MINIO_BUCKET: campstation
       MAIL_HOST: campstation-mailhog
       MAIL_PORT: 1025
       JWT_SECRET: dev-secret-key-change-in-production-12345678901234567890
@@ -92,6 +94,9 @@ services:
       JWT_REFRESH_EXPIRATION: 604800000
     ports:
       - "8080:8080"
+      - "5005:5005"
+    volumes:
+      - ./campstation/backend/src:/app/src
     depends_on:
       campstation-postgres:
         condition: service_healthy
@@ -207,10 +212,10 @@ services:
   psmo-backend:
     build:
       context: ./psmo-community/backend
-      dockerfile: Dockerfile
-      target: production
+      dockerfile: Dockerfile.dev
     container_name: psmo-backend-dev
     environment:
+      KTOR_PROFILE: dev
       DATABASE_URL: jdbc:postgresql://psmo-postgres:5432/psmo_dev
       DATABASE_USER: psmo
       DATABASE_PASSWORD: psmo_dev_password
@@ -220,6 +225,7 @@ services:
       MINIO_ENDPOINT: http://psmo-minio:9000
       MINIO_ACCESS_KEY: minioadmin
       MINIO_SECRET_KEY: minioadmin123
+      MINIO_BUCKET: psmo
       MAIL_HOST: psmo-mailhog
       MAIL_PORT: 1025
       JWT_SECRET: dev-secret-key-for-psmo-community-1234567890
@@ -227,6 +233,9 @@ services:
       JWT_AUDIENCE: psmo-app
     ports:
       - "8081:8080"
+      - "5006:5006"
+    volumes:
+      - ./psmo-community/backend/src:/app/src
     depends_on:
       psmo-postgres:
         condition: service_healthy

@@ -1,0 +1,68 @@
+# Java
+*.class
+*.jar
+*.war
+*.ear
+.gradle/
+build/
+!gradle/wrapper/gradle-wrapper.jar
+target/
+
+# Spring Boot
+.springBeans
+
+# IDE
+.idea/
+*.iml
+*.ipr
+*.iws
+.vscode/
+*.code-workspace
+
+# Node
+node_modules/
+dist/
+.npm
+.eslintcache
+
+# Environment
+.env
+.env.local
+.env.*.local
+.env.dev
+.env.prod
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Docker
+docker-compose.override.yml
+
+# SSL Certificates
+*.pem
+*.crt
+*.key
+ssl/
+
+# Database
+*.db
+*.sqlite
+
+# MinIO
+.minio.sys/
+
+# Temporary files
+tmp/
+temp/
+*.tmp
+*.swp
+*.swo
+*~

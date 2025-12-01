@@ -1,0 +1,21 @@
+# Development Dockerfile for Campstation Frontend
+FROM node:22.12-alpine
+
+WORKDIR /app
+
+# Install useful dev tools
+RUN apk add --no-cache curl wget
+
+# Copy package files
+COPY package.json package-lock.json* ./
+
+# Install dependencies
+RUN npm install
+
+# Copy source code
+COPY . .
+
+EXPOSE 3000
+
+# Run Vite dev server
+CMD ["npm", "run", "dev", "--", "--host", "0.0.0.0", "--port", "3000"]
