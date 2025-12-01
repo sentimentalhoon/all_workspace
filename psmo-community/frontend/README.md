@@ -29,6 +29,23 @@ See [Vite Configuration Reference](https://vite.dev/config/).
 npm install
 ```
 
+## Telegram Login Configuration
+
+The "내 정보" 화면은 텔레그램 로그인 위젯을 사용해 백엔드 `/api/auth/telegram`과 `/api/me`를 연동합니다.
+
+1. `frontend` 디렉터리에 `.env.local` 파일을 만들고 아래 항목을 추가하세요:
+
+   ```dotenv
+   VITE_TELEGRAM_BOT_ID=8578829111
+   VITE_TELEGRAM_BOT_USERNAME=Psmo_community_bot
+   ```
+
+   (운영 환경에서는 본인의 봇 ID/사용자명으로 변경)
+
+2. `npm run dev`로 개발 서버를 실행하면 **내 정보** 화면에서 “텔레그램으로 로그인” 버튼이 나타납니다. 버튼을 누르면 텔레그램 로그인 팝업 → 백엔드 토큰 교환 → `/api/me` 프로필 조회 순서로 진행됩니다.
+
+3. 발급된 JWT와 사용자 정보는 `localStorage`(`psmo-auth-session`)에 저장됩니다. 로그아웃 버튼을 누르면 세션이 초기화됩니다.
+
 ### Compile and Hot-Reload for Development
 
 ```sh
