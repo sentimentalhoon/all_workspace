@@ -15,7 +15,10 @@ fun Application.configureHTTP() {
         allowHeader(HttpHeaders.ContentType)
         allowCredentials = true
         
-        anyHost() // Development only - configure specific hosts in production
+        // Development and Production hosts
+        allowHost("localhost:5173")
+        allowHost("localhost:3000")
+        allowHost("mycommunity.duckdns.org", schemes = listOf("https"))
     }
     
     install(DefaultHeaders) {
