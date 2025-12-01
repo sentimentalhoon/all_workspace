@@ -1,0 +1,132 @@
+services:
+  postgres:
+    image: postgres:17-alpine
+    container_name: psmo-postgres-dev
+    environment:
+      POSTGRES_DB: psmo_community
+      POSTGRES_USER: psmo
+      POSTGRES_PASSWORD: psmo_dev_password
+    ports:
+      - "5433:5432"
+    volumes:
+      - psmo_postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U psmo"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - psmo-network
+
+  redis:
+    image: redis:7-alpine
+    container_name: psmo-redis-dev
+    ports:
+      - "6380:6379"
+    volumes:
+      - psmo_redis_data:/data
+    command: redis-server --appendonly yes
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - psmo-network
+
+  minio:
+    image: minio/minio:latest
+    container_name: psmo-minio-dev
+    environment:
+      MINIO_ROOT_USER: psmo
+      MINIO_ROOT_PASSWORD: psmo_minio_dev
+    ports:
+      - "9002:9000"
+      - "9003:9001"
+    volumes:
+      - psmo_minio_data:/data
+    command: server /data --console-address ":9001"
+    healthcheck:
+      test: ["CMD", "mc", "ready", "local"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - psmo-network
+
+  mailhog:
+    image: mailhog/mailhog:latest
+    container_name: psmo-mailhog-dev
+    ports:
+      - "1026:1025"
+      - "8026:8025"
+    networks:
+      - psmo-network
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile.dev
+    container_name: psmo-backend-dev
+    environment:
+      DATABASE_URL: jdbc:postgresql://postgres:5432/psmo_community
+      DATABASE_USER: psmo
+      DATABASE_PASSWORD: psmo_dev_password
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      MINIO_ENDPOINT: http://minio:9000
+      MINIO_ACCESS_KEY: psmo
+      MINIO_SECRET_KEY: psmo_minio_dev
+      MAIL_HOST: mailhog
+      MAIL_PORT: 1025
+    ports:
+      - "8081:8080"
+    volumes:
+      - ./backend:/app
+      - psmo_gradle_cache:/root/.gradle
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      minio:
+        condition: service_healthy
+    networks:
+      - psmo-network
+    develop:
+      watch:
+        - action: sync+restart
+          path: ./backend/src
+          target: /app/src
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile.dev
+    container_name: psmo-frontend-dev
+    environment:
+      VITE_API_URL: http://localhost:8081
+    ports:
+      - "3001:3000"
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+    depends_on:
+      - backend
+    networks:
+      - psmo-network
+    develop:
+      watch:
+        - action: sync
+          path: ./frontend/src
+          target: /app/src
+
+volumes:
+  psmo_postgres_data:
+  psmo_redis_data:
+  psmo_minio_data:
+  psmo_gradle_cache:
+
+networks:
+  psmo-network:
+    driver: bridge

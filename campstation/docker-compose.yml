@@ -1,0 +1,133 @@
+services:
+  postgres:
+    image: postgres:17-alpine
+    container_name: campstation-postgres-dev
+    environment:
+      POSTGRES_DB: campstation
+      POSTGRES_USER: campstation
+      POSTGRES_PASSWORD: campstation_dev_password
+    ports:
+      - "5432:5432"
+    volumes:
+      - campstation_postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U campstation"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - campstation-network
+
+  redis:
+    image: redis:7-alpine
+    container_name: campstation-redis-dev
+    ports:
+      - "6379:6379"
+    volumes:
+      - campstation_redis_data:/data
+    command: redis-server --appendonly yes
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - campstation-network
+
+  minio:
+    image: minio/minio:latest
+    container_name: campstation-minio-dev
+    environment:
+      MINIO_ROOT_USER: campstation
+      MINIO_ROOT_PASSWORD: campstation_minio_dev
+    ports:
+      - "9000:9000"
+      - "9001:9001"
+    volumes:
+      - campstation_minio_data:/data
+    command: server /data --console-address ":9001"
+    healthcheck:
+      test: ["CMD", "mc", "ready", "local"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - campstation-network
+
+  mailhog:
+    image: mailhog/mailhog:latest
+    container_name: campstation-mailhog-dev
+    ports:
+      - "1025:1025"
+      - "8025:8025"
+    networks:
+      - campstation-network
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile.dev
+    container_name: campstation-backend-dev
+    environment:
+      SPRING_PROFILES_ACTIVE: dev
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/campstation
+      SPRING_DATASOURCE_USERNAME: campstation
+      SPRING_DATASOURCE_PASSWORD: campstation_dev_password
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      MINIO_ENDPOINT: http://minio:9000
+      MINIO_ACCESS_KEY: campstation
+      MINIO_SECRET_KEY: campstation_minio_dev
+      MAIL_HOST: mailhog
+      MAIL_PORT: 1025
+    ports:
+      - "8080:8080"
+    volumes:
+      - ./backend:/app
+      - campstation_maven_cache:/root/.m2
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      minio:
+        condition: service_healthy
+    networks:
+      - campstation-network
+    develop:
+      watch:
+        - action: sync+restart
+          path: ./backend/src
+          target: /app/src
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile.dev
+    container_name: campstation-frontend-dev
+    environment:
+      VITE_API_URL: http://localhost:8080
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+    depends_on:
+      - backend
+    networks:
+      - campstation-network
+    develop:
+      watch:
+        - action: sync
+          path: ./frontend/src
+          target: /app/src
+
+volumes:
+  campstation_postgres_data:
+  campstation_redis_data:
+  campstation_minio_data:
+  campstation_maven_cache:
+
+networks:
+  campstation-network:
+    driver: bridge

@@ -1,0 +1,17 @@
+**/.git
+**/.gitignore
+**/.vscode
+**/.idea
+**/node_modules
+**/dist
+**/build
+**/.gradle
+**/gradle/wrapper/*.jar
+**/.env
+**/.env.local
+**/docker-compose*.yml
+**/Dockerfile*
+**/*.md
+**/.DS_Store
+**/coverage
+**/.cache

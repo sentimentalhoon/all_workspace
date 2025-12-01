@@ -1,0 +1,131 @@
+services:
+  postgres:
+    image: postgres:17-alpine
+    container_name: psmo-postgres-prod
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-psmo_community}
+      POSTGRES_USER: ${POSTGRES_USER:-psmo}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?POSTGRES_PASSWORD is required}
+    ports:
+      - "5433:5432"
+    volumes:
+      - psmo_postgres_data_prod:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-psmo}"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    restart: unless-stopped
+    networks:
+      - psmo-network
+
+  redis:
+    image: redis:7-alpine
+    container_name: psmo-redis-prod
+    ports:
+      - "6380:6379"
+    volumes:
+      - psmo_redis_data_prod:/data
+    command: redis-server --appendonly yes --requirepass ${REDIS_PASSWORD:?REDIS_PASSWORD is required}
+    healthcheck:
+      test: ["CMD", "redis-cli", "--raw", "incr", "ping"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    restart: unless-stopped
+    networks:
+      - psmo-network
+
+  minio:
+    image: minio/minio:latest
+    container_name: psmo-minio-prod
+    environment:
+      MINIO_ROOT_USER: ${MINIO_ROOT_USER:?MINIO_ROOT_USER is required}
+      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD:?MINIO_ROOT_PASSWORD is required}
+    ports:
+      - "9002:9000"
+      - "9003:9001"
+    volumes:
+      - psmo_minio_data_prod:/data
+    command: server /data --console-address ":9001"
+    healthcheck:
+      test: ["CMD", "mc", "ready", "local"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    restart: unless-stopped
+    networks:
+      - psmo-network
+
+  mailhog:
+    image: mailhog/mailhog:latest
+    container_name: psmo-mailhog-prod
+    ports:
+      - "1026:1025"
+      - "8026:8025"
+    restart: unless-stopped
+    networks:
+      - psmo-network
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+      args:
+        - JAVA_VERSION=21
+    container_name: psmo-backend-prod
+    environment:
+      DATABASE_URL: jdbc:postgresql://postgres:5432/${POSTGRES_DB:-psmo_community}
+      DATABASE_USER: ${POSTGRES_USER:-psmo}
+      DATABASE_PASSWORD: ${POSTGRES_PASSWORD:?POSTGRES_PASSWORD is required}
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      REDIS_PASSWORD: ${REDIS_PASSWORD:?REDIS_PASSWORD is required}
+      MINIO_ENDPOINT: http://minio:9000
+      MINIO_ACCESS_KEY: ${MINIO_ROOT_USER:?MINIO_ROOT_USER is required}
+      MINIO_SECRET_KEY: ${MINIO_ROOT_PASSWORD:?MINIO_ROOT_PASSWORD is required}
+      MAIL_HOST: mailhog
+      MAIL_PORT: 1025
+    ports:
+      - "8081:8080"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      minio:
+        condition: service_healthy
+    restart: unless-stopped
+    networks:
+      - psmo-network
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:8080/api/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+      args:
+        - NODE_VERSION=22
+    container_name: psmo-frontend-prod
+    environment:
+      VITE_API_URL: ${API_URL:-http://localhost:8081}
+    ports:
+      - "3001:80"
+    depends_on:
+      - backend
+    restart: unless-stopped
+    networks:
+      - psmo-network
+
+volumes:
+  psmo_postgres_data_prod:
+  psmo_redis_data_prod:
+  psmo_minio_data_prod:
+
+networks:
+  psmo-network:
+    driver: bridge
