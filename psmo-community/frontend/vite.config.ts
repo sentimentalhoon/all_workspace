@@ -6,8 +6,7 @@ import { defineConfig } from 'vite'
 import vueDevTools from 'vite-plugin-vue-devtools'
 
 // https://vite.dev/config/
-export default defineConfig(({ mode }) => {
-  const isDev = mode === 'development'
+export default defineConfig(() => {
   const backendPort = process.env.VITE_BACKEND_PORT || '8081'
   const backendHost = process.env.VITE_BACKEND_HOST || 'localhost'
 
@@ -21,16 +20,15 @@ export default defineConfig(({ mode }) => {
     server: {
       host: '0.0.0.0',
       port: 3000,
-      // Proxy only in development mode
-      ...(isDev && {
-        proxy: {
-          '/api': {
-            target: `http://${backendHost}:${backendPort}`,
-            changeOrigin: true,
-            secure: false,
-          },
+      // Proxy for API requests in dev server
+      proxy: {
+        '/api': {
+          target: `http://${backendHost}:${backendPort}`,
+          changeOrigin: true,
+          secure: false,
+          rewrite: (path) => path,
         },
-      }),
+      },
       watch: {
         usePolling: true,
         interval: 1000,
