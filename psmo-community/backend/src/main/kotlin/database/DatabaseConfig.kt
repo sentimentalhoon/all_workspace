@@ -7,9 +7,9 @@ import javax.sql.DataSource
 
 object DatabaseConfig {
     fun createDataSource(
-        jdbcUrl: String = System.getenv("DB_URL") ?: "jdbc:postgresql://psmo-postgres:5432/psmo_dev",
-        username: String = System.getenv("DB_USER") ?: "psmo",
-        password: String = System.getenv("DB_PASSWORD") ?: "psmo_dev_password"
+        jdbcUrl: String = System.getenv("DATABASE_URL") ?: "jdbc:postgresql://psmo-postgres:5432/psmo_dev",
+        username: String = System.getenv("DATABASE_USERNAME") ?: "psmo",
+        password: String = System.getenv("DATABASE_PASSWORD") ?: "psmo_dev_password"
     ): DataSource = HikariDataSource(HikariConfig().apply {
         this.jdbcUrl = jdbcUrl
         this.username = username
