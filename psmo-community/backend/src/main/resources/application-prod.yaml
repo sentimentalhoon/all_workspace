@@ -8,30 +8,30 @@ ktor:
 database:
   url: ${DATABASE_URL:jdbc:postgresql://psmo-postgres:5432/psmo_community}
   driver: org.postgresql.Driver
-  user: ${DATABASE_USER:psmo}
-  password: ${DATABASE_PASSWORD}
+  user: ${DATABASE_USERNAME:psmo}
+  password: ${DATABASE_PASSWORD:}
   maxPoolSize: 20
 
 redis:
   host: ${REDIS_HOST:psmo-redis}
   port: 6379
-  password: ${REDIS_PASSWORD}
+  password: ${REDIS_PASSWORD:}
 
 minio:
   endpoint: ${MINIO_ENDPOINT:http://psmo-minio:9000}
-  accessKey: ${MINIO_ACCESS_KEY}
-  secretKey: ${MINIO_SECRET_KEY}
+  accessKey: ${MINIO_ACCESS_KEY:}
+  secretKey: ${MINIO_SECRET_KEY:}
   bucket: ${MINIO_BUCKET:psmo}
 
 mail:
-  host: ${MAIL_HOST}
-  port: ${MAIL_PORT:587}
-  username: ${MAIL_USERNAME}
-  password: ${MAIL_PASSWORD}
+  host: ${MAIL_HOST:psmo-mailhog}
+  port: ${MAIL_PORT:1025}
+  username: ${MAIL_USERNAME:}
+  password: ${MAIL_PASSWORD:}
   from: ${MAIL_FROM:noreply@psmo.community}
 
 jwt:
-  secret: ${JWT_SECRET}
+  secret: ${JWT_SECRET:change-this-secret-in-production-min-32-chars}
   issuer: ${JWT_ISSUER:psmo-community}
   audience: ${JWT_AUDIENCE:psmo-app}
   realm: ${JWT_REALM:PSMO Community}

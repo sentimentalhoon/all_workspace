@@ -209,7 +209,7 @@ services:
     environment:
       KTOR_PROFILE: prod
       DATABASE_URL: jdbc:postgresql://psmo-postgres:5432/${PSMO_POSTGRES_DB:-psmo_community}
-      DATABASE_USER: ${PSMO_POSTGRES_USER:-psmo}
+      DATABASE_USERNAME: ${PSMO_POSTGRES_USER:-psmo}
       DATABASE_PASSWORD: ${PSMO_POSTGRES_PASSWORD:?PSMO_POSTGRES_PASSWORD is required}
       REDIS_HOST: psmo-redis
       REDIS_PORT: 6379
