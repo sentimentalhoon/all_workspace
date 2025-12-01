@@ -1,13 +1,13 @@
-package com.mycamp.app;
+package com.mycamp.campstation;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 @SpringBootApplication
-public class MyCampStationApplication {
+public class CampstationApplication {
 
 	public static void main(String[] args) {
-		SpringApplication.run(MyCampStationApplication.class, args);
+		SpringApplication.run(CampstationApplication.class, args);
 	}
 
 }

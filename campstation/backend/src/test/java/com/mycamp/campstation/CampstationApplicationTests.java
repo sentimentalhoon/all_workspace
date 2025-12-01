@@ -1,10 +1,10 @@
-package com.mycamp.app;
+package com.mycamp.campstation;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 
 @SpringBootTest
-class MyCampStationApplicationTests {
+class CampstationApplicationTests {
 
 	@Test
 	void contextLoads() {
