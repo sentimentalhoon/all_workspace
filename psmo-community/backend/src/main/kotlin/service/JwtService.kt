@@ -3,6 +3,7 @@ package com.psmo.service
 import com.auth0.jwt.JWT
 import com.auth0.jwt.algorithms.Algorithm
 import com.psmo.model.User
+import com.psmo.model.dto.TokenResponse
 import io.ktor.server.config.ApplicationConfig
 import io.ktor.server.config.tryGetString
 import java.util.Date
@@ -36,8 +37,3 @@ class JwtService(
         )
     }
 }
-
-data class TokenResponse(
-    val accessToken: String,
-    val expiresAt: Long
-)

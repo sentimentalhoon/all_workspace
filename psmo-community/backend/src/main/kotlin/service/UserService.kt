@@ -9,6 +9,7 @@ import org.jetbrains.exposed.sql.SchemaUtils
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
 import org.jetbrains.exposed.sql.andWhere
 import org.jetbrains.exposed.sql.insert
+import org.jetbrains.exposed.sql.select
 import org.jetbrains.exposed.sql.selectAll
 import org.jetbrains.exposed.sql.update
 import org.jetbrains.exposed.sql.transactions.transaction
@@ -60,6 +61,13 @@ class UserService(
             .andWhere { Users.telegramId eq telegramId }
             .single()
             .toUser()
+    }
+
+    fun getUserById(id: Long): User? = transaction(database) {
+        Users.selectAll()
+            .andWhere { Users.id eq id }
+            .singleOrNull()
+            ?.toUser()
     }
 
     private fun buildDisplayName(firstName: String?, lastName: String?, username: String?): String? {

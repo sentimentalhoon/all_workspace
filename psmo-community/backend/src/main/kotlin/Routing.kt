@@ -1,5 +1,7 @@
 package com.psmo
 
+import com.psmo.model.dto.ProfileResponse
+import com.psmo.model.dto.toResponse
 import com.psmo.service.JwtService
 import com.psmo.service.TelegramAuthException
 import com.psmo.service.TelegramAuthService
@@ -7,6 +9,9 @@ import com.psmo.service.TestService
 import com.psmo.service.UserService
 import io.ktor.http.*
 import io.ktor.server.application.*
+import io.ktor.server.auth.authenticate
+import io.ktor.server.auth.jwt.JWTPrincipal
+import io.ktor.server.auth.principal
 import io.ktor.server.config.ApplicationConfig
 import io.ktor.server.request.*
 import io.ktor.server.response.*
@@ -66,6 +71,30 @@ fun Application.configureRouting(config: ApplicationConfig) {
                         mapOf("status" to "error", "message" to "Internal server error")
                     )
                 }
+            }
+        }
+
+        authenticate("auth-jwt") {
+            get("/api/me") {
+                val principal = call.principal<JWTPrincipal>()
+                    ?: return@get call.respond(
+                        HttpStatusCode.Unauthorized,
+                        mapOf("status" to "error", "message" to "Authentication required")
+                    )
+
+                val userId = principal.subject?.toLongOrNull()
+                    ?: return@get call.respond(
+                        HttpStatusCode.BadRequest,
+                        mapOf("status" to "error", "message" to "Invalid token payload")
+                    )
+
+                val user = userService.getUserById(userId)
+                    ?: return@get call.respond(
+                        HttpStatusCode.NotFound,
+                        mapOf("status" to "error", "message" to "User not found")
+                    )
+
+                call.respond(ProfileResponse(user = user.toResponse()))
             }
         }
     }

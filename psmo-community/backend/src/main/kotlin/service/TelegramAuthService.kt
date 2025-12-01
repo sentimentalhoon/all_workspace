@@ -1,6 +1,8 @@
 package com.psmo.service
 
-import com.psmo.model.User
+import com.psmo.model.dto.TokenResponse
+import com.psmo.model.dto.UserResponse
+import com.psmo.model.dto.toResponse
 import io.ktor.http.Parameters
 import io.ktor.server.config.ApplicationConfig
 import io.ktor.server.config.tryGetString
@@ -70,14 +72,6 @@ class TelegramAuthService(
         val hmac = mac.doFinal(dataCheckString.toByteArray())
         return hmac.joinToString("") { "%02x".format(it) }
     }
-
-    private fun User.toResponse(): UserResponse = UserResponse(
-        id = id,
-        telegramId = telegramId,
-        displayName = displayName,
-        username = username,
-        photoUrl = photoUrl
-    )
 }
 
 data class TelegramAuthResponse(
@@ -86,14 +80,6 @@ data class TelegramAuthResponse(
     val token: TokenResponse,
     val authDate: Long,
     val verifiedAt: Long
-)
-
-data class UserResponse(
-    val id: Long,
-    val telegramId: Long,
-    val displayName: String?,
-    val username: String?,
-    val photoUrl: String?
 )
 
 class TelegramAuthException(

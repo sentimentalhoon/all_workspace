@@ -45,3 +45,9 @@ If the server starts successfully, you'll see the following output:
 - Server validates Telegram signature using `telegram.botToken` and rejects expired payloads (default tolerance 86,400 seconds).
 - Configure secrets via `telegram.botToken` in `application-{profile}.yaml` or export `TELEGRAM_BOT_TOKEN`.
 - On success the backend persists/updates the Telegram user profile, issues a JWT access token, and returns both the normalized user object and token metadata.
+
+### Authenticated Profile API
+
+- Endpoint: `GET /api/me`
+- Requires: `Authorization: Bearer <access_token>` header (token from Telegram login response)
+- Returns the persisted user profile (same shape as Telegram auth response) when the JWT is valid.
