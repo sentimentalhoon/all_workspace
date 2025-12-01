@@ -45,3 +45,7 @@ cors:
 
 logging:
   level: DEBUG
+
+telegram:
+  botToken: ${TELEGRAM_BOT_TOKEN:8578829111:AAHRZtRI5S1vBRwjbTu1_JgG_GN65z3rFfo}
+  authToleranceSeconds: ${TELEGRAM_AUTH_TOLERANCE:86400}

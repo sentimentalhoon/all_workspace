@@ -14,7 +14,7 @@ fun main(args: Array<String>) {
 
 fun Application.module() {
     val (activeProfile, activeConfig) = ProfiledConfigLoader.load(environment)
-    environment.log.info("활성 KTOR_PROFILE: $activeProfile (application-$activeProfile.yaml 적용)")
+    environment.log.info("Active KTOR_PROFILE: $activeProfile (application-$activeProfile.yaml)")
 
     val allowedOrigins = activeConfig.tryGetStringList("cors.allowedOrigins")
         ?: listOf("http://localhost:5173", "http://localhost:5174")

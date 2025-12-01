@@ -37,3 +37,11 @@ If the server starts successfully, you'll see the following output:
 2024-12-04 14:32:45.682 [main] INFO  Application - Responding at http://0.0.0.0:8080
 ```
 
+## Telegram Login Callback
+
+- Endpoint: `POST /api/auth/telegram`
+- Body: `application/x-www-form-urlencoded` payload directly from the Telegram Login Widget
+- Expected fields include `id`, `first_name`, `username`, `photo_url`, `auth_date`, `hash`, etc.
+- Server validates Telegram signature using `telegram.botToken` and rejects expired payloads (default tolerance 86,400 seconds).
+- Configure secrets via `telegram.botToken` in `application-{profile}.yaml` or export `TELEGRAM_BOT_TOKEN`.
+- On success the backend persists/updates the Telegram user profile, issues a JWT access token, and returns both the normalized user object and token metadata.
