@@ -1,0 +1,288 @@
+services:
+  # Campstation Services
+  campstation-postgres:
+    image: postgres:17-alpine
+    container_name: campstation-postgres-dev
+    environment:
+      POSTGRES_DB: campstation_dev
+      POSTGRES_USER: campstation
+      POSTGRES_PASSWORD: campstation_dev_password
+    ports:
+      - "5432:5432"
+    volumes:
+      - campstation_postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U campstation"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+    networks:
+      - campstation-network
+
+  campstation-redis:
+    image: redis:7-alpine
+    container_name: campstation-redis-dev
+    command: redis-server --appendonly yes --requirepass campstation_dev_redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - campstation_redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "--raw", "incr", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+    networks:
+      - campstation-network
+
+  campstation-minio:
+    image: minio/minio:latest
+    container_name: campstation-minio-dev
+    environment:
+      MINIO_ROOT_USER: minioadmin
+      MINIO_ROOT_PASSWORD: minioadmin123
+    ports:
+      - "9000:9000"
+      - "9001:9001"
+    volumes:
+      - campstation_minio_data:/data
+    command: server /data --console-address ":9001"
+    healthcheck:
+      test: ["CMD", "mc", "ready", "local"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+    networks:
+      - campstation-network
+
+  campstation-mailhog:
+    image: mailhog/mailhog:latest
+    container_name: campstation-mailhog-dev
+    ports:
+      - "1025:1025"
+      - "8025:8025"
+    restart: unless-stopped
+    networks:
+      - campstation-network
+
+  campstation-backend:
+    build:
+      context: ./campstation/backend
+      dockerfile: Dockerfile
+      target: production
+    container_name: campstation-backend-dev
+    environment:
+      SPRING_PROFILES_ACTIVE: dev
+      SPRING_DATASOURCE_URL: jdbc:postgresql://campstation-postgres:5432/campstation_dev
+      SPRING_DATASOURCE_USERNAME: campstation
+      SPRING_DATASOURCE_PASSWORD: campstation_dev_password
+      REDIS_HOST: campstation-redis
+      REDIS_PORT: 6379
+      REDIS_PASSWORD: campstation_dev_redis
+      MINIO_ENDPOINT: http://campstation-minio:9000
+      MINIO_ACCESS_KEY: minioadmin
+      MINIO_SECRET_KEY: minioadmin123
+      MAIL_HOST: campstation-mailhog
+      MAIL_PORT: 1025
+      JWT_SECRET: dev-secret-key-change-in-production-12345678901234567890
+      JWT_EXPIRATION: 86400000
+      JWT_REFRESH_EXPIRATION: 604800000
+    ports:
+      - "8080:8080"
+    depends_on:
+      campstation-postgres:
+        condition: service_healthy
+      campstation-redis:
+        condition: service_healthy
+      campstation-minio:
+        condition: service_healthy
+    restart: unless-stopped
+    networks:
+      - campstation-network
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "wget",
+          "--no-verbose",
+          "--tries=1",
+          "--spider",
+          "http://localhost:8080/api/health",
+        ]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  campstation-frontend:
+    build:
+      context: ./campstation/frontend
+      dockerfile: Dockerfile.dev
+    container_name: campstation-frontend-dev
+    environment:
+      VITE_API_BASE_URL: http://localhost:8080
+    ports:
+      - "5173:3000"
+    volumes:
+      - ./campstation/frontend/src:/app/src
+      - ./campstation/frontend/public:/app/public
+      - /app/node_modules
+    depends_on:
+      - campstation-backend
+    restart: unless-stopped
+    networks:
+      - campstation-network
+
+  # PSMO Community Services
+  psmo-postgres:
+    image: postgres:17-alpine
+    container_name: psmo-postgres-dev
+    environment:
+      POSTGRES_DB: psmo_dev
+      POSTGRES_USER: psmo
+      POSTGRES_PASSWORD: psmo_dev_password
+    ports:
+      - "5433:5432"
+    volumes:
+      - psmo_postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U psmo"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+    networks:
+      - psmo-network
+
+  psmo-redis:
+    image: redis:7-alpine
+    container_name: psmo-redis-dev
+    command: redis-server --appendonly yes --requirepass psmo_dev_redis
+    ports:
+      - "6380:6379"
+    volumes:
+      - psmo_redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "--raw", "incr", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+    networks:
+      - psmo-network
+
+  psmo-minio:
+    image: minio/minio:latest
+    container_name: psmo-minio-dev
+    environment:
+      MINIO_ROOT_USER: minioadmin
+      MINIO_ROOT_PASSWORD: minioadmin123
+    ports:
+      - "9002:9000"
+      - "9003:9001"
+    volumes:
+      - psmo_minio_data:/data
+    command: server /data --console-address ":9001"
+    healthcheck:
+      test: ["CMD", "mc", "ready", "local"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+    networks:
+      - psmo-network
+
+  psmo-mailhog:
+    image: mailhog/mailhog:latest
+    container_name: psmo-mailhog-dev
+    ports:
+      - "1026:1025"
+      - "8026:8025"
+    restart: unless-stopped
+    networks:
+      - psmo-network
+
+  psmo-backend:
+    build:
+      context: ./psmo-community/backend
+      dockerfile: Dockerfile
+      target: production
+    container_name: psmo-backend-dev
+    environment:
+      DATABASE_URL: jdbc:postgresql://psmo-postgres:5432/psmo_dev
+      DATABASE_USER: psmo
+      DATABASE_PASSWORD: psmo_dev_password
+      REDIS_HOST: psmo-redis
+      REDIS_PORT: 6379
+      REDIS_PASSWORD: psmo_dev_redis
+      MINIO_ENDPOINT: http://psmo-minio:9000
+      MINIO_ACCESS_KEY: minioadmin
+      MINIO_SECRET_KEY: minioadmin123
+      MAIL_HOST: psmo-mailhog
+      MAIL_PORT: 1025
+      JWT_SECRET: dev-secret-key-for-psmo-community-1234567890
+      JWT_ISSUER: psmo-community
+      JWT_AUDIENCE: psmo-app
+    ports:
+      - "8081:8080"
+    depends_on:
+      psmo-postgres:
+        condition: service_healthy
+      psmo-redis:
+        condition: service_healthy
+      psmo-minio:
+        condition: service_healthy
+    restart: unless-stopped
+    networks:
+      - psmo-network
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "wget",
+          "--no-verbose",
+          "--tries=1",
+          "--spider",
+          "http://localhost:8080/api/health",
+        ]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  psmo-frontend:
+    build:
+      context: ./psmo-community/frontend
+      dockerfile: Dockerfile.dev
+    container_name: psmo-frontend-dev
+    environment:
+      VITE_API_BASE_URL: http://localhost:8081
+    ports:
+      - "5174:3000"
+    volumes:
+      - ./psmo-community/frontend/src:/app/src
+      - ./psmo-community/frontend/public:/app/public
+      - /app/node_modules
+    depends_on:
+      - psmo-backend
+    restart: unless-stopped
+    networks:
+      - psmo-network
+
+volumes:
+  # Campstation volumes
+  campstation_postgres_data:
+  campstation_redis_data:
+  campstation_minio_data:
+
+  # PSMO volumes
+  psmo_postgres_data:
+  psmo_redis_data:
+  psmo_minio_data:
+
+networks:
+  campstation-network:
+    driver: bridge
+  psmo-network:
+    driver: bridge
