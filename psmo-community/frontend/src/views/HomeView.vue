@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import HealthCheck from '../components/HealthCheck.vue'
 import DatabaseTest from '../components/DatabaseTest.vue'
+import HealthCheck from '../components/HealthCheck.vue'
 </script>
 
 <template>

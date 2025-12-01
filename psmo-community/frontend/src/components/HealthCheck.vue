@@ -12,12 +12,13 @@ const backendHealth = ref<HealthStatus | null>(null)
 const loading = ref(true)
 const error = ref<string | null>(null)
 
+// Use relative path - works with Vite proxy in dev and Nginx proxy in prod
 const checkHealth = async () => {
   loading.value = true
   error.value = null
 
   try {
-    const response = await fetch('http://localhost:8081/api/health')
+    const response = await fetch('/api/health')
 
     if (!response.ok) {
       throw new Error(`HTTP error! status: ${response.status}`)

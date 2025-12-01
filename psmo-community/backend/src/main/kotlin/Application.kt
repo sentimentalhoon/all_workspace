@@ -11,12 +11,18 @@ fun main(args: Array<String>) {
 }
 
 fun Application.module() {
+    val allowedOrigins = environment.config.propertyOrNull("cors.allowedOrigins")?.getString()
+        ?.split(",")
+        ?: listOf("http://localhost:5173", "http://localhost:5174")
+    
     install(ContentNegotiation) {
         jackson()
     }
     
     install(CORS) {
-        anyHost()
+        allowedOrigins.forEach { origin ->
+            allowHost(origin.removePrefix("http://").removePrefix("https://"), schemes = listOf("http", "https"))
+        }
         allowHeader(HttpHeaders.ContentType)
         allowHeader(HttpHeaders.Authorization)
         allowMethod(HttpMethod.Get)

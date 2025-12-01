@@ -99,13 +99,14 @@ const hasResults = computed(() => {
   return Object.keys(results.value).length > 0
 })
 
+// Use relative path - works with Vite proxy in dev and Nginx proxy in prod
 const testAll = async () => {
   loading.value = true
   error.value = ''
   results.value = {}
 
   try {
-    const response = await fetch('http://localhost:8080/api/test/all')
+    const response = await fetch('/api/test/all')
     if (!response.ok) {
       throw new Error(`HTTP ${response.status}: ${response.statusText}`)
     }

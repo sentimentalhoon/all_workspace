@@ -8,3 +8,8 @@ ktor:
 # Active profile (dev or prod)
 profiles:
   active: ${KTOR_PROFILE:dev}
+
+# CORS configuration
+# Using /api proxy: Same-origin requests, CORS not strictly needed but kept for flexibility
+cors:
+  allowedOrigins: ${CORS_ALLOWED_ORIGINS:http://localhost:5173,http://localhost:5174}

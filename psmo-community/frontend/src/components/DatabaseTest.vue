@@ -1,7 +1,7 @@
 <template>
   <div class="db-test">
     <h2>🔌 데이터베이스 연결 테스트</h2>
-    
+
     <div class="test-controls">
       <button @click="testAll" :disabled="loading" class="test-btn">
         {{ loading ? '테스트 중...' : '전체 테스트 실행' }}
@@ -11,16 +11,17 @@
       </button>
     </div>
 
-    <div v-if="error" class="error-box">
-      ❌ {{ error }}
-    </div>
+    <div v-if="error" class="error-box">❌ {{ error }}</div>
 
     <div v-if="hasResults" class="results">
       <!-- PostgreSQL -->
       <div class="service-card" :class="{ success: results.postgres?.status === 'success' }">
         <div class="service-header">
           <h3>🐘 PostgreSQL</h3>
-          <span class="status-badge" :class="results.postgres?.status === 'success' ? 'success' : 'fail'">
+          <span
+            class="status-badge"
+            :class="results.postgres?.status === 'success' ? 'success' : 'fail'"
+          >
             {{ results.postgres?.status === 'success' ? '✓ 연결됨' : '✗ 실패' }}
           </span>
         </div>
@@ -36,7 +37,10 @@
       <div class="service-card" :class="{ success: results.redis?.status === 'success' }">
         <div class="service-header">
           <h3>⚡ Redis</h3>
-          <span class="status-badge" :class="results.redis?.status === 'success' ? 'success' : 'fail'">
+          <span
+            class="status-badge"
+            :class="results.redis?.status === 'success' ? 'success' : 'fail'"
+          >
             {{ results.redis?.status === 'success' ? '✓ 연결됨' : '✗ 실패' }}
           </span>
         </div>
@@ -53,7 +57,10 @@
       <div class="service-card" :class="{ success: results.minio?.status === 'success' }">
         <div class="service-header">
           <h3>🪣 MinIO</h3>
-          <span class="status-badge" :class="results.minio?.status === 'success' ? 'success' : 'fail'">
+          <span
+            class="status-badge"
+            :class="results.minio?.status === 'success' ? 'success' : 'fail'"
+          >
             {{ results.minio?.status === 'success' ? '✓ 연결됨' : '✗ 실패' }}
           </span>
         </div>
@@ -74,7 +81,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed } from 'vue'
+import { computed, ref } from 'vue'
 
 interface TestResult {
   postgres?: {
@@ -106,13 +113,14 @@ const error = ref('')
 
 const hasResults = computed(() => Object.keys(results.value).length > 0)
 
+// Use relative path - works with Vite proxy in dev and Nginx proxy in prod
 const testAll = async () => {
   loading.value = true
   error.value = ''
   results.value = {}
 
   try {
-    const response = await fetch('http://localhost:8081/api/test/all')
+    const response = await fetch('/api/test/all')
     if (!response.ok) {
       throw new Error(`HTTP ${response.status}: ${response.statusText}`)
     }
@@ -282,7 +290,11 @@ h2 {
 }
 
 @keyframes spin {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
 }
 </style>

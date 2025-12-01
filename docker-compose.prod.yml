@@ -94,12 +94,15 @@ services:
       SPRING_DATASOURCE_URL: jdbc:postgresql://campstation-postgres:5432/${CAMPSTATION_POSTGRES_DB:-campstation}
       SPRING_DATASOURCE_USERNAME: ${CAMPSTATION_POSTGRES_USER:-campstation}
       SPRING_DATASOURCE_PASSWORD: ${CAMPSTATION_POSTGRES_PASSWORD:?CAMPSTATION_POSTGRES_PASSWORD is required}
+      SPRING_JPA_DDL_AUTO: validate
+      SPRING_JPA_SHOW_SQL: false
       REDIS_HOST: campstation-redis
       REDIS_PORT: 6379
       REDIS_PASSWORD: ${CAMPSTATION_REDIS_PASSWORD:?CAMPSTATION_REDIS_PASSWORD is required}
       MINIO_ENDPOINT: http://campstation-minio:9000
       MINIO_ACCESS_KEY: ${CAMPSTATION_MINIO_USER:?CAMPSTATION_MINIO_USER is required}
       MINIO_SECRET_KEY: ${CAMPSTATION_MINIO_PASSWORD:?CAMPSTATION_MINIO_PASSWORD is required}
+      CORS_ALLOWED_ORIGINS: ${CAMPSTATION_CORS_ORIGINS:https://mycamp.duckdns.org}
       MAIL_HOST: campstation-mailhog
       MAIL_PORT: 1025
     depends_on:
@@ -131,6 +134,7 @@ services:
     build:
       context: ./campstation/frontend
       dockerfile: Dockerfile
+      # No build args needed - uses relative /api path
     container_name: campstation-frontend-prod
     depends_on:
       - campstation-backend
@@ -203,15 +207,16 @@ services:
       dockerfile: Dockerfile
     container_name: psmo-backend-prod
     environment:
-      DATABASE_URL: jdbc:postgresql://psmo-postgres:5432/${PSMO_POSTGRES_DB:-psmo_community}
-      DATABASE_USER: ${PSMO_POSTGRES_USER:-psmo}
-      DATABASE_PASSWORD: ${PSMO_POSTGRES_PASSWORD:?PSMO_POSTGRES_PASSWORD is required}
+      DB_URL: jdbc:postgresql://psmo-postgres:5432/${PSMO_POSTGRES_DB:-psmo_community}
+      DB_USER: ${PSMO_POSTGRES_USER:-psmo}
+      DB_PASSWORD: ${PSMO_POSTGRES_PASSWORD:?PSMO_POSTGRES_PASSWORD is required}
       REDIS_HOST: psmo-redis
       REDIS_PORT: 6379
       REDIS_PASSWORD: ${PSMO_REDIS_PASSWORD:?PSMO_REDIS_PASSWORD is required}
       MINIO_ENDPOINT: http://psmo-minio:9000
       MINIO_ACCESS_KEY: ${PSMO_MINIO_USER:?PSMO_MINIO_USER is required}
       MINIO_SECRET_KEY: ${PSMO_MINIO_PASSWORD:?PSMO_MINIO_PASSWORD is required}
+      CORS_ALLOWED_ORIGINS: ${PSMO_CORS_ORIGINS:https://mycommunity.duckdns.org}
       MAIL_HOST: psmo-mailhog
       MAIL_PORT: 1025
     depends_on:
@@ -243,6 +248,7 @@ services:
     build:
       context: ./psmo-community/frontend
       dockerfile: Dockerfile
+      # No build args needed - uses relative /api path
     container_name: psmo-frontend-prod
     depends_on:
       - psmo-backend

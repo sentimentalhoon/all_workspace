@@ -12,7 +12,7 @@ RUN npm ci
 # Copy source code
 COPY . .
 
-# Build application
+# Build application (uses relative /api path, no API_URL needed)
 RUN npm run build
 
 # Production stage with Nginx
