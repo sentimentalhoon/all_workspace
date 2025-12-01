@@ -77,7 +77,7 @@ onMounted(() => {
   const script = document.createElement('script')
   script.src = 'https://telegram.org/js/telegram-widget.js?22'
   script.async = true
-  script.setAttribute('data-telegram-discussion', 'psmocommunity/3')
+  script.setAttribute('data-telegram-discussion', 'psmocommunity/4')
   script.setAttribute('data-comments-limit', '50')
   script.setAttribute('data-colorful', '1')
   script.setAttribute('data-color', '667EEA')
