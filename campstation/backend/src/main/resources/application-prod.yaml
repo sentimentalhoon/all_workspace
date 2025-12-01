@@ -5,7 +5,7 @@ spring:
   datasource:
     url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://campstation-postgres:5432/campstation}
     username: ${SPRING_DATASOURCE_USERNAME:campstation}
-    password: ${SPRING_DATASOURCE_PASSWORD}
+    password: ${SPRING_DATASOURCE_PASSWORD:}
     driver-class-name: org.postgresql.Driver
 
   jpa:
@@ -21,23 +21,23 @@ spring:
     redis:
       host: ${REDIS_HOST:campstation-redis}
       port: 6379
-      password: ${REDIS_PASSWORD}
+      password: ${REDIS_PASSWORD:}
 
 minio:
   endpoint: ${MINIO_ENDPOINT:http://campstation-minio:9000}
-  access-key: ${MINIO_ACCESS_KEY}
-  secret-key: ${MINIO_SECRET_KEY}
+  access-key: ${MINIO_ACCESS_KEY:}
+  secret-key: ${MINIO_SECRET_KEY:}
   bucket: ${MINIO_BUCKET:campstation}
 
 mail:
-  host: ${MAIL_HOST}
-  port: ${MAIL_PORT:587}
-  username: ${MAIL_USERNAME}
-  password: ${MAIL_PASSWORD}
+  host: ${MAIL_HOST:campstation-mailhog}
+  port: ${MAIL_PORT:1025}
+  username: ${MAIL_USERNAME:}
+  password: ${MAIL_PASSWORD:}
   from: ${MAIL_FROM:noreply@mycamp.duckdns.org}
 
 jwt:
-  secret: ${JWT_SECRET}
+  secret: ${JWT_SECRET:change-this-secret-in-production-min-32-chars}
   expiration: ${JWT_EXPIRATION:86400000}
   refresh-expiration: ${JWT_REFRESH_EXPIRATION:604800000}
 
