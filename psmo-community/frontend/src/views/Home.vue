@@ -33,13 +33,20 @@ import axios from "axios";
 import { onMounted, ref } from "vue";
 
 const health = ref(null);
+const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || "";
 
 const checkHealth = async () => {
   try {
-    const response = await axios.get("/api/health");
+    const response = await axios.get(`${apiBaseUrl}/api/health`);
     health.value = response.data;
   } catch (error) {
     console.error("Error checking health:", error);
+    health.value = {
+      status: "ERROR",
+      service: "psmo-community-backend",
+      timestamp: new Date().toISOString(),
+      error: error.message,
+    };
   }
 };
 
@@ -109,6 +116,11 @@ h1 {
 
 .value.UP {
   color: #42b983;
+  font-weight: bold;
+}
+
+.value.ERROR {
+  color: #e74c3c;
   font-weight: bold;
 }
 
