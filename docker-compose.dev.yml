@@ -133,6 +133,7 @@ services:
     volumes:
       - ./campstation/frontend/src:/app/src
       - ./campstation/frontend/public:/app/public
+      - ./campstation/frontend/vite.config.ts:/app/vite.config.ts
       - /app/node_modules
     depends_on:
       - campstation-backend
@@ -272,6 +273,7 @@ services:
     volumes:
       - ./psmo-community/frontend/src:/app/src
       - ./psmo-community/frontend/public:/app/public
+      - ./psmo-community/frontend/vite.config.ts:/app/vite.config.ts
       - /app/node_modules
     depends_on:
       - psmo-backend
