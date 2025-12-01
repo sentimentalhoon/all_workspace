@@ -22,6 +22,21 @@ const router = createRouter({
       name: 'admin',
       component: () => import('../views/AdminView.vue'),
     },
+    {
+      path: '/search',
+      name: 'search',
+      component: () => import('../views/SearchView.vue'),
+    },
+    {
+      path: '/bookings',
+      name: 'bookings',
+      component: () => import('../views/BookingsView.vue'),
+    },
+    {
+      path: '/my',
+      name: 'my',
+      component: () => import('../views/MyView.vue'),
+    },
   ],
 })
 

@@ -6,18 +6,18 @@ const banners = [
   {
     title: '신규 가입 고객 특별 혜택',
     subtitle: '첫 예약 시 10% 할인 쿠폰 증정',
-    background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)'
+    background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
   },
   {
     title: '직영 캠핑장 오픈',
     subtitle: '새로운 캠핑장을 먼저 만나보세요',
-    background: 'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)'
+    background: 'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)',
   },
   {
     title: '겨울 캠핑 시즌',
     subtitle: '따뜻한 겨울 캠핑을 즐겨보세요',
-    background: 'linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)'
-  }
+    background: 'linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)',
+  },
 ]
 
 const newCampings = [
@@ -27,7 +27,7 @@ const newCampings = [
     location: '충북 제천시',
     image: '🏔️',
     rating: 4.8,
-    reviews: 24
+    reviews: 24,
   },
   {
     id: 2,
@@ -35,7 +35,7 @@ const newCampings = [
     location: '경기 양평군',
     image: '🌲',
     rating: 4.9,
-    reviews: 45
+    reviews: 45,
   },
   {
     id: 3,
@@ -43,7 +43,7 @@ const newCampings = [
     location: '경기 포천시',
     image: '🏕️',
     rating: 4.7,
-    reviews: 31
+    reviews: 31,
   },
   {
     id: 4,
@@ -51,7 +51,7 @@ const newCampings = [
     location: '충남 서산시',
     image: '🌊',
     rating: 4.6,
-    reviews: 18
+    reviews: 18,
   },
   {
     id: 5,
@@ -59,8 +59,8 @@ const newCampings = [
     location: '강원 양양군',
     image: '⛰️',
     rating: 4.9,
-    reviews: 52
-  }
+    reviews: 52,
+  },
 ]
 
 const reviews = [
@@ -73,7 +73,7 @@ const reviews = [
     time: '4시간전',
     content:
       '두번째 방문이었는데 점점 인기가 많아져서 평일인데도 사이트가 꽉 차있어 간신히 예약했네요. 캠지기님은 역시 넘넘 친절하시고 캠핑장 관리도 아~~~주 깨끗하게 잘 되어있어 이번에도 잘 쉬고 힐링했어요.',
-    photos: 2
+    photos: 2,
   },
   {
     id: 2,
@@ -84,7 +84,7 @@ const reviews = [
     time: '5시간전',
     content:
       '아이랑 잘 쉬고 갑니다. 사장님 친절하시고, 수도권에서 가기 딱 좋은 것 같아요. 올라가는 경사가 좀 힘들었지만, 샤워실 아이랑 둘이 씻기도 좋고 뜨신물도 잘 나오네요. 또 가겠습니다~',
-    photos: 0
+    photos: 0,
   },
   {
     id: 3,
@@ -95,8 +95,8 @@ const reviews = [
     time: '5시간전',
     content:
       '두번째 방문인데도 좋았던 캠핑장. 조용히 힐링하기 좋고 캠지기님이 친절하세요. 방문당시 양양 산불로 위험한 날이었는데 캠장님께서 새벽까지 관리해주셨습니다 최고!',
-    photos: 6
-  }
+    photos: 6,
+  },
 ]
 
 const nextBanner = () => {
@@ -494,7 +494,9 @@ const prevBanner = () => {
   border-radius: 12px;
   overflow: hidden;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
-  transition: transform 0.2s, box-shadow 0.2s;
+  transition:
+    transform 0.2s,
+    box-shadow 0.2s;
   cursor: pointer;
 }
 

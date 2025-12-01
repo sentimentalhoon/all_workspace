@@ -15,6 +15,7 @@ chmod +x setup-env.sh
 ```
 
 The script will:
+
 1. Ask for your email address (for SSL certificate notifications)
 2. Generate secure random passwords for all services
 3. Create `.env.prod` file with all configurations
@@ -57,16 +58,19 @@ docker compose --env-file .env.prod -f docker-compose.prod.yml up -d
 The script automatically generates secure passwords for:
 
 ### Campstation Services
+
 - PostgreSQL database password
 - Redis cache password
 - MinIO object storage password
 
 ### PSMO Community Services
+
 - PostgreSQL database password
 - Redis cache password
 - MinIO object storage password
 
 All passwords are:
+
 - 32 characters long
 - Cryptographically random
 - URL-safe (no special characters that need escaping)
@@ -74,11 +78,13 @@ All passwords are:
 ## Troubleshooting
 
 **Script permission denied:**
+
 ```bash
 chmod +x setup-env.sh
 ```
 
 **OpenSSL not found:**
+
 ```bash
 # Ubuntu/Debian
 sudo apt-get install openssl
@@ -88,6 +94,7 @@ brew install openssl
 ```
 
 **Want to regenerate passwords:**
+
 ```bash
 # Remove the old file
 rm .env.prod

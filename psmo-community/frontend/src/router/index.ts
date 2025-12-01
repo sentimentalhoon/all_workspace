@@ -22,6 +22,26 @@ const router = createRouter({
       name: 'admin',
       component: () => import('../views/AdminView.vue'),
     },
+    {
+      path: '/report',
+      name: 'report',
+      component: () => import('../views/ReportView.vue'),
+    },
+    {
+      path: '/chat',
+      name: 'chat',
+      component: () => import('../views/ChatView.vue'),
+    },
+    {
+      path: '/board',
+      name: 'board',
+      component: () => import('../views/BoardView.vue'),
+    },
+    {
+      path: '/my',
+      name: 'my',
+      component: () => import('../views/MyView.vue'),
+    },
   ],
 })
 
