@@ -8,8 +8,8 @@ import io.ktor.serialization.jackson.*
 import io.ktor.server.application.*
 import io.ktor.server.auth.*
 import io.ktor.server.auth.jwt.*
+import io.ktor.server.config.ApplicationConfigurationException
 import io.ktor.server.config.tryGetString
-import io.ktor.server.config.tryGetStringList
 import io.ktor.server.plugins.contentnegotiation.*
 import io.ktor.server.plugins.cors.routing.*
 import io.ktor.server.response.*
@@ -22,11 +22,15 @@ fun Application.module() {
     val (activeProfile, activeConfig) = ProfiledConfigLoader.load(environment)
     environment.log.info("Active KTOR_PROFILE: $activeProfile (application-$activeProfile.yaml)")
 
-    val allowedOrigins = activeConfig.tryGetStringList("cors.allowedOrigins")
-        ?: activeConfig.tryGetString("cors.allowedOrigins")
-            ?.split(',')
-            ?.mapNotNull { it.trim().takeIf(String::isNotEmpty) }
-        ?: listOf("http://localhost:5173", "http://localhost:5174")
+    val allowedOrigins = activeConfig.propertyOrNull("cors.allowedOrigins")?.let { value ->
+        try {
+            value.getList()
+        } catch (_: ApplicationConfigurationException) {
+            value.getString()
+                .split(',')
+                .mapNotNull { it.trim().takeIf(String::isNotEmpty) }
+        }
+    } ?: listOf("http://localhost:5173", "http://localhost:5174")
 
     val jwtSecret = activeConfig.tryGetString("jwt.secret")
         ?: System.getenv("JWT_SECRET")
