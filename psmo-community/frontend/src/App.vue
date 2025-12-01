@@ -11,7 +11,7 @@
       <router-view />
     </main>
     <footer>
-      <p>&copy; 2025 PSMO Community. All rights reserved.</p>
+      <p>&copy; 2025 PSMO Community</p>
     </footer>
   </div>
 </template>
@@ -29,22 +29,25 @@
 
 header {
   background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  padding: 1rem 2rem;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
+  padding: 1rem;
+  position: sticky;
+  top: 0;
+  z-index: 100;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 }
 
 .logo {
   color: white;
-  font-size: 1.5rem;
+  font-size: 1.25rem;
   font-weight: bold;
+  margin-bottom: 0.75rem;
+  text-align: center;
 }
 
 nav {
   display: flex;
-  gap: 1rem;
+  justify-content: center;
+  gap: 0.5rem;
 }
 
 nav a {
@@ -53,9 +56,14 @@ nav a {
   padding: 0.5rem 1rem;
   border-radius: 4px;
   transition: all 0.3s;
+  font-size: 0.9rem;
+  text-align: center;
+  flex: 1;
+  max-width: 120px;
 }
 
-nav a:hover {
+nav a:hover,
+nav a:active {
   background-color: rgba(255, 255, 255, 0.2);
 }
 
@@ -66,21 +74,27 @@ nav a.router-link-active {
 
 main {
   flex: 1;
-  padding: 2rem;
-  max-width: 1200px;
-  margin: 0 auto;
-  width: 100%;
+  padding: 1rem;
+  overflow-y: auto;
 }
 
 footer {
   background-color: #2c3e50;
   color: white;
   text-align: center;
-  padding: 1rem;
+  padding: 0.75rem;
   margin-top: auto;
+  font-size: 0.875rem;
 }
 
 footer p {
   margin: 0;
+}
+
+/* 모바일 터치 최적화 */
+@media (hover: none) and (pointer: coarse) {
+  nav a:hover {
+    background-color: transparent;
+  }
 }
 </style>

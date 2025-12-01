@@ -3,6 +3,7 @@
 ## 📋 개요
 
 Campstation과 PSMO Community 프로젝트 모두 동일한 기술 스택을 사용합니다:
+
 - **Vue.js 3.5.13** - Progressive JavaScript Framework
 - **Vite 6.0.3** - 빠른 개발 서버 및 빌드 도구
 - **Vue Router 4.5.0** - SPA 라우팅
@@ -35,26 +36,29 @@ frontend/
 ## 📦 주요 의존성
 
 ### 핵심 라이브러리
+
 ```json
 {
-  "vue": "^3.5.13",           // Vue.js 프레임워크
-  "vue-router": "^4.5.0",     // 라우팅
-  "pinia": "^2.3.0",          // 상태 관리
-  "axios": "^1.7.9"           // HTTP 요청
+  "vue": "^3.5.13", // Vue.js 프레임워크
+  "vue-router": "^4.5.0", // 라우팅
+  "pinia": "^2.3.0", // 상태 관리
+  "axios": "^1.7.9" // HTTP 요청
 }
 ```
 
 ### 개발 도구
+
 ```json
 {
-  "@vitejs/plugin-vue": "^5.2.1",  // Vite Vue 플러그인
-  "vite": "^6.0.3"                  // 빌드 도구
+  "@vitejs/plugin-vue": "^5.2.1", // Vite Vue 플러그인
+  "vite": "^6.0.3" // 빌드 도구
 }
 ```
 
 ## 🚀 개발 시작하기
 
 ### 1. 의존성 설치
+
 ```bash
 # Campstation
 cd campstation/frontend
@@ -66,6 +70,7 @@ npm install
 ```
 
 ### 2. 개발 서버 실행
+
 ```bash
 # Campstation (포트 3000)
 npm run dev
@@ -75,11 +80,13 @@ npm run dev
 ```
 
 ### 3. 프로덕션 빌드
+
 ```bash
 npm run build
 ```
 
 ### 4. 빌드 미리보기
+
 ```bash
 npm run preview
 ```
@@ -92,24 +99,24 @@ Vue 3의 새로운 방식으로, 로직을 재사용 가능하게 구성합니�
 
 ```vue
 <script setup>
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, onMounted } from "vue";
 
 // 반응형 상태
-const count = ref(0)
-const message = ref('Hello Vue!')
+const count = ref(0);
+const message = ref("Hello Vue!");
 
 // 계산된 속성
-const doubleCount = computed(() => count.value * 2)
+const doubleCount = computed(() => count.value * 2);
 
 // 메서드
 function increment() {
-  count.value++
+  count.value++;
 }
 
 // 라이프사이클 훅
 onMounted(() => {
-  console.log('컴포넌트가 마운트되었습니다')
-})
+  console.log("컴포넌트가 마운트되었습니다");
+});
 </script>
 
 <template>
@@ -137,60 +144,64 @@ button {
 ### 2. 반응형 상태 (Reactivity)
 
 #### ref - 기본 타입용
-```javascript
-import { ref } from 'vue'
 
-const count = ref(0)
-const name = ref('John')
+```javascript
+import { ref } from "vue";
+
+const count = ref(0);
+const name = ref("John");
 
 // 값 접근 시 .value 사용
-console.log(count.value)  // 0
-count.value++             // 1
+console.log(count.value); // 0
+count.value++; // 1
 ```
 
 #### reactive - 객체용
+
 ```javascript
-import { reactive } from 'vue'
+import { reactive } from "vue";
 
 const state = reactive({
   user: {
-    name: 'John',
-    age: 30
+    name: "John",
+    age: 30,
   },
-  items: []
-})
+  items: [],
+});
 
 // 직접 접근 가능
-console.log(state.user.name)
-state.user.age = 31
+console.log(state.user.name);
+state.user.age = 31;
 ```
 
 #### computed - 계산된 속성
-```javascript
-import { ref, computed } from 'vue'
 
-const firstName = ref('John')
-const lastName = ref('Doe')
+```javascript
+import { ref, computed } from "vue";
+
+const firstName = ref("John");
+const lastName = ref("Doe");
 
 const fullName = computed(() => {
-  return `${firstName.value} ${lastName.value}`
-})
+  return `${firstName.value} ${lastName.value}`;
+});
 ```
 
 #### watch - 상태 감시
-```javascript
-import { ref, watch } from 'vue'
 
-const count = ref(0)
+```javascript
+import { ref, watch } from "vue";
+
+const count = ref(0);
 
 watch(count, (newValue, oldValue) => {
-  console.log(`Count changed from ${oldValue} to ${newValue}`)
-})
+  console.log(`Count changed from ${oldValue} to ${newValue}`);
+});
 
 // 여러 값 감시
 watch([firstName, lastName], ([newFirst, newLast]) => {
-  console.log(`Name: ${newFirst} ${newLast}`)
-})
+  console.log(`Name: ${newFirst} ${newLast}`);
+});
 ```
 
 ### 3. 컴포넌트 기본 구조
@@ -198,33 +209,33 @@ watch([firstName, lastName], ([newFirst, newLast]) => {
 ```vue
 <script setup>
 // Import 문
-import { ref, computed, onMounted } from 'vue'
-import ChildComponent from './ChildComponent.vue'
+import { ref, computed, onMounted } from "vue";
+import ChildComponent from "./ChildComponent.vue";
 
 // Props 정의
 const props = defineProps({
   title: String,
   count: {
     type: Number,
-    default: 0
-  }
-})
+    default: 0,
+  },
+});
 
 // Emits 정의
-const emit = defineEmits(['update', 'delete'])
+const emit = defineEmits(["update", "delete"]);
 
 // 상태
-const localCount = ref(props.count)
+const localCount = ref(props.count);
 
 // 메서드
 function handleUpdate() {
-  emit('update', localCount.value)
+  emit("update", localCount.value);
 }
 
 // 라이프사이클
 onMounted(() => {
-  console.log('Component mounted')
-})
+  console.log("Component mounted");
+});
 </script>
 
 <template>
@@ -246,17 +257,19 @@ onMounted(() => {
 ### 4. 템플릿 문법
 
 #### 텍스트 보간
+
 ```vue
 <template>
   <p>{{ message }}</p>
   <p>{{ count * 2 }}</p>
-  <p>{{ isActive ? 'Yes' : 'No' }}</p>
+  <p>{{ isActive ? "Yes" : "No" }}</p>
 </template>
 ```
 
 #### 디렉티브
 
 **v-bind (속성 바인딩)**
+
 ```vue
 <template>
   <img :src="imageUrl" :alt="imageAlt">
@@ -266,6 +279,7 @@ onMounted(() => {
 ```
 
 **v-on (이벤트 처리)**
+
 ```vue
 <template>
   <button @click="handleClick">Click</button>
@@ -275,6 +289,7 @@ onMounted(() => {
 ```
 
 **v-if / v-else-if / v-else (조건부 렌더링)**
+
 ```vue
 <template>
   <div v-if="type === 'A'">Type A</div>
@@ -284,6 +299,7 @@ onMounted(() => {
 ```
 
 **v-show (CSS 토글)**
+
 ```vue
 <template>
   <div v-show="isVisible">Visible content</div>
@@ -291,6 +307,7 @@ onMounted(() => {
 ```
 
 **v-for (리스트 렌더링)**
+
 ```vue
 <template>
   <ul>
@@ -305,25 +322,24 @@ onMounted(() => {
   </div>
 
   <!-- 객체 순회 -->
-  <div v-for="(value, key) in object" :key="key">
-    {{ key }}: {{ value }}
-  </div>
+  <div v-for="(value, key) in object" :key="key">{{ key }}: {{ value }}</div>
 </template>
 ```
 
 **v-model (양방향 바인딩)**
+
 ```vue
 <script setup>
-import { ref } from 'vue'
+import { ref } from "vue";
 
-const text = ref('')
-const checked = ref(false)
-const selected = ref('')
+const text = ref("");
+const checked = ref(false);
+const selected = ref("");
 </script>
 
 <template>
-  <input v-model="text" type="text">
-  <input v-model="checked" type="checkbox">
+  <input v-model="text" type="text" />
+  <input v-model="checked" type="checkbox" />
   <select v-model="selected">
     <option>A</option>
     <option>B</option>
@@ -334,51 +350,52 @@ const selected = ref('')
 ### 5. 라이프사이클 훅
 
 ```javascript
-import { 
+import {
   onBeforeMount,
   onMounted,
   onBeforeUpdate,
   onUpdated,
   onBeforeUnmount,
-  onUnmounted
-} from 'vue'
+  onUnmounted,
+} from "vue";
 
 // 마운트 전
 onBeforeMount(() => {
-  console.log('Before mount')
-})
+  console.log("Before mount");
+});
 
 // 마운트 후 (가장 많이 사용)
 onMounted(() => {
-  console.log('Mounted - DOM 접근 가능')
+  console.log("Mounted - DOM 접근 가능");
   // API 호출, 초기 데이터 로드 등
-})
+});
 
 // 업데이트 전
 onBeforeUpdate(() => {
-  console.log('Before update')
-})
+  console.log("Before update");
+});
 
 // 업데이트 후
 onUpdated(() => {
-  console.log('Updated')
-})
+  console.log("Updated");
+});
 
 // 언마운트 전
 onBeforeUnmount(() => {
-  console.log('Before unmount')
+  console.log("Before unmount");
   // 이벤트 리스너 제거, 타이머 정리 등
-})
+});
 
 // 언마운트 후
 onUnmounted(() => {
-  console.log('Unmounted')
-})
+  console.log("Unmounted");
+});
 ```
 
 ## 🎨 스타일링
 
 ### Scoped Styles
+
 ```vue
 <style scoped>
 /* 이 컴포넌트에만 적용 */
@@ -389,6 +406,7 @@ onUnmounted(() => {
 ```
 
 ### Global Styles
+
 ```vue
 <style>
 /* 전역 스타일 */
@@ -399,6 +417,7 @@ onUnmounted(() => {
 ```
 
 ### CSS Modules
+
 ```vue
 <template>
   <div :class="$style.container">
@@ -418,6 +437,7 @@ onUnmounted(() => {
 ```
 
 ### Dynamic Classes
+
 ```vue
 <script setup>
 import { ref } from 'vue'
@@ -439,6 +459,7 @@ const hasError = ref(false)
 ```
 
 ### Inline Styles
+
 ```vue
 <script setup>
 import { ref } from 'vue'
@@ -459,22 +480,19 @@ const fontSize = ref(14)
 ## 🔄 Props & Emits
 
 ### Props (부모 → 자식)
+
 ```vue
 <!-- ParentComponent.vue -->
 <script setup>
-import { ref } from 'vue'
-import ChildComponent from './ChildComponent.vue'
+import { ref } from "vue";
+import ChildComponent from "./ChildComponent.vue";
 
-const userName = ref('John')
-const userAge = ref(30)
+const userName = ref("John");
+const userAge = ref(30);
 </script>
 
 <template>
-  <ChildComponent 
-    :name="userName" 
-    :age="userAge"
-    :is-active="true"
-  />
+  <ChildComponent :name="userName" :age="userAge" :is-active="true" />
 </template>
 ```
 
@@ -485,17 +503,17 @@ const userAge = ref(30)
 const props = defineProps({
   name: {
     type: String,
-    required: true
+    required: true,
   },
   age: {
     type: Number,
-    default: 0
+    default: 0,
   },
-  isActive: Boolean
-})
+  isActive: Boolean,
+});
 
 // Props 사용
-console.log(props.name)
+console.log(props.name);
 </script>
 
 <template>
@@ -508,17 +526,18 @@ console.log(props.name)
 ```
 
 ### Emits (자식 → 부모)
+
 ```vue
 <!-- ChildComponent.vue -->
 <script setup>
-const emit = defineEmits(['update', 'delete'])
+const emit = defineEmits(["update", "delete"]);
 
 function handleUpdate() {
-  emit('update', { id: 1, name: 'Updated' })
+  emit("update", { id: 1, name: "Updated" });
 }
 
 function handleDelete(id) {
-  emit('delete', id)
+  emit("delete", id);
 }
 </script>
 
@@ -531,22 +550,19 @@ function handleDelete(id) {
 ```vue
 <!-- ParentComponent.vue -->
 <script setup>
-import ChildComponent from './ChildComponent.vue'
+import ChildComponent from "./ChildComponent.vue";
 
 function onUpdate(data) {
-  console.log('Updated:', data)
+  console.log("Updated:", data);
 }
 
 function onDelete(id) {
-  console.log('Deleted:', id)
+  console.log("Deleted:", id);
 }
 </script>
 
 <template>
-  <ChildComponent 
-    @update="onUpdate"
-    @delete="onDelete"
-  />
+  <ChildComponent @update="onUpdate" @delete="onDelete" />
 </template>
 ```
 
@@ -557,27 +573,27 @@ function onDelete(id) {
 ```vue
 <!-- ParentComponent.vue -->
 <script setup>
-import { ref, provide } from 'vue'
+import { ref, provide } from "vue";
 
-const theme = ref('dark')
+const theme = ref("dark");
 const updateTheme = (newTheme) => {
-  theme.value = newTheme
-}
+  theme.value = newTheme;
+};
 
 // 제공
-provide('theme', theme)
-provide('updateTheme', updateTheme)
+provide("theme", theme);
+provide("updateTheme", updateTheme);
 </script>
 ```
 
 ```vue
 <!-- DeepChildComponent.vue -->
 <script setup>
-import { inject } from 'vue'
+import { inject } from "vue";
 
 // 주입
-const theme = inject('theme')
-const updateTheme = inject('updateTheme')
+const theme = inject("theme");
+const updateTheme = inject("updateTheme");
 </script>
 
 <template>
@@ -591,6 +607,7 @@ const updateTheme = inject('updateTheme')
 ## 📚 다음 단계
 
 이제 기초를 익혔다면:
+
 1. [라우팅 가이드](./ROUTING.md) - Vue Router 사용법
 2. [상태 관리 가이드](./STATE_MANAGEMENT.md) - Pinia 사용법
 3. [API 통신 가이드](./API_COMMUNICATION.md) - Axios 사용법

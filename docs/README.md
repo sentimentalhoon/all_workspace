@@ -5,11 +5,13 @@
 이 워크스페이스는 단일 Ubuntu 서버에서 Docker Compose를 통해 두 개의 독립적인 프로젝트를 운영합니다.
 
 ### 1. Campstation (캠핑장 관리 시스템)
+
 - **도메인**: https://mycamp.duckdns.org
 - **백엔드**: Spring Boot 4.0.0 + Java 21
 - **프론트엔드**: Vue.js 3.5.13 + Vite 6.0.3
 
 ### 2. PSMO Community (커뮤니티 플랫폼)
+
 - **도메인**: https://mycommunity.duckdns.org
 - **백엔드**: Ktor 3.0.2 + Kotlin 2.1.0 + Java 21
 - **프론트엔드**: Vue.js 3.5.13 + Vite 6.0.3
@@ -56,43 +58,46 @@
 ## 🛠️ 기술 스택
 
 ### 공통
+
 - **컨테이너화**: Docker, Docker Compose
 - **웹 서버**: Nginx 1.27-alpine
 - **SSL**: Let's Encrypt (Certbot)
 - **DNS**: DuckDNS
 
 ### Campstation
-| 구분 | 기술 | 버전 |
-|------|------|------|
-| 백엔드 | Spring Boot | 4.0.0 |
-| 언어 | Java | 21 |
-| 빌드 도구 | Maven | 3.9.6 |
-| 프론트엔드 | Vue.js | 3.5.13 |
-| 번들러 | Vite | 6.0.3 |
-| 상태 관리 | Pinia | 2.3.0 |
-| 라우터 | Vue Router | 4.5.0 |
-| HTTP 클라이언트 | Axios | 1.7.9 |
-| 데이터베이스 | PostgreSQL | 17-alpine |
-| 캐시 | Redis | 7-alpine |
-| 객체 스토리지 | MinIO | latest |
-| 메일 테스트 | MailHog | latest |
+
+| 구분            | 기술        | 버전      |
+| --------------- | ----------- | --------- |
+| 백엔드          | Spring Boot | 4.0.0     |
+| 언어            | Java        | 21        |
+| 빌드 도구       | Maven       | 3.9.6     |
+| 프론트엔드      | Vue.js      | 3.5.13    |
+| 번들러          | Vite        | 6.0.3     |
+| 상태 관리       | Pinia       | 2.3.0     |
+| 라우터          | Vue Router  | 4.5.0     |
+| HTTP 클라이언트 | Axios       | 1.7.9     |
+| 데이터베이스    | PostgreSQL  | 17-alpine |
+| 캐시            | Redis       | 7-alpine  |
+| 객체 스토리지   | MinIO       | latest    |
+| 메일 테스트     | MailHog     | latest    |
 
 ### PSMO Community
-| 구분 | 기술 | 버전 |
-|------|------|------|
-| 백엔드 | Ktor | 3.0.2 |
-| 언어 | Kotlin | 2.1.0 |
-| JVM | Java | 21 |
-| 빌드 도구 | Gradle | 8.11.1 |
-| 프론트엔드 | Vue.js | 3.5.13 |
-| 번들러 | Vite | 6.0.3 |
-| 상태 관리 | Pinia | 2.3.0 |
-| 라우터 | Vue Router | 4.5.0 |
-| HTTP 클라이언트 | Axios | 1.7.9 |
-| 데이터베이스 | PostgreSQL | 17-alpine |
-| 캐시 | Redis | 7-alpine |
-| 객체 스토리지 | MinIO | latest |
-| 메일 테스트 | MailHog | latest |
+
+| 구분            | 기술       | 버전      |
+| --------------- | ---------- | --------- |
+| 백엔드          | Ktor       | 3.0.2     |
+| 언어            | Kotlin     | 2.1.0     |
+| JVM             | Java       | 21        |
+| 빌드 도구       | Gradle     | 8.11.1    |
+| 프론트엔드      | Vue.js     | 3.5.13    |
+| 번들러          | Vite       | 6.0.3     |
+| 상태 관리       | Pinia      | 2.3.0     |
+| 라우터          | Vue Router | 4.5.0     |
+| HTTP 클라이언트 | Axios      | 1.7.9     |
+| 데이터베이스    | PostgreSQL | 17-alpine |
+| 캐시            | Redis      | 7-alpine  |
+| 객체 스토리지   | MinIO      | latest    |
+| 메일 테스트     | MailHog    | latest    |
 
 ## 📂 프로젝트 구조
 
@@ -140,6 +145,7 @@ all_workspace/
 ## 🌐 포트 할당
 
 ### Campstation
+
 - Frontend: 3000 (dev), 80 (container)
 - Backend: 8080 (dev/container)
 - PostgreSQL: 5432 (container)
@@ -148,6 +154,7 @@ all_workspace/
 - MailHog: 1025 (SMTP), 8025 (Web UI)
 
 ### PSMO Community
+
 - Frontend: 3001 (dev), 80 (container)
 - Backend: 8081 (dev), 8080 (container)
 - PostgreSQL: 5433 (container)
@@ -156,6 +163,7 @@ all_workspace/
 - MailHog: 1026 (SMTP), 8026 (Web UI)
 
 ### Infrastructure
+
 - Nginx: 80 (HTTP), 443 (HTTPS)
 
 ## 🔐 SSL 인증서
@@ -170,12 +178,14 @@ all_workspace/
 ## 🚀 배포 가이드
 
 ### 전체 시스템 시작
+
 ```bash
 cd ~/all_workspace
 sudo docker compose -f docker-compose.prod.yml up -d
 ```
 
 ### 특정 서비스 재시작
+
 ```bash
 # Campstation 백엔드만
 sudo docker compose -f docker-compose.prod.yml restart campstation-backend
@@ -185,6 +195,7 @@ sudo docker compose -f docker-compose.prod.yml restart psmo-frontend
 ```
 
 ### 코드 변경 후 재배포
+
 ```bash
 # 1. 최신 코드 가져오기
 git pull
@@ -195,6 +206,7 @@ sudo docker compose -f docker-compose.prod.yml up -d [service-name]
 ```
 
 ### 전체 시스템 중지
+
 ```bash
 sudo docker compose -f docker-compose.prod.yml down
 ```
@@ -202,12 +214,14 @@ sudo docker compose -f docker-compose.prod.yml down
 ## 🔍 모니터링 명령어
 
 ### 컨테이너 상태 확인
+
 ```bash
 docker ps
 docker ps -a  # 중지된 컨테이너 포함
 ```
 
 ### 로그 확인
+
 ```bash
 # 실시간 로그
 docker logs -f [container-name]
@@ -221,6 +235,7 @@ docker exec nginx-proxy cat /var/log/nginx/psmo_error.log
 ```
 
 ### 헬스체크
+
 ```bash
 # API 헬스체크
 curl https://mycamp.duckdns.org/api/health
@@ -234,16 +249,19 @@ docker exec psmo-backend-prod wget -qO- http://localhost:8080/api/health
 ## 🗄️ 데이터베이스 접속
 
 ### Campstation PostgreSQL
+
 ```bash
 docker exec -it campstation-postgres-prod psql -U campstation -d campstation
 ```
 
 ### PSMO PostgreSQL
+
 ```bash
 docker exec -it psmo-postgres-prod psql -U psmo -d psmo_community
 ```
 
 ### Redis
+
 ```bash
 # Campstation
 docker exec -it campstation-redis-prod redis-cli -a [REDIS_PASSWORD]
@@ -273,11 +291,13 @@ PSMO_MINIO_PASSWORD=
 ## 📝 주요 엔드포인트
 
 ### Campstation
+
 - 메인: https://mycamp.duckdns.org
 - API: https://mycamp.duckdns.org/api/*
 - 헬스체크: https://mycamp.duckdns.org/api/health
 
 ### PSMO Community
+
 - 메인: https://mycommunity.duckdns.org
 - API: https://mycommunity.duckdns.org/api/*
 - 헬스체크: https://mycommunity.duckdns.org/api/health
@@ -285,18 +305,22 @@ PSMO_MINIO_PASSWORD=
 ## 🐛 트러블슈팅
 
 ### 컨테이너가 unhealthy 상태
+
 1. 로그 확인: `docker logs [container-name]`
 2. 헬스체크 직접 테스트: `docker exec [container] wget -qO- http://localhost:8080/api/health`
 3. 재시작: `sudo docker compose -f docker-compose.prod.yml restart [service]`
 
 ### SSL 인증서 갱신
+
 ```bash
 sudo certbot renew
 sudo docker compose -f docker-compose.prod.yml restart nginx
 ```
 
 ### NAT Loopback 문제 (같은 공유기 내부에서 접속 안됨)
+
 Windows에서 DNS 캐시 초기화:
+
 ```powershell
 ipconfig /flushdns
 ```

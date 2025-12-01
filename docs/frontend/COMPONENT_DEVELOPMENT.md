@@ -10,39 +10,39 @@ Vue.js 3 Composition API를 사용한 컴포넌트 개발 모범 사례와 패�
 
 ```vue
 <script setup>
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, onMounted } from "vue";
 
 // Props 정의
 const props = defineProps({
   title: {
     type: String,
-    required: true
+    required: true,
   },
   count: {
     type: Number,
-    default: 0
-  }
-})
+    default: 0,
+  },
+});
 
 // Emits 정의
-const emit = defineEmits(['update', 'delete'])
+const emit = defineEmits(["update", "delete"]);
 
 // State
-const localCount = ref(props.count)
+const localCount = ref(props.count);
 
 // Computed
-const doubleCount = computed(() => localCount.value * 2)
+const doubleCount = computed(() => localCount.value * 2);
 
 // Methods
 function increment() {
-  localCount.value++
-  emit('update', localCount.value)
+  localCount.value++;
+  emit("update", localCount.value);
 }
 
 // Lifecycle
 onMounted(() => {
-  console.log('Component mounted')
-})
+  console.log("Component mounted");
+});
 </script>
 
 <template>
@@ -81,42 +81,42 @@ const props = defineProps({
   // 필수 prop
   id: {
     type: [String, Number],
-    required: true
+    required: true,
   },
 
   // 기본값
   status: {
     type: String,
-    default: 'pending'
+    default: "pending",
   },
 
   // 객체/배열 기본값 (함수로 반환)
   items: {
     type: Array,
-    default: () => []
+    default: () => [],
   },
 
   config: {
     type: Object,
     default: () => ({
-      theme: 'light'
-    })
+      theme: "light",
+    }),
   },
 
   // 커스텀 검증
   age: {
     type: Number,
     validator: (value) => {
-      return value >= 0 && value <= 150
-    }
+      return value >= 0 && value <= 150;
+    },
   },
 
   // 여러 타입 허용
   value: {
     type: [String, Number, Boolean],
-    default: ''
-  }
-})
+    default: "",
+  },
+});
 </script>
 ```
 
@@ -126,22 +126,22 @@ const props = defineProps({
 <script setup>
 const props = defineProps({
   modelValue: String,
-  disabled: Boolean
-})
+  disabled: Boolean,
+});
 
-const emit = defineEmits(['update:modelValue'])
+const emit = defineEmits(["update:modelValue"]);
 
 // Props 직접 사용
-console.log(props.modelValue)
+console.log(props.modelValue);
 
 // Computed로 래핑 (읽기 전용)
-const value = computed(() => props.modelValue)
+const value = computed(() => props.modelValue);
 
 // v-model 양방향 바인딩
 const localValue = computed({
   get: () => props.modelValue,
-  set: (value) => emit('update:modelValue', value)
-})
+  set: (value) => emit("update:modelValue", value),
+});
 </script>
 
 <template>
@@ -154,18 +154,18 @@ const localValue = computed({
 ```vue
 <script setup>
 const props = defineProps({
-  count: Number
-})
+  count: Number,
+});
 
 // ❌ 반응성 손실
-const { count } = props
+const { count } = props;
 
 // ✅ toRefs 사용
-import { toRefs } from 'vue'
-const { count } = toRefs(props)
+import { toRefs } from "vue";
+const { count } = toRefs(props);
 
 // ✅ 또는 직접 접근
-console.log(props.count)
+console.log(props.count);
 </script>
 ```
 
@@ -175,18 +175,18 @@ console.log(props.count)
 
 ```vue
 <script setup>
-const emit = defineEmits(['submit', 'cancel', 'update'])
+const emit = defineEmits(["submit", "cancel", "update"]);
 
 function handleSubmit() {
-  emit('submit')
+  emit("submit");
 }
 
 function handleUpdate(value) {
-  emit('update', value)
+  emit("update", value);
 }
 
 function handleMultipleArgs() {
-  emit('update', 'value1', 'value2', { key: 'value3' })
+  emit("update", "value1", "value2", { key: "value3" });
 }
 </script>
 
@@ -207,23 +207,23 @@ const emit = defineEmits({
   // 검증 함수
   submit: (payload) => {
     if (payload.email && payload.password) {
-      return true
+      return true;
     } else {
-      console.warn('Invalid submit payload')
-      return false
+      console.warn("Invalid submit payload");
+      return false;
     }
   },
 
   update: (id, value) => {
-    return typeof id === 'number' && value !== undefined
-  }
-})
+    return typeof id === "number" && value !== undefined;
+  },
+});
 
 function handleSubmit() {
-  emit('submit', {
-    email: 'user@example.com',
-    password: 'secret'
-  })
+  emit("submit", {
+    email: "user@example.com",
+    password: "secret",
+  });
 }
 </script>
 ```
@@ -234,21 +234,18 @@ function handleSubmit() {
 <!-- CustomInput.vue -->
 <script setup>
 const props = defineProps({
-  modelValue: String
-})
+  modelValue: String,
+});
 
-const emit = defineEmits(['update:modelValue'])
+const emit = defineEmits(["update:modelValue"]);
 
 function updateValue(event) {
-  emit('update:modelValue', event.target.value)
+  emit("update:modelValue", event.target.value);
 }
 </script>
 
 <template>
-  <input 
-    :value="modelValue" 
-    @input="updateValue"
-  />
+  <input :value="modelValue" @input="updateValue" />
 </template>
 ```
 
@@ -256,9 +253,9 @@ function updateValue(event) {
 
 ```vue
 <script setup>
-import CustomInput from './CustomInput.vue'
+import CustomInput from "./CustomInput.vue";
 
-const text = ref('')
+const text = ref("");
 </script>
 
 <template>
@@ -273,21 +270,18 @@ const text = ref('')
 <script setup>
 defineProps({
   firstName: String,
-  lastName: String
-})
+  lastName: String,
+});
 
-const emit = defineEmits([
-  'update:firstName',
-  'update:lastName'
-])
+const emit = defineEmits(["update:firstName", "update:lastName"]);
 </script>
 
 <template>
-  <input 
+  <input
     :value="firstName"
     @input="emit('update:firstName', $event.target.value)"
   />
-  <input 
+  <input
     :value="lastName"
     @input="emit('update:lastName', $event.target.value)"
   />
@@ -298,15 +292,12 @@ const emit = defineEmits([
 
 ```vue
 <script setup>
-const firstName = ref('John')
-const lastName = ref('Doe')
+const firstName = ref("John");
+const lastName = ref("Doe");
 </script>
 
 <template>
-  <UserForm 
-    v-model:first-name="firstName"
-    v-model:last-name="lastName"
-  />
+  <UserForm v-model:first-name="firstName" v-model:last-name="lastName" />
 </template>
 ```
 
@@ -340,11 +331,11 @@ const lastName = ref('Doe')
     <header>
       <slot name="header">Default Header</slot>
     </header>
-    
+
     <main>
       <slot>Default Content</slot>
     </main>
-    
+
     <footer>
       <slot name="footer">Default Footer</slot>
     </footer>
@@ -374,9 +365,9 @@ const lastName = ref('Doe')
 <!-- UserList.vue -->
 <script setup>
 const users = ref([
-  { id: 1, name: 'John', age: 30 },
-  { id: 2, name: 'Jane', age: 25 }
-])
+  { id: 1, name: "John", age: 30 },
+  { id: 2, name: "Jane", age: 25 },
+]);
 </script>
 
 <template>
@@ -405,14 +396,12 @@ const users = ref([
 
 ```vue
 <script setup>
-const slotName = ref('header')
+const slotName = ref("header");
 </script>
 
 <template>
   <Layout>
-    <template #[slotName]>
-      Dynamic slot content
-    </template>
+    <template #[slotName]> Dynamic slot content </template>
   </Layout>
 </template>
 ```
@@ -423,22 +412,22 @@ const slotName = ref('header')
 
 ```javascript
 // composables/useCounter.js
-import { ref, computed } from 'vue'
+import { ref, computed } from "vue";
 
 export function useCounter(initialValue = 0) {
-  const count = ref(initialValue)
-  const double = computed(() => count.value * 2)
+  const count = ref(initialValue);
+  const double = computed(() => count.value * 2);
 
   function increment() {
-    count.value++
+    count.value++;
   }
 
   function decrement() {
-    count.value--
+    count.value--;
   }
 
   function reset() {
-    count.value = initialValue
+    count.value = initialValue;
   }
 
   return {
@@ -446,8 +435,8 @@ export function useCounter(initialValue = 0) {
     double,
     increment,
     decrement,
-    reset
-  }
+    reset,
+  };
 }
 ```
 
@@ -455,9 +444,9 @@ export function useCounter(initialValue = 0) {
 
 ```vue
 <script setup>
-import { useCounter } from '@/composables/useCounter'
+import { useCounter } from "@/composables/useCounter";
 
-const { count, double, increment, decrement, reset } = useCounter(10)
+const { count, double, increment, decrement, reset } = useCounter(10);
 </script>
 
 <template>
@@ -475,26 +464,26 @@ const { count, double, increment, decrement, reset } = useCounter(10)
 
 ```javascript
 // composables/useMouse.js
-import { ref, onMounted, onUnmounted } from 'vue'
+import { ref, onMounted, onUnmounted } from "vue";
 
 export function useMouse() {
-  const x = ref(0)
-  const y = ref(0)
+  const x = ref(0);
+  const y = ref(0);
 
   function update(event) {
-    x.value = event.pageX
-    y.value = event.pageY
+    x.value = event.pageX;
+    y.value = event.pageY;
   }
 
   onMounted(() => {
-    window.addEventListener('mousemove', update)
-  })
+    window.addEventListener("mousemove", update);
+  });
 
   onUnmounted(() => {
-    window.removeEventListener('mousemove', update)
-  })
+    window.removeEventListener("mousemove", update);
+  });
 
-  return { x, y }
+  return { x, y };
 }
 ```
 
@@ -502,17 +491,21 @@ export function useMouse() {
 
 ```javascript
 // composables/useLocalStorage.js
-import { ref, watch } from 'vue'
+import { ref, watch } from "vue";
 
 export function useLocalStorage(key, defaultValue) {
-  const storedValue = localStorage.getItem(key)
-  const value = ref(storedValue ? JSON.parse(storedValue) : defaultValue)
+  const storedValue = localStorage.getItem(key);
+  const value = ref(storedValue ? JSON.parse(storedValue) : defaultValue);
 
-  watch(value, (newValue) => {
-    localStorage.setItem(key, JSON.stringify(newValue))
-  }, { deep: true })
+  watch(
+    value,
+    (newValue) => {
+      localStorage.setItem(key, JSON.stringify(newValue));
+    },
+    { deep: true }
+  );
 
-  return value
+  return value;
 }
 ```
 
@@ -520,10 +513,10 @@ export function useLocalStorage(key, defaultValue) {
 
 ```vue
 <script setup>
-import { useLocalStorage } from '@/composables/useLocalStorage'
+import { useLocalStorage } from "@/composables/useLocalStorage";
 
-const theme = useLocalStorage('theme', 'light')
-const settings = useLocalStorage('settings', { notifications: true })
+const theme = useLocalStorage("theme", "light");
+const settings = useLocalStorage("settings", { notifications: true });
 </script>
 
 <template>
@@ -542,16 +535,16 @@ const settings = useLocalStorage('settings', { notifications: true })
 
 ```vue
 <script setup>
-import { ref, shallowRef } from 'vue'
-import ComponentA from './ComponentA.vue'
-import ComponentB from './ComponentB.vue'
+import { ref, shallowRef } from "vue";
+import ComponentA from "./ComponentA.vue";
+import ComponentB from "./ComponentB.vue";
 
 // shallowRef 사용 (컴포넌트는 깊은 반응성 불필요)
-const currentComponent = shallowRef(ComponentA)
+const currentComponent = shallowRef(ComponentA);
 
 function switchComponent() {
-  currentComponent.value = 
-    currentComponent.value === ComponentA ? ComponentB : ComponentA
+  currentComponent.value =
+    currentComponent.value === ComponentA ? ComponentB : ComponentA;
 }
 </script>
 
@@ -565,24 +558,20 @@ function switchComponent() {
 
 ```vue
 <script setup>
-import { ref } from 'vue'
-import TabA from './TabA.vue'
-import TabB from './TabB.vue'
+import { ref } from "vue";
+import TabA from "./TabA.vue";
+import TabB from "./TabB.vue";
 
 const tabs = {
   TabA,
-  TabB
-}
+  TabB,
+};
 
-const currentTab = ref('TabA')
+const currentTab = ref("TabA");
 </script>
 
 <template>
-  <button 
-    v-for="(_, tab) in tabs" 
-    :key="tab"
-    @click="currentTab = tab"
-  >
+  <button v-for="(_, tab) in tabs" :key="tab" @click="currentTab = tab">
     {{ tab }}
   </button>
 
@@ -618,32 +607,32 @@ const currentTab = ref('TabA')
 ### defineAsyncComponent
 
 ```javascript
-import { defineAsyncComponent } from 'vue'
+import { defineAsyncComponent } from "vue";
 
 // 기본 사용
 const AsyncComponent = defineAsyncComponent(() =>
-  import('./components/HeavyComponent.vue')
-)
+  import("./components/HeavyComponent.vue")
+);
 
 // 로딩/에러 상태
 const AsyncComponentWithOptions = defineAsyncComponent({
-  loader: () => import('./components/HeavyComponent.vue'),
+  loader: () => import("./components/HeavyComponent.vue"),
   loadingComponent: LoadingSpinner,
   errorComponent: ErrorDisplay,
-  delay: 200,  // 200ms 후 로딩 컴포넌트 표시
-  timeout: 3000  // 3초 후 타임아웃
-})
+  delay: 200, // 200ms 후 로딩 컴포넌트 표시
+  timeout: 3000, // 3초 후 타임아웃
+});
 ```
 
 사용:
 
 ```vue
 <script setup>
-import { defineAsyncComponent } from 'vue'
+import { defineAsyncComponent } from "vue";
 
 const HeavyComponent = defineAsyncComponent(() =>
-  import('./HeavyComponent.vue')
-)
+  import("./HeavyComponent.vue")
+);
 </script>
 
 <template>
@@ -663,16 +652,16 @@ const HeavyComponent = defineAsyncComponent(() =>
 ```vue
 <!-- App.vue -->
 <script setup>
-import { ref, provide } from 'vue'
+import { ref, provide } from "vue";
 
-const theme = ref('light')
+const theme = ref("light");
 const toggleTheme = () => {
-  theme.value = theme.value === 'light' ? 'dark' : 'light'
-}
+  theme.value = theme.value === "light" ? "dark" : "light";
+};
 
 // 제공
-provide('theme', theme)
-provide('toggleTheme', toggleTheme)
+provide("theme", theme);
+provide("toggleTheme", toggleTheme);
 </script>
 
 <template>
@@ -685,16 +674,22 @@ provide('toggleTheme', toggleTheme)
 ```vue
 <!-- ChildComponent.vue -->
 <script setup>
-import { inject } from 'vue'
+import { inject } from "vue";
 
-const theme = inject('theme')
-const toggleTheme = inject('toggleTheme')
+const theme = inject("theme");
+const toggleTheme = inject("toggleTheme");
 
 // 기본값 제공
-const userSettings = inject('userSettings', { notifications: true })
+const userSettings = inject("userSettings", { notifications: true });
 
 // 기본값을 함수로 (비용이 큰 경우)
-const config = inject('config', () => ({ /* default config */ }), true)
+const config = inject(
+  "config",
+  () => ({
+    /* default config */
+  }),
+  true
+);
 </script>
 
 <template>
@@ -708,30 +703,30 @@ const config = inject('config', () => ({ /* default config */ }), true)
 
 ```javascript
 // keys.js
-import { InjectionKey } from 'vue'
+import { InjectionKey } from "vue";
 
-export const themeKey = Symbol()
-export const userKey = Symbol()
+export const themeKey = Symbol();
+export const userKey = Symbol();
 ```
 
 ```vue
 <!-- Provider -->
 <script setup>
-import { provide, ref } from 'vue'
-import { themeKey } from './keys'
+import { provide, ref } from "vue";
+import { themeKey } from "./keys";
 
-const theme = ref('light')
-provide(themeKey, theme)
+const theme = ref("light");
+provide(themeKey, theme);
 </script>
 ```
 
 ```vue
 <!-- Consumer -->
 <script setup>
-import { inject } from 'vue'
-import { themeKey } from './keys'
+import { inject } from "vue";
+import { themeKey } from "./keys";
 
-const theme = inject(themeKey)
+const theme = inject(themeKey);
 </script>
 ```
 
@@ -741,16 +736,16 @@ const theme = inject(themeKey)
 
 ```vue
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, onMounted } from "vue";
 
-const input = ref(null)
-const list = ref(null)
+const input = ref(null);
+const list = ref(null);
 
 onMounted(() => {
   // DOM 엘리먼트 접근
-  input.value.focus()
-  console.log(list.value.children.length)
-})
+  input.value.focus();
+  console.log(list.value.children.length);
+});
 </script>
 
 <template>
@@ -766,15 +761,15 @@ onMounted(() => {
 
 ```vue
 <script setup>
-import { ref, onMounted } from 'vue'
-import ChildComponent from './ChildComponent.vue'
+import { ref, onMounted } from "vue";
+import ChildComponent from "./ChildComponent.vue";
 
-const child = ref(null)
+const child = ref(null);
 
 onMounted(() => {
   // 자식 컴포넌트 메서드 호출
-  child.value.someMethod()
-})
+  child.value.someMethod();
+});
 </script>
 
 <template>
@@ -787,19 +782,19 @@ onMounted(() => {
 ```vue
 <!-- ChildComponent.vue -->
 <script setup>
-import { ref } from 'vue'
+import { ref } from "vue";
 
-const count = ref(0)
+const count = ref(0);
 
 function someMethod() {
-  console.log('Called from parent')
+  console.log("Called from parent");
 }
 
 // 부모에게 노출할 것만 명시
 defineExpose({
   count,
-  someMethod
-})
+  someMethod,
+});
 </script>
 ```
 
@@ -807,22 +802,26 @@ defineExpose({
 
 ```vue
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, onMounted } from "vue";
 
-const items = ref([1, 2, 3])
-const itemRefs = ref([])
+const items = ref([1, 2, 3]);
+const itemRefs = ref([]);
 
 onMounted(() => {
-  console.log(itemRefs.value)  // DOM 엘리먼트 배열
-})
+  console.log(itemRefs.value); // DOM 엘리먼트 배열
+});
 </script>
 
 <template>
   <ul>
-    <li 
-      v-for="item in items" 
+    <li
+      v-for="item in items"
       :key="item"
-      :ref="el => { if (el) itemRefs[item - 1] = el }"
+      :ref="
+        (el) => {
+          if (el) itemRefs[item - 1] = el;
+        }
+      "
     >
       {{ item }}
     </li>
@@ -835,39 +834,39 @@ onMounted(() => {
 ### 컴포넌트 테스트
 
 ```javascript
-import { mount } from '@vue/test-utils'
-import MyComponent from '@/components/MyComponent.vue'
+import { mount } from "@vue/test-utils";
+import MyComponent from "@/components/MyComponent.vue";
 
-describe('MyComponent', () => {
-  it('renders properly', () => {
+describe("MyComponent", () => {
+  it("renders properly", () => {
     const wrapper = mount(MyComponent, {
       props: {
-        title: 'Test Title'
-      }
-    })
+        title: "Test Title",
+      },
+    });
 
-    expect(wrapper.text()).toContain('Test Title')
-  })
+    expect(wrapper.text()).toContain("Test Title");
+  });
 
-  it('emits event on button click', async () => {
-    const wrapper = mount(MyComponent)
-    
-    await wrapper.find('button').trigger('click')
-    
-    expect(wrapper.emitted()).toHaveProperty('submit')
-    expect(wrapper.emitted('submit')).toHaveLength(1)
-  })
+  it("emits event on button click", async () => {
+    const wrapper = mount(MyComponent);
 
-  it('updates data when prop changes', async () => {
+    await wrapper.find("button").trigger("click");
+
+    expect(wrapper.emitted()).toHaveProperty("submit");
+    expect(wrapper.emitted("submit")).toHaveLength(1);
+  });
+
+  it("updates data when prop changes", async () => {
     const wrapper = mount(MyComponent, {
-      props: { count: 0 }
-    })
+      props: { count: 0 },
+    });
 
-    await wrapper.setProps({ count: 5 })
-    
-    expect(wrapper.vm.count).toBe(5)
-  })
-})
+    await wrapper.setProps({ count: 5 });
+
+    expect(wrapper.vm.count).toBe(5);
+  });
+});
 ```
 
 ## 📚 모범 사례
@@ -877,21 +876,21 @@ describe('MyComponent', () => {
 ```vue
 <script setup>
 const props = defineProps({
-  modelValue: String
-})
+  modelValue: String,
+});
 
 // ❌ Props 직접 수정 금지
 // props.modelValue = 'new value'
 
 // ✅ 로컬 state로 복사
-const localValue = ref(props.modelValue)
+const localValue = ref(props.modelValue);
 
 // ✅ Computed + emit 사용
-const emit = defineEmits(['update:modelValue'])
+const emit = defineEmits(["update:modelValue"]);
 const value = computed({
   get: () => props.modelValue,
-  set: (val) => emit('update:modelValue', val)
-})
+  set: (val) => emit("update:modelValue", val),
+});
 </script>
 ```
 
@@ -900,11 +899,7 @@ const value = computed({
 ```vue
 <script setup>
 // ✅ kebab-case 사용
-const emit = defineEmits([
-  'update-value',
-  'delete-item',
-  'submit-form'
-])
+const emit = defineEmits(["update-value", "delete-item", "submit-form"]);
 
 // ❌ camelCase 피하기 (HTML은 대소문자 구분 안함)
 // const emit = defineEmits(['updateValue'])
@@ -925,9 +920,9 @@ const emit = defineEmits([
 
 <!-- ✅ 작은 컴포넌트로 분리 -->
 <script setup>
-import UserProfile from './UserProfile.vue'
-import UserPosts from './UserPosts.vue'
-import UserStats from './UserStats.vue'
+import UserProfile from "./UserProfile.vue";
+import UserPosts from "./UserPosts.vue";
+import UserStats from "./UserStats.vue";
 </script>
 
 <template>
