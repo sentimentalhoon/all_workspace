@@ -44,17 +44,24 @@
 
 ## 🚀 배포 단계
 
-### 1. SSL 인증서 설치
+### 1. SSL 인증서 발급
 
 ```bash
-# 디렉토리 생성
-mkdir -p infrastructure/nginx/ssl/campstation
-mkdir -p infrastructure/nginx/ssl/psmo
+# Certbot 설치 (아직 설치 안했다면)
+sudo apt update
+sudo apt install certbot python3-certbot-nginx
 
-# 인증서 복사 (실제 경로로 변경)
-cp /your/cert/path/campstation/* infrastructure/nginx/ssl/campstation/
-cp /your/cert/path/psmo/* infrastructure/nginx/ssl/psmo/
+# 인증서 발급 (Docker 실행 전, 80 포트가 비어있어야 함)
+sudo certbot certonly --standalone -d mycamp.duckdns.org
+sudo certbot certonly --standalone -d mycommunity.duckdns.org
+
+# 인증서 확인
+sudo ls -la /etc/letsencrypt/live/mycamp.duckdns.org/
+sudo ls -la /etc/letsencrypt/live/mycommunity.duckdns.org/
 ```
+
+**중요**: Certbot이 자동으로 `/etc/letsencrypt/live/` 경로에 인증서를 생성합니다.
+Docker Compose가 이 경로를 자동으로 마운트합니다.
 
 상세 내용: [SSL_SETUP.md](./SSL_SETUP.md)
 
