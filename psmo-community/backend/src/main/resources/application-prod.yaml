@@ -38,5 +38,8 @@ jwt:
   expiration: ${JWT_EXPIRATION:86400000}
   refreshExpiration: ${JWT_REFRESH_EXPIRATION:604800000}
 
+cors:
+  allowedOrigins: ${CORS_ALLOWED_ORIGINS:https://mycommunity.duckdns.org}
+
 logging:
   level: INFO

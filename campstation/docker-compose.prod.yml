@@ -112,8 +112,7 @@ services:
       args:
         - NODE_VERSION=22
     container_name: campstation-frontend-prod
-    environment:
-      VITE_API_URL: ${API_URL:-http://localhost:8080}
+    # No environment variables needed - uses relative /api path
     ports:
       - "3000:80"
     depends_on:

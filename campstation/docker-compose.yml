@@ -106,7 +106,9 @@ services:
       dockerfile: Dockerfile.dev
     container_name: campstation-frontend-dev
     environment:
-      VITE_API_URL: http://localhost:8080
+      # Vite dev server uses proxy configuration from vite.config.ts
+      VITE_BACKEND_HOST: backend
+      VITE_BACKEND_PORT: 8080
     ports:
       - "3000:3000"
     volumes:

@@ -9,7 +9,10 @@ ktor:
 profiles:
   active: ${KTOR_PROFILE:dev}
 
+# Common configuration
+# Profile-specific settings in application-dev.yaml and application-prod.yaml
+
 # CORS configuration
 # Using /api proxy: Same-origin requests, CORS not strictly needed but kept for flexibility
 cors:
-  allowedOrigins: ${CORS_ALLOWED_ORIGINS:http://localhost:5173,http://localhost:5174}
+  allowedOrigins: ${CORS_ALLOWED_ORIGINS}
