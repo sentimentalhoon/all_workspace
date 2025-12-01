@@ -102,7 +102,7 @@ services:
       MINIO_ENDPOINT: http://campstation-minio:9000
       MINIO_ACCESS_KEY: ${CAMPSTATION_MINIO_USER:?CAMPSTATION_MINIO_USER is required}
       MINIO_SECRET_KEY: ${CAMPSTATION_MINIO_PASSWORD:?CAMPSTATION_MINIO_PASSWORD is required}
-      CORS_ALLOWED_ORIGINS: ${CAMPSTATION_CORS_ORIGINS:https://mycamp.duckdns.org}
+      CORS_ALLOWED_ORIGINS: ${CAMPSTATION_CORS_ORIGINS:-https://mycamp.duckdns.org}
       MAIL_HOST: campstation-mailhog
       MAIL_PORT: 1025
     depends_on:
@@ -207,16 +207,17 @@ services:
       dockerfile: Dockerfile
     container_name: psmo-backend-prod
     environment:
-      DB_URL: jdbc:postgresql://psmo-postgres:5432/${PSMO_POSTGRES_DB:-psmo_community}
-      DB_USER: ${PSMO_POSTGRES_USER:-psmo}
-      DB_PASSWORD: ${PSMO_POSTGRES_PASSWORD:?PSMO_POSTGRES_PASSWORD is required}
+      KTOR_PROFILE: prod
+      DATABASE_URL: jdbc:postgresql://psmo-postgres:5432/${PSMO_POSTGRES_DB:-psmo_community}
+      DATABASE_USER: ${PSMO_POSTGRES_USER:-psmo}
+      DATABASE_PASSWORD: ${PSMO_POSTGRES_PASSWORD:?PSMO_POSTGRES_PASSWORD is required}
       REDIS_HOST: psmo-redis
       REDIS_PORT: 6379
       REDIS_PASSWORD: ${PSMO_REDIS_PASSWORD:?PSMO_REDIS_PASSWORD is required}
       MINIO_ENDPOINT: http://psmo-minio:9000
       MINIO_ACCESS_KEY: ${PSMO_MINIO_USER:?PSMO_MINIO_USER is required}
       MINIO_SECRET_KEY: ${PSMO_MINIO_PASSWORD:?PSMO_MINIO_PASSWORD is required}
-      CORS_ALLOWED_ORIGINS: ${PSMO_CORS_ORIGINS:https://mycommunity.duckdns.org}
+      CORS_ALLOWED_ORIGINS: ${PSMO_CORS_ORIGINS:-https://mycommunity.duckdns.org}
       MAIL_HOST: psmo-mailhog
       MAIL_PORT: 1025
     depends_on:
