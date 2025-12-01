@@ -46,6 +46,8 @@ The "내 정보" 화면은 텔레그램 로그인 위젯을 사용해 백엔드 
 
 3. 발급된 JWT와 사용자 정보는 `localStorage`(`psmo-auth-session`)에 저장됩니다. 로그아웃 버튼을 누르면 세션이 초기화됩니다.
 
+> Docker 환경(dev/prod 컨테이너)에서는 `.env.local` 대신 `VITE_TELEGRAM_BOT_ID`와 `VITE_TELEGRAM_BOT_USERNAME`을 환경 변수나 build args로 주입하면 동일하게 동작합니다.
+
 ### Compile and Hot-Reload for Development
 
 ```sh

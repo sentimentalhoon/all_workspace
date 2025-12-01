@@ -232,6 +232,8 @@ services:
       JWT_SECRET: dev-secret-key-for-psmo-community-1234567890
       JWT_ISSUER: psmo-community
       JWT_AUDIENCE: psmo-app
+      TELEGRAM_BOT_TOKEN: ${TELEGRAM_BOT_TOKEN:?TELEGRAM_BOT_TOKEN is required}
+      TELEGRAM_AUTH_TOLERANCE: ${TELEGRAM_AUTH_TOLERANCE:-86400}
     ports:
       - "8081:8080"
       - "5006:5006"
@@ -268,6 +270,8 @@ services:
       # Vite dev server uses proxy configuration from vite.config.ts
       VITE_BACKEND_HOST: psmo-backend
       VITE_BACKEND_PORT: 8080
+      VITE_TELEGRAM_BOT_ID: ${TELEGRAM_BOT_ID:?TELEGRAM_BOT_ID is required}
+      VITE_TELEGRAM_BOT_USERNAME: ${TELEGRAM_BOT_USERNAME:?TELEGRAM_BOT_USERNAME is required}
     ports:
       - "5174:3000"
     volumes:

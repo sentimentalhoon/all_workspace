@@ -43,7 +43,7 @@ If the server starts successfully, you'll see the following output:
 - Body: `application/x-www-form-urlencoded` payload directly from the Telegram Login Widget
 - Expected fields include `id`, `first_name`, `username`, `photo_url`, `auth_date`, `hash`, etc.
 - Server validates Telegram signature using `telegram.botToken` and rejects expired payloads (default tolerance 86,400 seconds).
-- Configure secrets via `telegram.botToken` in `application-{profile}.yaml` or export `TELEGRAM_BOT_TOKEN`.
+- Configure secrets via `TELEGRAM_BOT_TOKEN` (mandatory) and optional `TELEGRAM_AUTH_TOLERANCE`; the YAML merely references those environment variables.
 - On success the backend persists/updates the Telegram user profile, issues a JWT access token, and returns both the normalized user object and token metadata.
 
 ### Authenticated Profile API

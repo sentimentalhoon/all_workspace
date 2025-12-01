@@ -220,6 +220,8 @@ services:
       CORS_ALLOWED_ORIGINS: ${PSMO_CORS_ORIGINS:-https://mycommunity.duckdns.org}
       MAIL_HOST: psmo-mailhog
       MAIL_PORT: 1025
+      TELEGRAM_BOT_TOKEN: ${TELEGRAM_BOT_TOKEN:?TELEGRAM_BOT_TOKEN is required}
+      TELEGRAM_AUTH_TOLERANCE: ${TELEGRAM_AUTH_TOLERANCE:-86400}
     depends_on:
       psmo-postgres:
         condition: service_healthy
@@ -249,7 +251,9 @@ services:
     build:
       context: ./psmo-community/frontend
       dockerfile: Dockerfile
-      # No build args needed - uses relative /api path
+      args:
+        VITE_TELEGRAM_BOT_ID: ${TELEGRAM_BOT_ID:?TELEGRAM_BOT_ID is required}
+        VITE_TELEGRAM_BOT_USERNAME: ${TELEGRAM_BOT_USERNAME:?TELEGRAM_BOT_USERNAME is required}
     container_name: psmo-frontend-prod
     depends_on:
       - psmo-backend

@@ -12,6 +12,12 @@ RUN npm ci
 # Copy source code
 COPY . .
 
+# Build arguments for Telegram widget (optional defaults)
+ARG VITE_TELEGRAM_BOT_ID
+ARG VITE_TELEGRAM_BOT_USERNAME
+ENV VITE_TELEGRAM_BOT_ID=${VITE_TELEGRAM_BOT_ID}
+ENV VITE_TELEGRAM_BOT_USERNAME=${VITE_TELEGRAM_BOT_USERNAME}
+
 # Build application (uses relative /api path, no API_URL needed)
 RUN npm run build
 
