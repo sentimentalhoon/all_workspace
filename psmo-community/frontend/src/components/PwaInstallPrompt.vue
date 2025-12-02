@@ -1,6 +1,12 @@
 <template>
   <transition name="fade">
-    <div v-if="isVisible" class="pwa-prompt" role="dialog" aria-live="polite">
+    <div
+      v-if="isVisible"
+      class="pwa-prompt"
+      role="dialog"
+      aria-live="polite"
+      :style="promptStyle"
+    >
       <div class="prompt-content">
         <div class="prompt-text">
           <p class="title">PSMO 앱 설치</p>
@@ -18,16 +24,23 @@
 </template>
 
 <script setup lang="ts">
-import { onBeforeUnmount, onMounted, ref } from 'vue'
+import { computed, onBeforeUnmount, onMounted, ref } from 'vue'
 
 type BeforeInstallPromptEvent = Event & {
   prompt: () => Promise<void>
   userChoice: Promise<{ outcome: 'accepted' | 'dismissed'; platform: string }>
 }
 
+const props = defineProps<{
+  bottomOffset?: number
+}>()
+
 const deferredPrompt = ref<BeforeInstallPromptEvent | null>(null)
 const isVisible = ref(false)
 const installing = ref(false)
+const promptStyle = computed(() => ({
+  bottom: `calc(${props.bottomOffset ?? 24}px + env(safe-area-inset-bottom, 0px))`,
+}))
 
 const handleBeforeInstallPrompt = (event: Event) => {
   event.preventDefault()
