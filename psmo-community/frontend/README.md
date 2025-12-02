@@ -90,3 +90,10 @@ npm run test:e2e -- --debug
 ```sh
 npm run lint
 ```
+
+## PWA (Progressive Web App)
+
+- `vite-plugin-pwa` is enabled so every `npm run build` emits an installable bundle (manifest + service worker).
+- Use `npm run build && npm run preview` or deploy to HTTPS to verify the “Add to Home Screen” prompt.
+- Update the branded icons under `public/icons/pwa-*.svg` if you change the visual identity.
+

@@ -1,0 +1,23 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 192 192">
+  <defs>
+    <linearGradient id="psmoGradient192" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#ff9d53" />
+      <stop offset="100%" stop-color="#f05365" />
+    </linearGradient>
+    <linearGradient id="psmoSky192" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#1f1b3a" />
+      <stop offset="100%" stop-color="#2b2b4b" />
+    </linearGradient>
+  </defs>
+  <rect width="192" height="192" rx="44" fill="url(#psmoSky192)" />
+  <circle cx="64" cy="60" r="18" fill="url(#psmoGradient192)" />
+  <path
+    d="M44 146h28l24-48 24 48h28l-40-78c-2-4-6-6-12-6s-10 2-12 6l-40 78Z"
+    fill="none"
+    stroke="#ffffff"
+    stroke-width="10"
+    stroke-linecap="round"
+    stroke-linejoin="round"
+  />
+  <path d="M88 146h16" stroke="#ffffff" stroke-width="10" stroke-linecap="round" />
+</svg>
