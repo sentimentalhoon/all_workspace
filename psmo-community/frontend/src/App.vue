@@ -12,7 +12,7 @@ const showBottomNav = computed(() => route.path !== '/admin')
   <div class="mobile-container">
     <div class="content-wrapper" :class="{ 'with-bottom-nav': showBottomNav }">
       <RouterView />
-      <PwaInstallPrompt :bottom-offset="showBottomNav ? 96 : 24" />
+      <PwaInstallPrompt :bottom-offset="showBottomNav ? 96 : 24" mobile-only />
     </div>
 
     <nav v-if="showBottomNav" class="bottom-nav">

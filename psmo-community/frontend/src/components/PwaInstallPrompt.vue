@@ -1,21 +1,15 @@
 <template>
   <transition name="fade">
-    <div
-      v-if="isVisible"
-      class="pwa-prompt"
-      role="dialog"
-      aria-live="polite"
-      :style="promptStyle"
-    >
+    <div v-if="isVisible" class="pwa-prompt" role="dialog" aria-live="polite" :style="promptStyle">
       <div class="prompt-content">
         <div class="prompt-text">
-          <p class="title">PSMO 앱 설치</p>
-          <p class="subtitle">홈 화면에 추가하면 더 빠르게 커뮤니티를 열 수 있어요.</p>
+          <p class="title">Install PSMO App</p>
+          <p class="subtitle">Add to your home screen for faster access to the community.</p>
         </div>
         <div class="prompt-actions">
-          <button class="btn secondary" type="button" @click="dismiss">나중에</button>
+          <button class="btn secondary" type="button" @click="dismiss">Later</button>
           <button class="btn primary" type="button" @click="install" :disabled="installing">
-            {{ installing ? '설치 중...' : '설치하기' }}
+            {{ installing ? 'Installing...' : 'Install' }}
           </button>
         </div>
       </div>
@@ -33,17 +27,30 @@ type BeforeInstallPromptEvent = Event & {
 
 const props = defineProps<{
   bottomOffset?: number
+  mobileOnly?: boolean
 }>()
 
 const deferredPrompt = ref<BeforeInstallPromptEvent | null>(null)
 const isVisible = ref(false)
 const installing = ref(false)
+const isMobile = ref(false)
+
 const promptStyle = computed(() => ({
   bottom: `calc(${props.bottomOffset ?? 24}px + env(safe-area-inset-bottom, 0px))`,
 }))
 
+const updateDeviceState = () => {
+  if (typeof window === 'undefined') return
+  const coarse = window.matchMedia('(pointer: coarse)').matches
+  const ua = navigator.userAgent || ''
+  isMobile.value = coarse || /Android|iPhone|iPad|iPod/i.test(ua)
+}
+
+const eligible = () => (!props.mobileOnly || isMobile.value)
+
 const handleBeforeInstallPrompt = (event: Event) => {
   event.preventDefault()
+  if (!eligible()) return
   deferredPrompt.value = event as BeforeInstallPromptEvent
   isVisible.value = true
 }
@@ -73,11 +80,14 @@ const handleAppInstalled = () => {
 }
 
 onMounted(() => {
+  updateDeviceState()
+  window.addEventListener('resize', updateDeviceState)
   window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt)
   window.addEventListener('appinstalled', handleAppInstalled)
 })
 
 onBeforeUnmount(() => {
+  window.removeEventListener('resize', updateDeviceState)
   window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt)
   window.removeEventListener('appinstalled', handleAppInstalled)
 })
@@ -86,7 +96,6 @@ onBeforeUnmount(() => {
 <style scoped>
 .pwa-prompt {
   position: fixed;
-  bottom: 1.5rem;
   left: 50%;
   transform: translateX(-50%);
   width: min(480px, calc(100% - 2rem));
@@ -94,7 +103,7 @@ onBeforeUnmount(() => {
   border-radius: 1rem;
   box-shadow: 0 20px 50px rgba(0, 0, 0, 0.3);
   color: #f8fafc;
-  z-index: 999;
+  z-index: 1200;
 }
 
 .prompt-content {
@@ -126,6 +135,7 @@ onBeforeUnmount(() => {
   display: flex;
   gap: 0.5rem;
   justify-content: flex-end;
+  flex-wrap: wrap;
 }
 
 .btn {
@@ -162,4 +172,3 @@ onBeforeUnmount(() => {
   transform: translate(-50%, 10px);
 }
 </style>
-*** End Patch
