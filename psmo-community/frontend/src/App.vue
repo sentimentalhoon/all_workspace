@@ -2,6 +2,8 @@
 import { computed } from 'vue'
 import { RouterView, useRoute } from 'vue-router'
 
+import PwaInstallPrompt from './components/PwaInstallPrompt.vue'
+
 const route = useRoute()
 const showBottomNav = computed(() => route.path !== '/admin')
 </script>
@@ -10,6 +12,7 @@ const showBottomNav = computed(() => route.path !== '/admin')
   <div class="mobile-container">
     <div class="content-wrapper" :class="{ 'with-bottom-nav': showBottomNav }">
       <RouterView />
+      <PwaInstallPrompt />
     </div>
 
     <nav v-if="showBottomNav" class="bottom-nav">
