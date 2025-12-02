@@ -1,0 +1,260 @@
+.chat-view {
+  background: linear-gradient(180deg, #f8fafc 0%, #eef2ff 45%, #ffffff 100%);
+  min-height: calc(100vh - 60px);
+  padding: 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1.2rem;
+  color: #1d2433;
+}
+
+.hero {
+  border-radius: 24px;
+  padding: 1.8rem;
+  color: #fff;
+  background:
+    radial-gradient(circle at right top, rgba(255, 255, 255, 0.25), transparent 55%),
+    linear-gradient(135deg, #ff9d53 0%, #f05365 100%);
+  box-shadow: 0 24px 60px rgba(240, 83, 101, 0.25);
+}
+
+.hero-copy h1 {
+  margin: 0.4rem 0;
+  font-size: clamp(1.6rem, 4vw, 2rem);
+}
+
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.25rem 0.85rem;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.25);
+  font-size: 0.8rem;
+}
+
+.summary {
+  line-height: 1.55;
+  margin: 0.5rem 0 1.2rem;
+  max-width: 540px;
+}
+
+.hero-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+}
+
+.cta {
+  border-radius: 999px;
+  padding: 0.65rem 1.4rem;
+  font-weight: 600;
+  text-decoration: none;
+  text-align: center;
+  transition: opacity 0.2s ease;
+}
+
+.cta.primary {
+  background: white;
+  color: #f05365;
+}
+
+.cta.ghost {
+  background: rgba(255, 255, 255, 0.15);
+  color: #fff;
+  border: 1px solid rgba(255, 255, 255, 0.35);
+}
+
+.cta:hover {
+  opacity: 0.9;
+}
+
+.hero-metrics {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  margin-top: 1.2rem;
+}
+
+.hero-metrics span {
+  background: rgba(255, 255, 255, 0.2);
+  padding: 0.35rem 0.75rem;
+  border-radius: 999px;
+  font-size: 0.8rem;
+}
+
+.status-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 0.8rem;
+}
+
+.status-card {
+  background: white;
+  border-radius: 18px;
+  padding: 1.2rem;
+  box-shadow: 0 18px 45px rgba(15, 23, 42, 0.08);
+}
+
+.status-card .label {
+  font-size: 0.78rem;
+  color: #7a808f;
+  margin: 0;
+}
+
+.status-card .value {
+  margin: 0.3rem 0 0;
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: #1d2433;
+}
+
+.status-card .value.online {
+  color: #1ec7a6;
+}
+
+.status-card .desc {
+  margin: 0.5rem 0 0;
+  font-size: 0.85rem;
+  color: #5f667a;
+}
+
+.widget-wrapper {
+  background: white;
+  border-radius: 24px;
+  padding: 1rem;
+  box-shadow: 0 18px 40px rgba(15, 23, 42, 0.07);
+}
+
+.widget-wrapper header {
+  display: flex;
+  justify-content: space-between;
+  gap: 0.75rem;
+  align-items: center;
+  margin-bottom: 0.75rem;
+}
+
+.widget-wrapper h2 {
+  margin: 0;
+  font-size: 1.15rem;
+}
+
+.widget-wrapper p {
+  margin: 0;
+  font-size: 0.82rem;
+  color: #7a808f;
+}
+
+.refresh-btn {
+  border: 1px solid #d3d9e6;
+  background: transparent;
+  border-radius: 999px;
+  padding: 0.4rem 1.1rem;
+  font-weight: 600;
+  color: #1d2433;
+  cursor: pointer;
+}
+
+.widget-shell {
+  background: #f8f9fb;
+  border-radius: 14px;
+  min-height: 420px;
+  padding: 0.6rem;
+}
+
+.widget-shell iframe {
+  width: 100% !important;
+  border-radius: 12px;
+}
+
+.loading-text {
+  text-align: center;
+  padding-top: 2rem;
+  color: #7a808f;
+}
+
+.guide-card,
+.app-section {
+  background: white;
+  border-radius: 24px;
+  padding: 1.5rem;
+  box-shadow: 0 18px 40px rgba(15, 23, 42, 0.07);
+}
+
+.guide-card h3 {
+  margin: 0 0 0.7rem;
+}
+
+.guide-card ol {
+  margin: 0;
+  padding-left: 1.2rem;
+  color: #5f667a;
+  line-height: 1.6;
+  font-size: 0.92rem;
+}
+
+.app-section {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 1rem;
+  align-items: center;
+}
+
+.promo-copy h3 {
+  margin: 0 0 0.35rem;
+}
+
+.promo-copy p {
+  margin: 0 0 1rem;
+  color: #5f667a;
+}
+
+.download-buttons {
+  display: flex;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.download {
+  flex: 1;
+  min-width: 120px;
+  text-align: center;
+  border-radius: 12px;
+  padding: 0.75rem;
+  text-decoration: none;
+  font-weight: 600;
+  color: white;
+}
+
+.download.android {
+  background: #18c964;
+}
+
+.download.ios {
+  background: #007aff;
+}
+
+.promo-visual {
+  font-size: 3rem;
+  text-align: center;
+}
+
+@media (max-width: 768px) {
+  .hero {
+    padding: 1.2rem;
+  }
+
+  .status-card {
+    padding: 1rem;
+  }
+
+  .widget-wrapper header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .refresh-btn {
+    width: 100%;
+    text-align: center;
+  }
+}
