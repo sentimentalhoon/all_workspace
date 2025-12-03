@@ -11,6 +11,10 @@ import java.time.Instant
 import javax.crypto.Mac
 import javax.crypto.spec.SecretKeySpec
 
+/**
+ * Telegram Login Widget 서명 검증과 사용자 토큰 발급을 담당.
+ * TODO: 향후 Apple/Google OAuth 등 멀티 공급자 전략으로 확장하도록 추상화 레이어 필요
+ */
 class TelegramAuthService(
     private val config: ApplicationConfig,
     private val userService: UserService,
@@ -23,6 +27,9 @@ class TelegramAuthService(
     private val toleranceSeconds: Long =
         config.tryGetString("telegram.authToleranceSeconds")?.toLongOrNull() ?: 86_400L
 
+    /**
+     * Telegram 으로부터 전달된 파라미터를 검증하고 사용자 토큰을 반환한다.
+     */
     fun authenticate(parameters: Parameters): TelegramAuthResponse {
         val data = parameters.entries()
             .associate { (key, values) -> key to values.firstOrNull().orEmpty() }
@@ -65,6 +72,9 @@ class TelegramAuthService(
         )
     }
 
+    /**
+     * Telegram 사양에 맞춰 데이터 체크 문자열을 HMAC-SHA256 으로 검증한다.
+     */
     private fun calculateHash(dataCheckString: String): String {
         val secretKey = MessageDigest.getInstance("SHA-256").digest(botToken.toByteArray())
         val mac = Mac.getInstance("HmacSHA256")
@@ -74,6 +84,9 @@ class TelegramAuthService(
     }
 }
 
+/**
+ * 인증 성공 응답 DTO.
+ */
 data class TelegramAuthResponse(
     val status: String = "success",
     val user: UserResponse,
@@ -82,6 +95,9 @@ data class TelegramAuthResponse(
     val verifiedAt: Long
 )
 
+/**
+ * Telegram 인증 관련 예외.
+ */
 class TelegramAuthException(
     override val message: String,
     val isUnauthorized: Boolean = false

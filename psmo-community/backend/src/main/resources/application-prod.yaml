@@ -47,3 +47,7 @@ logging:
 telegram:
   botToken: ${TELEGRAM_BOT_TOKEN}
   authToleranceSeconds: ${TELEGRAM_AUTH_TOLERANCE:86400}
+
+chat:
+  redisChannel: ${CHAT_REDIS_CHANNEL:psmo:chat:global}
+  historyLimit: ${CHAT_HISTORY_LIMIT:50}

@@ -5,7 +5,6 @@ import com.psmo.model.User
 import com.psmo.model.Users
 import com.psmo.model.toUser
 import io.ktor.server.config.ApplicationConfig
-import org.jetbrains.exposed.sql.SchemaUtils
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
 import org.jetbrains.exposed.sql.andWhere
 import org.jetbrains.exposed.sql.insert
@@ -15,17 +14,19 @@ import org.jetbrains.exposed.sql.update
 import org.jetbrains.exposed.sql.transactions.transaction
 import java.time.LocalDateTime
 
+/**
+ * Telegram 기반 사용자 CRUD 를 담당한다.
+ * Flyway 마이그레이션으로 테이블이 선행 생성된다는 가정 하에 동작한다.
+ */
 class UserService(
     private val config: ApplicationConfig
 ) {
-    private val database by lazy {
-        DatabaseConfig.connectToDatabase(config).also { db ->
-            transaction(db) {
-                SchemaUtils.create(Users)
-            }
-        }
-    }
+    private val database by lazy { DatabaseConfig.connectToDatabase(config) }
 
+    /**
+     * Telegram 로그인 정보로 사용자를 upsert 한다.
+     * TODO: Telegram 외 OAuth 공급자가 추가되면 provider column 으로 분기하도록 스키마 확장
+     */
     fun upsertTelegramUser(
         telegramId: Long,
         firstName: String?,
@@ -63,6 +64,9 @@ class UserService(
             .toUser()
     }
 
+    /**
+     * 사용자 기본키를 통해 프로필을 조회한다.
+     */
     fun getUserById(id: Long): User? = transaction(database) {
         Users.selectAll()
             .andWhere { Users.id eq id }
@@ -70,6 +74,9 @@ class UserService(
             ?.toUser()
     }
 
+    /**
+     * Telegram 제공 정보 중 우선순위를 정해 표시명으로 사용한다.
+     */
     private fun buildDisplayName(firstName: String?, lastName: String?, username: String?): String? {
         val combined = listOfNotNull(firstName?.takeIf { it.isNotBlank() }, lastName?.takeIf { it.isNotBlank() })
             .joinToString(" ")

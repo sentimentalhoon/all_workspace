@@ -13,7 +13,7 @@ Here are some useful links to get you started:
 Here's a list of features included in this project:
 
 | Name                                               | Description                                                 |
-| ----------------------------------------------------|------------------------------------------------------------- |
+| -------------------------------------------------- | ----------------------------------------------------------- |
 | [Routing](https://start.ktor.io/p/routing-default) | Allows to define structured routes and associated handlers. |
 
 ## Building & Running
@@ -21,7 +21,7 @@ Here's a list of features included in this project:
 To build or run the project, use one of the following tasks:
 
 | Task                                    | Description                                                          |
-| -----------------------------------------|---------------------------------------------------------------------- |
+| --------------------------------------- | -------------------------------------------------------------------- |
 | `./gradlew test`                        | Run the tests                                                        |
 | `./gradlew build`                       | Build everything                                                     |
 | `./gradlew buildFatJar`                 | Build an executable JAR of the server with all dependencies included |
@@ -51,3 +51,36 @@ If the server starts successfully, you'll see the following output:
 - Endpoint: `GET /api/me`
 - Requires: `Authorization: Bearer <access_token>` header (token from Telegram login response)
 - Returns the persisted user profile (same shape as Telegram auth response) when the JWT is valid.
+
+## 실시간 채팅 WebSocket
+
+- Endpoint: `GET /ws/chat` (same host/port, **must** include `Authorization: Bearer <access_token>` header during the WebSocket handshake)
+- 최초 연결 시 `type = "history"` 메시지들로 최근 대화(`chat.historyLimit`, 기본 50개)를 내려주고, 이후에는 `type = "chat_message"` 형식으로 실시간 메시지가 broadcast 됩니다.
+- 클라이언트 → 서버 payload 예시:
+
+```json
+{ "type": "chat_message", "content": "안녕하세요!" }
+```
+
+- 서버 → 클라이언트 payload 예시:
+
+```json
+{
+  "type": "chat_message",
+  "messageId": 42,
+  "userId": 1,
+  "displayName": "홍길동",
+  "username": "hong",
+  "content": "안녕하세요!",
+  "createdAtEpochMillis": 1733310000000
+}
+```
+
+### Chat 환경 변수
+
+| Key                  | Default            | Description                                              |
+| -------------------- | ------------------ | -------------------------------------------------------- |
+| `CHAT_REDIS_CHANNEL` | `psmo:chat:global` | Redis Pub/Sub channel name used to fan-out chat messages |
+| `CHAT_HISTORY_LIMIT` | `50`               | Number of recent messages sent to new clients            |
+
+Docker dev compose (`docker-compose.dev.yml`) already forwards the two env vars to `psmo-backend`; override them in `.env.dev` or through the deployment pipeline as needed.

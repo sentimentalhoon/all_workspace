@@ -22,6 +22,7 @@ dependencies {
     implementation(libs.ktor.server.config.yaml)
     implementation(libs.ktor.server.status.pages)
     implementation(libs.ktor.server.call.logging)
+    implementation(libs.ktor.server.websockets)
     
     // Logging
     implementation(libs.logback.classic)
@@ -33,6 +34,8 @@ dependencies {
     implementation(libs.exposed.java.time)
     implementation(libs.postgresql)
     implementation(libs.hikari)
+    implementation(libs.flyway)
+    implementation(libs.flyway.database.postgresql)
     
     // Redis
     implementation(libs.redis)

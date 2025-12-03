@@ -5,11 +5,18 @@ import io.ktor.server.config.ApplicationConfig
 import io.ktor.server.config.MapApplicationConfig
 import io.ktor.server.config.yaml.YamlConfigLoader
 
+/**
+ * 활성 profile 과 병합된 설정 객체를 함께 들고 다니기 위한 DTO.
+ */
 data class ActiveProfileConfig(
     val profile: String,
     val config: ApplicationConfig
 )
 
+/**
+ * KTOR_PROFILE (profiles.active) 별로 application-<profile>.yaml 을 로드하여 base config 와 병합한다.
+ * YAML 계층 구조를 Map 으로 평탄화하여 MapApplicationConfig 에 주입한다.
+ */
 object ProfiledConfigLoader {
     private const val DEFAULT_PROFILE = "dev"
 
@@ -33,6 +40,7 @@ object ProfiledConfigLoader {
     private fun flattenConfig(config: ApplicationConfig): Sequence<Pair<String, String>> =
         flattenMap(config.toMap())
 
+    // YAML 계층 구조를 `key.nested=value` 형태로 평탄화한다.
     private fun flattenMap(map: Map<String, Any?>, prefix: String = ""): Sequence<Pair<String, String>> = sequence {
         for ((key, rawValue) in map) {
             val path = if (prefix.isEmpty()) key else "$prefix.$key"

@@ -8,6 +8,10 @@ import io.ktor.server.config.ApplicationConfig
 import io.ktor.server.config.tryGetString
 import java.util.Date
 
+/**
+ * JWT 토큰 생성 책임을 분리한 서비스.
+ * HMAC256 대칭키 기반이며, 환경변수/설정파일에서 키를 찾는다.
+ */
 class JwtService(
     config: ApplicationConfig
 ) {
@@ -20,6 +24,10 @@ class JwtService(
 
     private val algorithm = Algorithm.HMAC256(secret)
 
+    /**
+     * 사용자 정보 기반 access token 을 발급한다.
+     * TODO: refresh token 을 별도 테이블에서 관리하도록 확장
+     */
     fun generateAccessToken(user: User): TokenResponse {
         val expiresAt = Date(System.currentTimeMillis() + expirationMs)
         val token = JWT.create()

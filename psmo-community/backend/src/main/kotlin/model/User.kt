@@ -6,6 +6,9 @@ import org.jetbrains.exposed.sql.javatime.CurrentDateTime
 import org.jetbrains.exposed.sql.javatime.datetime
 import java.time.LocalDateTime
 
+/**
+ * Telegram 사용자 테이블 정의.
+ */
 object Users : LongIdTable("users") {
     val telegramId = long("telegram_id").uniqueIndex()
     val displayName = varchar("display_name", 150).nullable()
@@ -15,6 +18,10 @@ object Users : LongIdTable("users") {
     val updatedAt = datetime("updated_at").defaultExpression(CurrentDateTime)
 }
 
+/**
+ * 사용자 도메인 모델.
+ * TODO: 역할/권한 필드(role 등)를 추가하여 RBAC 구현
+ */
 data class User(
     val id: Long,
     val telegramId: Long,
@@ -25,6 +32,9 @@ data class User(
     val updatedAt: LocalDateTime
 )
 
+/**
+ * Exposed ResultRow -> User 변환 헬퍼.
+ */
 fun ResultRow.toUser(): User = User(
     id = this[Users.id].value,
     telegramId = this[Users.telegramId],

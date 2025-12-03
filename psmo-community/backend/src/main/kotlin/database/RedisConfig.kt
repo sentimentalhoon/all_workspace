@@ -5,7 +5,13 @@ import io.ktor.server.config.tryGetString
 import redis.clients.jedis.JedisPool
 import redis.clients.jedis.JedisPoolConfig
 
+/**
+ * Redis(Jedis) 커넥션 풀 설정.
+ */
 object RedisConfig {
+    /**
+     * JedisPool 을 생성하고 기본 커넥션 풀 파라미터를 지정한다.
+     */
     fun createJedisPool(config: ApplicationConfig): JedisPool {
         val host = config.tryGetString("redis.host")
             ?: System.getenv("REDIS_HOST")
