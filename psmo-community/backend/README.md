@@ -54,7 +54,7 @@ If the server starts successfully, you'll see the following output:
 
 ## 실시간 채팅 WebSocket
 
-- Endpoint: `GET /ws/chat` (same host/port, **must** include `Authorization: Bearer <access_token>` header during the WebSocket handshake)
+- Endpoint: `GET /ws/chat` (same host/port. 기본적으로 `Authorization: Bearer <access_token>` 헤더를 요구하지만 브라우저 WebSocket 의 제약을 고려해 `?token=<access_token>` 쿼리 파라미터로도 전달할 수 있습니다.)
 - 최초 연결 시 `type = "history"` 메시지들로 최근 대화(`chat.historyLimit`, 기본 50개)를 내려주고, 이후에는 `type = "chat_message"` 형식으로 실시간 메시지가 broadcast 됩니다.
 - 클라이언트 → 서버 payload 예시:
 

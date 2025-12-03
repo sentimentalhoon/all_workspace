@@ -5,6 +5,8 @@ import com.auth0.jwt.algorithms.Algorithm
 import com.psmo.config.ProfiledConfigLoader
 import com.psmo.database.DatabaseConfig
 import io.ktor.http.*
+import io.ktor.http.auth.HttpAuthHeader
+import io.ktor.http.auth.parseAuthorizationHeader
 import io.ktor.serialization.jackson.*
 import io.ktor.server.application.*
 import io.ktor.server.auth.*
@@ -84,6 +86,13 @@ fun Application.module() {
     install(Authentication) {
         jwt("auth-jwt") {
             realm = jwtRealm
+            authHeader { call ->
+                call.request.headers[HttpHeaders.Authorization]
+                    ?.let(::parseAuthorizationHeader)
+                    ?: call.request.queryParameters["token"]
+                        ?.takeIf { it.isNotBlank() }
+                        ?.let { HttpAuthHeader.Single("Bearer", it) }
+            }
             verifier(
                 JWT.require(jwtAlgorithm)
                     .withAudience(jwtAudience)

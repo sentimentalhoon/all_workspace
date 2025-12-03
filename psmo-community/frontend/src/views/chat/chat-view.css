@@ -79,6 +79,70 @@
   color: #fff;
 }
 
+.channel-link {
+  color: #fff;
+  text-decoration: underline;
+  font-weight: 600;
+  opacity: 0.9;
+  align-self: flex-start;
+}
+
+.channel-link:hover {
+  opacity: 1;
+}
+
+.chat-tabs {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.tab-controls {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 0.75rem;
+}
+
+.tab-button {
+  border: 1px solid #d3d9e6;
+  border-radius: 18px;
+  padding: 0.9rem 1rem;
+  background: #fff;
+  text-align: left;
+  cursor: pointer;
+  transition:
+    border-color 0.2s ease,
+    box-shadow 0.2s ease,
+    transform 0.2s ease;
+}
+
+.tab-button:hover {
+  border-color: #ff9d53;
+}
+
+.tab-button.active {
+  border-color: #f05365;
+  box-shadow: 0 14px 30px rgba(240, 83, 101, 0.15);
+  transform: translateY(-2px);
+}
+
+.tab-label {
+  display: block;
+  font-weight: 600;
+  color: #1d2433;
+}
+
+.tab-description {
+  display: block;
+  margin-top: 0.25rem;
+  font-size: 0.85rem;
+  color: #4f566b;
+}
+
+.tab-panels {
+  width: 100%;
+}
+
 .chat-widget {
   background: #fff;
   border-radius: 24px;
