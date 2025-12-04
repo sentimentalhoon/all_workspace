@@ -4,7 +4,7 @@ import type {
   TelegramLoginPayload,
   UserResponse,
 } from '@/types/auth'
-import { fetchClient, setAccessToken } from '@/utils/api'
+import { fetchClient, getAccessToken, refreshAccessToken, setAccessToken } from '@/utils/api'
 import { defineStore } from 'pinia'
 import { computed, ref } from 'vue'
 
@@ -92,6 +92,15 @@ export const useAuthStore = defineStore('auth', () => {
     // 이전에 로그인한 적이 없다면 불필요한 요청을 보내지 않음 (401 에러 방지)
     if (!localStorage.getItem('wasLoggedIn')) {
       return
+    }
+
+    // 앱 시작 시 AccessToken이 없으면 먼저 갱신 시도 (401 에러 방지)
+    if (!getAccessToken()) {
+      try {
+        await refreshAccessToken()
+      } catch (e) {
+        // 갱신 실패 시 아래 fetchProfile에서 처리하거나 여기서 종료
+      }
     }
 
     // 앱 시작 시 호출: AccessToken 이 없어도 /api/me 를 호출하면

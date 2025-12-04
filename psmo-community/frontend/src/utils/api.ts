@@ -39,7 +39,7 @@ const isTokenExpiringSoon = (token: string, thresholdSeconds = 300): boolean => 
   }
 }
 
-const refreshAccessToken = async (): Promise<string | null> => {
+export const refreshAccessToken = async (): Promise<string | null> => {
   if (isRefreshing) {
     return new Promise((resolve) => {
       addRefreshSubscriber(resolve)
