@@ -7,8 +7,8 @@ postgresql = "42.7.2"
 hikari = "5.1.0"
 redis = "5.1.0"
 minio = "8.5.7"
-flyway = "10.17.3"
-flyway-postgres = "10.17.3"
+flyway = "9.22.3"
+flyway-postgres = "9.22.3"
 
 [libraries]
 ktor-server-core = { module = "io.ktor:ktor-server-core-jvm", version.ref = "ktor" }

@@ -89,6 +89,11 @@ object DatabaseConfig {
             val flyway = Flyway.configure()
                 .dataSource(dataSource)
                 .locations("classpath:db/migration")
+                .sqlMigrationPrefix("V")
+                .repeatableSqlMigrationPrefix("R")
+                .sqlMigrationSeparator("__")
+                .sqlMigrationSuffixes(".sql")
+                .validateMigrationNaming(true)
                 .load()
 
             flyway.migrate()
