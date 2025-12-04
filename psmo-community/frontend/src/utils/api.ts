@@ -8,7 +8,7 @@ type FetchOptions = RequestInit & {
 
 let accessToken: string | null = null
 let isRefreshing = false
-let refreshSubscribers: ((token: string) => void)[] = []
+let refreshSubscribers: ((token: string | null) => void)[] = []
 
 export const setAccessToken = (token: string | null) => {
   accessToken = token
@@ -16,17 +16,67 @@ export const setAccessToken = (token: string | null) => {
 
 export const getAccessToken = () => accessToken
 
-const onRefreshed = (token: string) => {
+const onRefreshed = (token: string | null) => {
   refreshSubscribers.forEach((callback) => callback(token))
   refreshSubscribers = []
 }
 
-const addRefreshSubscriber = (callback: (token: string) => void) => {
+const addRefreshSubscriber = (callback: (token: string | null) => void) => {
   refreshSubscribers.push(callback)
+}
+
+const isTokenExpiringSoon = (token: string, thresholdSeconds = 300): boolean => {
+  try {
+    const payload = JSON.parse(atob(token.split('.')[1].replace(/-/g, '+').replace(/_/g, '/')))
+    if (!payload.exp) return false
+    const now = Math.floor(Date.now() / 1000)
+    return payload.exp - now < thresholdSeconds
+  } catch (e) {
+    return true // 파싱 실패 시 만료된 것으로 간주
+  }
+}
+
+const refreshAccessToken = async (): Promise<string | null> => {
+  if (isRefreshing) {
+    return new Promise((resolve) => {
+      addRefreshSubscriber(resolve)
+    })
+  }
+
+  isRefreshing = true
+  try {
+    const refreshResponse = await fetch(`${BASE_URL}/auth/refresh`, {
+      method: 'POST',
+      credentials: 'include',
+    })
+
+    if (refreshResponse.ok) {
+      const data = (await refreshResponse.json()) as { token: TokenResponse }
+      const newToken = data.token.accessToken
+      setAccessToken(newToken)
+      onRefreshed(newToken)
+      return newToken
+    } else {
+      setAccessToken(null)
+      onRefreshed(null)
+      return null
+    }
+  } catch (e) {
+    setAccessToken(null)
+    onRefreshed(null)
+    return null
+  } finally {
+    isRefreshing = false
+  }
 }
 
 export const fetchClient = async (url: string, options: FetchOptions = {}): Promise<Response> => {
   const fullUrl = url.startsWith('/') ? url : `${BASE_URL}${url}`
+
+  // 1. 토큰 만료 임박 확인 (5분 미만)
+  if (accessToken && isTokenExpiringSoon(accessToken)) {
+    await refreshAccessToken()
+  }
 
   const headers: Record<string, string> = { ...options.headers }
   if (accessToken) {
@@ -39,49 +89,13 @@ export const fetchClient = async (url: string, options: FetchOptions = {}): Prom
   })
 
   if (response.status === 401) {
-    if (!isRefreshing) {
-      isRefreshing = true
-      try {
-        const refreshResponse = await fetch(`${BASE_URL}/auth/refresh`, {
-          method: 'POST',
-          credentials: 'include',
-        })
+    // 2. 401 발생 시 토큰 갱신 시도 (이미 위에서 갱신했더라도, 시점 차이나 다른 이유로 401이 날 수 있음)
+    const newToken = await refreshAccessToken()
 
-        if (refreshResponse.ok) {
-          const data = (await refreshResponse.json()) as { token: TokenResponse }
-          const newToken = data.token.accessToken
-          setAccessToken(newToken)
-          onRefreshed(newToken)
-        } else {
-          setAccessToken(null)
-          // 갱신 실패 시 대기 중인 요청들도 실패 처리하거나 로그아웃 처리
-          refreshSubscribers = [] 
-        }
-      } catch (e) {
-        setAccessToken(null)
-        refreshSubscribers = []
-      } finally {
-        isRefreshing = false
-      }
+    if (newToken) {
+      headers['Authorization'] = `Bearer ${newToken}`
+      return fetch(fullUrl, { ...options, headers })
     }
-
-    // 토큰 갱신 중이거나 방금 갱신을 시도했다면, 갱신 완료를 기다린 후 재요청
-    if (isRefreshing) {
-      return new Promise<Response>((resolve) => {
-        addRefreshSubscriber((newToken) => {
-          headers['Authorization'] = `Bearer ${newToken}`
-          resolve(fetch(fullUrl, { ...options, headers }))
-        })
-      })
-    }
-
-    // 이미 갱신된 상태라면(동시성 이슈로 인해) 바로 재요청
-    if (accessToken) {
-       headers['Authorization'] = `Bearer ${accessToken}`
-       return fetch(fullUrl, { ...options, headers })
-    }
-    
-    return response
   }
 
   return response
