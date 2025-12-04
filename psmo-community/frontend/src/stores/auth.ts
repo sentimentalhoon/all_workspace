@@ -47,6 +47,7 @@ export const useAuthStore = defineStore('auth', () => {
 
       user.value = data.user
       setAccessToken(data.token.accessToken)
+      localStorage.setItem('wasLoggedIn', 'true')
 
       return data
     } catch (err) {
@@ -88,6 +89,11 @@ export const useAuthStore = defineStore('auth', () => {
   }
 
   async function checkAuth() {
+    // 이전에 로그인한 적이 없다면 불필요한 요청을 보내지 않음 (401 에러 방지)
+    if (!localStorage.getItem('wasLoggedIn')) {
+      return
+    }
+
     // 앱 시작 시 호출: AccessToken 이 없어도 /api/me 를 호출하면
     // fetchClient 가 401 -> refresh -> retry 과정을 거쳐 로그인을 복구함
     try {
@@ -95,6 +101,7 @@ export const useAuthStore = defineStore('auth', () => {
     } catch {
       // 실패하면 로그아웃 상태 유지
       user.value = null
+      localStorage.removeItem('wasLoggedIn')
     }
   }
 
@@ -107,6 +114,7 @@ export const useAuthStore = defineStore('auth', () => {
     user.value = null
     setAccessToken(null)
     error.value = null
+    localStorage.removeItem('wasLoggedIn')
   }
 
   return {
