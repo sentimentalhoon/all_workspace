@@ -35,7 +35,6 @@ dependencies {
     implementation(libs.postgresql)
     implementation(libs.hikari)
     implementation(libs.flyway)
-    implementation(libs.flyway.database.postgresql)
     
     // Redis
     implementation(libs.redis)
