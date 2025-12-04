@@ -142,6 +142,9 @@ export function useTelegramAuth() {
 
     if (!isAuthenticated.value) {
       authStore.checkAuth().catch(() => undefined)
+    } else {
+      // 이미 로그인된 상태라면 프로필을 갱신하여 토큰 만료 여부를 확인하고 최신 정보를 가져옴
+      authStore.fetchProfile().catch(() => undefined)
     }
   })
 
