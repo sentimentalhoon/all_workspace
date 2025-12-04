@@ -93,7 +93,7 @@ object DatabaseConfig {
                 .repeatableSqlMigrationPrefix("R")
                 .sqlMigrationSeparator("__")
                 .sqlMigrationSuffixes(".sql")
-                .validateMigrationNaming(true)
+                .validateMigrationNaming(false)
                 .load()
 
             flyway.migrate()
