@@ -86,11 +86,17 @@ object DatabaseConfig {
 
     private fun runMigrations(dataSource: DataSource, key: String) {
         migrationStates.computeIfAbsent(key) {
-            Flyway.configure()
+            val flyway = Flyway.configure()
                 .dataSource(dataSource)
                 .locations("classpath:db/migration")
+                .sqlMigrationPrefix("V")
+                .repeatableSqlMigrationPrefix("R")
+                .sqlMigrationSeparator("__")
+                .sqlMigrationSuffixes(".sql")
+                .validateMigrationNaming(true)
                 .load()
-                .migrate()
+
+            flyway.migrate()
             true
         }
     }
