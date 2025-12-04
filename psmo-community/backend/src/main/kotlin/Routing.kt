@@ -19,6 +19,7 @@ import io.ktor.server.response.*
 import io.ktor.server.routing.*
 import io.ktor.server.websocket.*
 import io.ktor.http.*
+import io.ktor.util.date.*
 import io.ktor.websocket.*
 import kotlinx.coroutines.*
 
@@ -116,7 +117,7 @@ fun Application.configureRouting(config: ApplicationConfig) {
                     val result = refreshTokenService.rotateRefreshToken(refreshToken, jwtService.getRefreshExpirationSeconds())
                     if (result == null) {
                         // 유효하지 않거나 만료된 토큰 -> 쿠키 삭제
-                        call.response.cookies.appendExpired(name = "refresh_token", path = "/api/auth")
+                        call.response.cookies.append(name = "refresh_token", value = "", maxAge = 0, expires = GMTDate.START, path = "/api/auth")
                         call.respond(HttpStatusCode.Unauthorized, mapOf("status" to "error", "message" to "Invalid refresh token"))
                         return@post
                     }
@@ -147,7 +148,7 @@ fun Application.configureRouting(config: ApplicationConfig) {
                 if (refreshToken != null) {
                     refreshTokenService.revokeRefreshToken(refreshToken)
                 }
-                call.response.cookies.appendExpired(name = "refresh_token", path = "/api/auth")
+                call.response.cookies.append(name = "refresh_token", value = "", maxAge = 0, expires = GMTDate.START, path = "/api/auth")
                 call.respond(HttpStatusCode.OK, mapOf("status" to "success"))
             }
         }

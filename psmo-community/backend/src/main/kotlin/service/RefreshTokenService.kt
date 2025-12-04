@@ -7,7 +7,7 @@ import com.psmo.model.User
 import com.psmo.model.Users
 import com.psmo.model.toUser
 import org.jetbrains.exposed.sql.and
-import org.jetbrains.exposed.sql.select
+import org.jetbrains.exposed.sql.selectAll
 import org.jetbrains.exposed.sql.transactions.transaction
 import java.time.LocalDateTime
 import java.util.UUID
@@ -37,7 +37,7 @@ class RefreshTokenService {
                 return@transaction null
             }
 
-            Users.select { Users.id eq refreshToken.userId }
+            Users.selectAll().where { Users.id eq refreshToken.userId }
                 .singleOrNull()
                 ?.toUser()
         }
@@ -49,7 +49,7 @@ class RefreshTokenService {
             
             if (refreshToken == null) return@transaction null
             
-            val user = Users.select { Users.id eq refreshToken.userId }
+            val user = Users.selectAll().where { Users.id eq refreshToken.userId }
                 .singleOrNull()
                 ?.toUser()
             
