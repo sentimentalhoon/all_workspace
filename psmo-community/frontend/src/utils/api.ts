@@ -32,6 +32,7 @@ export const fetchClient = async (url: string, options: FetchOptions = {}): Prom
     try {
       const refreshResponse = await fetch(`${BASE_URL}/auth/refresh`, {
         method: 'POST',
+        credentials: 'include',
       })
 
       if (refreshResponse.ok) {

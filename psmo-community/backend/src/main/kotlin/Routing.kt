@@ -89,7 +89,8 @@ fun Application.configureRouting(config: ApplicationConfig) {
                         httpOnly = true,
                         secure = true, // HTTPS 환경에서만 전송 (개발환경에서는 false 로 해야할 수도 있음)
                         path = "/api/auth", // Auth 관련 경로에서만 쿠키 전송
-                        maxAge = jwtService.getRefreshExpirationSeconds()
+                        maxAge = jwtService.getRefreshExpirationSeconds(),
+                        extensions = mapOf("SameSite" to "Lax")
                     )
                     
                     call.respond(HttpStatusCode.OK, authResponse)
@@ -131,7 +132,8 @@ fun Application.configureRouting(config: ApplicationConfig) {
                         httpOnly = true,
                         secure = true,
                         path = "/api/auth",
-                        maxAge = jwtService.getRefreshExpirationSeconds()
+                        maxAge = jwtService.getRefreshExpirationSeconds(),
+                        extensions = mapOf("SameSite" to "Lax")
                     )
                     
                     val newAccessToken = jwtService.generateAccessToken(user)
