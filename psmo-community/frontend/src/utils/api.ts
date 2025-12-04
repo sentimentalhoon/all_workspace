@@ -1,4 +1,5 @@
 import type { TokenResponse } from '@/types/auth'
+import { ref } from 'vue'
 
 const BASE_URL = '/api'
 
@@ -6,15 +7,15 @@ type FetchOptions = RequestInit & {
   headers?: Record<string, string>
 }
 
-let accessToken: string | null = null
+const accessToken = ref<string | null>(null)
 let isRefreshing = false
 let refreshSubscribers: ((token: string | null) => void)[] = []
 
 export const setAccessToken = (token: string | null) => {
-  accessToken = token
+  accessToken.value = token
 }
 
-export const getAccessToken = () => accessToken
+export const getAccessToken = () => accessToken.value
 
 const onRefreshed = (token: string | null) => {
   refreshSubscribers.forEach((callback) => callback(token))
@@ -77,13 +78,13 @@ export const fetchClient = async (url: string, options: FetchOptions = {}): Prom
   const fullUrl = url.startsWith('/') ? url : `${BASE_URL}${url}`
 
   // 1. 토큰 만료 임박 확인 (5분 미만)
-  if (accessToken && isTokenExpiringSoon(accessToken)) {
+  if (accessToken.value && isTokenExpiringSoon(accessToken.value)) {
     await refreshAccessToken()
   }
 
   const headers: Record<string, string> = { ...options.headers }
-  if (accessToken) {
-    headers['Authorization'] = `Bearer ${accessToken}`
+  if (accessToken.value) {
+    headers['Authorization'] = `Bearer ${accessToken.value}`
   }
 
   const response = await fetch(fullUrl, {
