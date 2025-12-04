@@ -28,8 +28,9 @@ const addRefreshSubscriber = (callback: (token: string | null) => void) => {
 const isTokenExpiringSoon = (token: string, thresholdSeconds = 300): boolean => {
   try {
     const parts = token.split('.')
-    if (parts.length < 2) return true
-    const payload = JSON.parse(atob(parts[1].replace(/-/g, '+').replace(/_/g, '/')))
+    const payloadPart = parts[1]
+    if (!payloadPart) return true
+    const payload = JSON.parse(atob(payloadPart.replace(/-/g, '+').replace(/_/g, '/')))
     if (!payload.exp) return false
     const now = Math.floor(Date.now() / 1000)
     return payload.exp - now < thresholdSeconds
