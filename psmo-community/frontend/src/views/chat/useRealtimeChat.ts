@@ -1,5 +1,5 @@
-import { getAccessToken } from '@/utils/api'
 import type { ChatServerMessage } from '@/types/chat'
+import { getAccessToken } from '@/utils/api'
 import { computed, onBeforeUnmount, ref, watch } from 'vue'
 
 type ConnectionStatus =

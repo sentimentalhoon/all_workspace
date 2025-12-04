@@ -35,7 +35,7 @@ jwt:
   issuer: ${JWT_ISSUER:psmo-community}
   audience: ${JWT_AUDIENCE:psmo-app}
   realm: ${JWT_REALM:PSMO Community}
-  expiration: ${JWT_EXPIRATION:86400000}
+  expiration: ${JWT_EXPIRATION:600000}
   refreshExpiration: ${JWT_REFRESH_EXPIRATION:604800000}
 
 cors:
