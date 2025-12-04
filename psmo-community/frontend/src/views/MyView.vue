@@ -28,6 +28,22 @@
         @select="handleMenuSelect"
       />
 
+      <div
+        class="debug-info"
+        style="
+          margin-top: 20px;
+          padding: 10px;
+          background: #f5f5f5;
+          border-radius: 8px;
+          font-size: 12px;
+          word-break: break-all;
+        "
+      >
+        <h3>토큰 정보 (디버깅용)</h3>
+        <p><strong>Access Token:</strong> {{ accessTokenDisplay }}</p>
+        <p><strong>남은 시간:</strong> {{ remainingTime }}</p>
+      </div>
+
       <FooterLinks :links="footerLinks" />
       <AppInfo v-bind="appInfo" />
     </div>
@@ -45,6 +61,8 @@ import ProfileSection from '@/views/my/components/ProfileSection.vue'
 import StatsGrid from '@/views/my/components/StatsGrid.vue'
 import { useMyProfile } from '@/views/my/composables/useMyProfile'
 import { appInfo, footerLinks, menuSections, userStats } from '@/views/my/constants'
+import { getAccessToken } from '@/utils/api'
+import { onMounted, onUnmounted, ref } from 'vue'
 
 /**
  * 인증 상태, 아바타, 텔레그램 로그인 흐름 등을 포함한 프로필 인터랙션 훅입니다.
@@ -62,6 +80,48 @@ const {
   handleLogout,
   refreshProfile,
 } = useMyProfile()
+
+const accessTokenDisplay = ref('')
+const remainingTime = ref('')
+let timer: number | undefined
+
+const updateTokenInfo = () => {
+  const token = getAccessToken()
+  accessTokenDisplay.value = token || '없음'
+
+  if (token) {
+    try {
+      const parts = token.split('.')
+      if (parts.length >= 2) {
+        const payload = JSON.parse(atob(parts[1].replace(/-/g, '+').replace(/_/g, '/')))
+        if (payload.exp) {
+          const now = Math.floor(Date.now() / 1000)
+          const diff = payload.exp - now
+          if (diff > 0) {
+            const minutes = Math.floor(diff / 60)
+            const seconds = diff % 60
+            remainingTime.value = `${minutes}분 ${seconds}초`
+          } else {
+            remainingTime.value = '만료됨'
+          }
+        }
+      }
+    } catch (e) {
+      remainingTime.value = '파싱 오류'
+    }
+  } else {
+    remainingTime.value = '-'
+  }
+}
+
+onMounted(() => {
+  updateTokenInfo()
+  timer = window.setInterval(updateTokenInfo, 1000)
+})
+
+onUnmounted(() => {
+  if (timer) clearInterval(timer)
+})
 
 /**
  * 메뉴 항목 선택 시 후속 동작을 바인딩합니다.
