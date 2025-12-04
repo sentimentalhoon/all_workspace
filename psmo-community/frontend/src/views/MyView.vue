@@ -54,6 +54,7 @@
 /**
  * @fileoverview 내 정보 페이지. 프로필, 통계, 메뉴 섹션을 한 화면에서 제공합니다.
  */
+import { getAccessToken } from '@/utils/api'
 import AppInfo from '@/views/my/components/AppInfo.vue'
 import FooterLinks from '@/views/my/components/FooterLinks.vue'
 import MenuSection from '@/views/my/components/MenuSection.vue'
@@ -61,7 +62,6 @@ import ProfileSection from '@/views/my/components/ProfileSection.vue'
 import StatsGrid from '@/views/my/components/StatsGrid.vue'
 import { useMyProfile } from '@/views/my/composables/useMyProfile'
 import { appInfo, footerLinks, menuSections, userStats } from '@/views/my/constants'
-import { getAccessToken } from '@/utils/api'
 import { onMounted, onUnmounted, ref } from 'vue'
 
 /**
