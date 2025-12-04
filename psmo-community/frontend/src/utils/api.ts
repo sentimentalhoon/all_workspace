@@ -79,6 +79,7 @@ export const fetchClient = async (url: string, options: FetchOptions = {}): Prom
 
   // 1. 토큰 만료 임박 확인 (5분 미만)
   if (accessToken.value && isTokenExpiringSoon(accessToken.value)) {
+    console.log('[API] Token expiring soon, refreshing proactively...')
     await refreshAccessToken()
   }
 
