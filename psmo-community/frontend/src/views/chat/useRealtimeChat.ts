@@ -112,9 +112,6 @@ export function useRealtimeChat(options?: UseRealtimeChatOptions) {
     if (!shouldMaintainConnection.value) {
       connectionStatus.value = 'idle'
       return
-    if (!shouldMaintainConnection.value) {
-      connectionStatus.value = 'idle'
-      return
     }
 
     if (!getAccessToken()) {
