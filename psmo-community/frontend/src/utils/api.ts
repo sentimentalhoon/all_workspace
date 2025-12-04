@@ -26,7 +26,7 @@ const addRefreshSubscriber = (callback: (token: string | null) => void) => {
   refreshSubscribers.push(callback)
 }
 
-const isTokenExpiringSoon = (token: string, thresholdSeconds = 300): boolean => {
+export const isTokenExpiringSoon = (token: string, thresholdSeconds = 300): boolean => {
   try {
     const parts = token.split('.')
     const payloadPart = parts[1]

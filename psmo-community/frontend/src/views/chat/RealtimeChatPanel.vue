@@ -61,8 +61,9 @@
 
 <script setup lang="ts">
 import type { UserResponse } from '@/types/auth'
+import { getAccessToken, isTokenExpiringSoon, refreshAccessToken } from '@/utils/api'
 import { useRealtimeChat } from '@/views/chat/useRealtimeChat'
-import { computed, nextTick, ref, watch } from 'vue'
+import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import { RouterLink } from 'vue-router'
 
 const props = defineProps<{
@@ -85,6 +86,27 @@ const { messages, connectionStatus, lastError, connect, disconnect, sendMessage 
 const draft = ref('')
 const messageListRef = ref<HTMLDivElement | null>(null)
 const localError = ref<string | null>(null)
+let tokenCheckTimer: number | undefined
+
+const checkTokenPeriodically = async () => {
+  if (!props.isAuthenticated) return
+  const token = getAccessToken()
+  if (token && isTokenExpiringSoon(token)) {
+    console.log('[Chat] Token expiring soon, refreshing...')
+    await refreshAccessToken()
+  }
+}
+
+onMounted(() => {
+  // 1분마다 토큰 만료 여부 확인
+  tokenCheckTimer = window.setInterval(checkTokenPeriodically, 60 * 1000)
+})
+
+onBeforeUnmount(() => {
+  if (tokenCheckTimer) {
+    clearInterval(tokenCheckTimer)
+  }
+})
 
 const currentUserId = computed(() => props.user?.id ?? null)
 
