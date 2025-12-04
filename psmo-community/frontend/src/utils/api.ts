@@ -17,7 +17,7 @@ export const getAccessToken = () => accessToken
 export const fetchClient = async (url: string, options: FetchOptions = {}): Promise<Response> => {
   const fullUrl = url.startsWith('/') ? url : `${BASE_URL}${url}`
 
-  const headers = { ...options.headers }
+  const headers: Record<string, string> = { ...options.headers }
   if (accessToken) {
     headers['Authorization'] = `Bearer ${accessToken}`
   }

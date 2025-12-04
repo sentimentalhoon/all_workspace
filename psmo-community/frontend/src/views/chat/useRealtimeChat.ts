@@ -1,6 +1,5 @@
-import { useAuthStore } from '@/stores/auth'
+import { getAccessToken } from '@/utils/api'
 import type { ChatServerMessage } from '@/types/chat'
-import { storeToRefs } from 'pinia'
 import { computed, onBeforeUnmount, ref, watch } from 'vue'
 
 type ConnectionStatus =
@@ -48,9 +47,6 @@ const getWsUrl = (token: string): string | null => {
 }
 
 export function useRealtimeChat(options?: UseRealtimeChatOptions) {
-  const authStore = useAuthStore()
-  const { token } = storeToRefs(authStore)
-
   const wsRef = ref<WebSocket | null>(null)
   const connectionStatus = ref<ConnectionStatus>('idle')
   const lastError = ref<string | null>(null)
@@ -116,17 +112,17 @@ export function useRealtimeChat(options?: UseRealtimeChatOptions) {
     if (!shouldMaintainConnection.value) {
       connectionStatus.value = 'idle'
       return
+    if (!shouldMaintainConnection.value) {
+      connectionStatus.value = 'idle'
+      return
     }
 
-    if (!token.value?.accessToken) {
+    if (!getAccessToken()) {
       connectionStatus.value = 'unauthorized'
       return
     }
 
     if (event.code === CLOSE_CODE_POLICY_VIOLATION) {
-      connectionStatus.value = 'unauthorized'
-      lastError.value = event.reason || '인증이 만료되었습니다. 다시 로그인해 주세요.'
-      shouldMaintainConnection.value = false
       return
     }
 
@@ -144,7 +140,7 @@ export function useRealtimeChat(options?: UseRealtimeChatOptions) {
       return
     }
 
-    const accessToken = token.value?.accessToken
+    const accessToken = getAccessToken()
     if (!accessToken) {
       connectionStatus.value = 'unauthorized'
       return
@@ -228,7 +224,7 @@ export function useRealtimeChat(options?: UseRealtimeChatOptions) {
   }
 
   watch(
-    () => token.value?.accessToken,
+    () => getAccessToken(),
     (accessToken, previousToken) => {
       if (!shouldMaintainConnection.value) {
         return
