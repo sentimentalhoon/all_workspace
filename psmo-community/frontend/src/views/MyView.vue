@@ -92,8 +92,9 @@ const updateTokenInfo = () => {
   if (token) {
     try {
       const parts = token.split('.')
-      if (parts.length >= 2) {
-        const payload = JSON.parse(atob(parts[1].replace(/-/g, '+').replace(/_/g, '/')))
+      const payloadPart = parts[1]
+      if (payloadPart) {
+        const payload = JSON.parse(atob(payloadPart.replace(/-/g, '+').replace(/_/g, '/')))
         if (payload.exp) {
           const now = Math.floor(Date.now() / 1000)
           const diff = payload.exp - now
