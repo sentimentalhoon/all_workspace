@@ -20,13 +20,15 @@ class JwtService(
         ?: throw IllegalStateException("JWT secret is not configured.")
     private val issuer = config.tryGetString("jwt.issuer") ?: "psmo-community"
     private val audience = config.tryGetString("jwt.audience") ?: "psmo-app"
-    private val expirationMs = config.tryGetString("jwt.expiration")?.toLongOrNull() ?: 86_400_000L
+    private val expirationMs = config.tryGetString("jwt.expiration")?.toLongOrNull() ?: 1_800_000L // 기본 30분
+    private val refreshExpirationMs = config.tryGetString("jwt.refreshExpiration")?.toLongOrNull() ?: 1_209_600_000L // 기본 14일
 
     private val algorithm = Algorithm.HMAC256(secret)
 
+    fun getRefreshExpirationSeconds(): Long = refreshExpirationMs / 1000
+
     /**
      * 사용자 정보 기반 access token 을 발급한다.
-     * TODO: refresh token 을 별도 테이블에서 관리하도록 확장
      */
     fun generateAccessToken(user: User): TokenResponse {
         val expiresAt = Date(System.currentTimeMillis() + expirationMs)

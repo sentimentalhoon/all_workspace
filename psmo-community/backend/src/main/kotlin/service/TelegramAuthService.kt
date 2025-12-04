@@ -18,7 +18,8 @@ import javax.crypto.spec.SecretKeySpec
 class TelegramAuthService(
     private val config: ApplicationConfig,
     private val userService: UserService,
-    private val jwtService: JwtService
+    private val jwtService: JwtService,
+    private val refreshTokenService: RefreshTokenService
 ) {
     private val botToken: String = config.tryGetString("telegram.botToken")
         ?: System.getenv("TELEGRAM_BOT_TOKEN")
@@ -28,9 +29,10 @@ class TelegramAuthService(
         config.tryGetString("telegram.authToleranceSeconds")?.toLongOrNull() ?: 86_400L
 
     /**
-     * Telegram 으로부터 전달된 파라미터를 검증하고 사용자 토큰을 반환한다.
+     * Telegram 으로부터 전달된 파라미터를 검증하고 사용자 토큰(Access + Refresh)을 반환한다.
+     * Refresh Token 은 Controller 레벨에서 Cookie 로 설정해야 하므로 여기서는 문자열로 반환한다.
      */
-    fun authenticate(parameters: Parameters): TelegramAuthResponse {
+    fun authenticate(parameters: Parameters): Pair<TelegramAuthResponse, String> {
         val data = parameters.entries()
             .associate { (key, values) -> key to values.firstOrNull().orEmpty() }
 
@@ -62,13 +64,18 @@ class TelegramAuthService(
             username = data["username"],
             photoUrl = data["photo_url"]
         )
-        val token = jwtService.generateAccessToken(userRecord)
+        
+        val accessToken = jwtService.generateAccessToken(userRecord)
+        val refreshToken = refreshTokenService.createRefreshToken(userRecord, jwtService.getRefreshExpirationSeconds())
 
-        return TelegramAuthResponse(
-            user = userRecord.toResponse(),
-            token = token,
-            authDate = authDate,
-            verifiedAt = now
+        return Pair(
+            TelegramAuthResponse(
+                user = userRecord.toResponse(),
+                token = accessToken,
+                authDate = authDate,
+                verifiedAt = now
+            ),
+            refreshToken
         )
     }
 

@@ -140,8 +140,8 @@ export function useTelegramAuth() {
   onMounted(() => {
     loadTelegramScript(telegramReady).catch(() => undefined)
 
-    if (isAuthenticated.value && !user.value) {
-      authStore.fetchProfile().catch(() => undefined)
+    if (!isAuthenticated.value) {
+      authStore.checkAuth().catch(() => undefined)
     }
   })
 

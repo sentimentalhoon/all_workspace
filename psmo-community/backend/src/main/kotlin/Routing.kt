@@ -5,26 +5,7 @@ import com.psmo.model.dto.toResponse
 import com.psmo.service.ChatRoomManager
 import com.psmo.service.ChatService
 import com.psmo.service.JwtService
-import com.psmo.service.TelegramAuthException
-import com.psmo.service.TelegramAuthService
-import com.psmo.service.TestService
-import com.psmo.service.UserService
-import io.ktor.http.*
-import io.ktor.server.application.*
-import io.ktor.server.application.ApplicationStopped
-import io.ktor.server.auth.authenticate
-import io.ktor.server.auth.jwt.JWTPrincipal
-import io.ktor.server.auth.principal
-import io.ktor.server.config.ApplicationConfig
-import io.ktor.server.request.*
-import io.ktor.server.response.*
-import io.ktor.server.routing.*
-import io.ktor.server.websocket.webSocket
-import io.ktor.websocket.close
-import io.ktor.websocket.CloseReason
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.SupervisorJob
+import com.psmo.service.RefreshTokenService
 
 /**
  * API 라우팅 진입점. 의존성 간접 생성이 필요한 서비스들을 여기에서 조립한다.
@@ -34,7 +15,8 @@ fun Application.configureRouting(config: ApplicationConfig) {
     val testService = TestService(config)
     val userService = UserService(config)
     val jwtService = JwtService(config)
-    val telegramAuthService = TelegramAuthService(config, userService, jwtService)
+    val refreshTokenService = RefreshTokenService()
+    val telegramAuthService = TelegramAuthService(config, userService, jwtService, refreshTokenService)
     val chatService = ChatService(config)
     val chatSubscriptionScope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
     val chatBroadcastScope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
@@ -82,8 +64,19 @@ fun Application.configureRouting(config: ApplicationConfig) {
             post("/telegram") {
                 val params = call.receiveParameters()
                 try {
-                    val result = telegramAuthService.authenticate(params)
-                    call.respond(HttpStatusCode.OK, result)
+                    val (authResponse, refreshToken) = telegramAuthService.authenticate(params)
+                    
+                    // Refresh Token 을 HttpOnly Cookie 로 설정
+                    call.response.cookies.append(
+                        name = "refresh_token",
+                        value = refreshToken,
+                        httpOnly = true,
+                        secure = true, // HTTPS 환경에서만 전송 (개발환경에서는 false 로 해야할 수도 있음)
+                        path = "/api/auth", // Auth 관련 경로에서만 쿠키 전송
+                        maxAge = jwtService.getRefreshExpirationSeconds()
+                    )
+                    
+                    call.respond(HttpStatusCode.OK, authResponse)
                 } catch (ex: TelegramAuthException) {
                     val status = if (ex.isUnauthorized) HttpStatusCode.Unauthorized else HttpStatusCode.BadRequest
                     call.respond(status, mapOf("status" to "error", "message" to ex.message))
@@ -95,6 +88,52 @@ fun Application.configureRouting(config: ApplicationConfig) {
                         mapOf("status" to "error", "message" to "Internal server error")
                     )
                 }
+            }
+
+            post("/refresh") {
+                val refreshToken = call.request.cookies["refresh_token"]
+                if (refreshToken == null) {
+                    call.respond(HttpStatusCode.Unauthorized, mapOf("status" to "error", "message" to "Refresh token missing"))
+                    return@post
+                }
+
+                try {
+                    val result = refreshTokenService.rotateRefreshToken(refreshToken, jwtService.getRefreshExpirationSeconds())
+                    if (result == null) {
+                        // 유효하지 않거나 만료된 토큰 -> 쿠키 삭제
+                        call.response.cookies.appendExpired(name = "refresh_token", path = "/api/auth")
+                        call.respond(HttpStatusCode.Unauthorized, mapOf("status" to "error", "message" to "Invalid refresh token"))
+                        return@post
+                    }
+
+                    val (newRefreshToken, user) = result
+
+                    // 새 Refresh Token 쿠키 설정
+                    call.response.cookies.append(
+                        name = "refresh_token",
+                        value = newRefreshToken,
+                        httpOnly = true,
+                        secure = true,
+                        path = "/api/auth",
+                        maxAge = jwtService.getRefreshExpirationSeconds()
+                    )
+                    
+                    val newAccessToken = jwtService.generateAccessToken(user)
+                    call.respond(HttpStatusCode.OK, mapOf("token" to newAccessToken))
+
+                } catch (ex: Exception) {
+                    this@configureRouting.environment.log.error("Token refresh failed", ex)
+                    call.respond(HttpStatusCode.InternalServerError, mapOf("status" to "error", "message" to "Internal server error"))
+                }
+            }
+
+            post("/logout") {
+                val refreshToken = call.request.cookies["refresh_token"]
+                if (refreshToken != null) {
+                    refreshTokenService.revokeRefreshToken(refreshToken)
+                }
+                call.response.cookies.appendExpired(name = "refresh_token", path = "/api/auth")
+                call.respond(HttpStatusCode.OK, mapOf("status" to "success"))
             }
         }
 

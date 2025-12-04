@@ -1,53 +1,18 @@
-import { defineStore } from 'pinia'
-import { computed, ref, watch } from 'vue'
 import type {
   ProfileResponse,
   TelegramAuthResponse,
   TelegramLoginPayload,
-  TokenResponse,
   UserResponse,
 } from '@/types/auth'
-
-const STORAGE_KEY = 'psmo-auth-session'
-
-type StoredSession = {
-  user: UserResponse
-  token: TokenResponse
-}
-
-const loadStoredSession = (): StoredSession | null => {
-  if (typeof window === 'undefined') return null
-  try {
-    const raw = window.localStorage.getItem(STORAGE_KEY)
-    return raw ? (JSON.parse(raw) as StoredSession) : null
-  } catch {
-    return null
-  }
-}
+import { fetchClient, setAccessToken } from '@/utils/api'
+import { defineStore } from 'pinia'
+import { computed, ref } from 'vue'
 
 export const useAuthStore = defineStore('auth', () => {
-  const persisted = loadStoredSession()
-  const user = ref<UserResponse | null>(persisted?.user ?? null)
-  const token = ref<TokenResponse | null>(persisted?.token ?? null)
+  const user = ref<UserResponse | null>(null)
   const loading = ref(false)
   const error = ref<string | null>(null)
-
-  const isAuthenticated = computed(() => Boolean(token.value?.accessToken))
-
-  const persistSession = () => {
-    if (typeof window === 'undefined') return
-    if (user.value && token.value) {
-      const payload: StoredSession = {
-        user: user.value,
-        token: token.value,
-      }
-      window.localStorage.setItem(STORAGE_KEY, JSON.stringify(payload))
-    } else {
-      window.localStorage.removeItem(STORAGE_KEY)
-    }
-  }
-
-  watch([user, token], persistSession, { deep: true })
+  const isAuthenticated = computed(() => !!user.value)
 
   const handleError = (err: unknown, fallback: string) => {
     const message = err instanceof Error ? err.message : fallback
@@ -81,7 +46,7 @@ export const useAuthStore = defineStore('auth', () => {
       }
 
       user.value = data.user
-      token.value = data.token
+      setAccessToken(data.token.accessToken)
 
       return data
     } catch (err) {
@@ -93,17 +58,12 @@ export const useAuthStore = defineStore('auth', () => {
   }
 
   async function fetchProfile() {
-    if (!token.value) return null
-
     loading.value = true
     error.value = null
 
     try {
-      const headers: HeadersInit = token.value
-        ? { Authorization: `Bearer ${token.value.accessToken}` }
-        : {}
-
-      const response = await fetch('/api/me', { headers })
+      // fetchClient 내부에서 401 시 자동 갱신 시도함
+      const response = await fetchClient('/api/me')
 
       if (response.status === 401) {
         logout()
@@ -112,7 +72,9 @@ export const useAuthStore = defineStore('auth', () => {
 
       const data = (await response.json()) as ProfileResponse
       if (!response.ok) {
-        throw new Error((data as { message?: string }).message ?? '프로필 정보를 불러오지 못했습니다.')
+        throw new Error(
+          (data as { message?: string }).message ?? '프로필 정보를 불러오지 못했습니다.',
+        )
       }
 
       user.value = data.user
@@ -125,21 +87,36 @@ export const useAuthStore = defineStore('auth', () => {
     }
   }
 
-  function logout() {
+  async function checkAuth() {
+    // 앱 시작 시 호출: AccessToken 이 없어도 /api/me 를 호출하면
+    // fetchClient 가 401 -> refresh -> retry 과정을 거쳐 로그인을 복구함
+    try {
+      await fetchProfile()
+    } catch {
+      // 실패하면 로그아웃 상태 유지
+      user.value = null
+    }
+  }
+
+  async function logout() {
+    try {
+      await fetch('/api/auth/logout', { method: 'POST' })
+    } catch (e) {
+      // ignore
+    }
     user.value = null
-    token.value = null
+    setAccessToken(null)
     error.value = null
-    persistSession()
   }
 
   return {
     user,
-    token,
     loading,
     error,
     isAuthenticated,
     loginWithTelegramPayload,
     fetchProfile,
+    checkAuth,
     logout,
   }
 })
