@@ -6,6 +6,21 @@ import com.psmo.service.ChatRoomManager
 import com.psmo.service.ChatService
 import com.psmo.service.JwtService
 import com.psmo.service.RefreshTokenService
+import com.psmo.service.TestService
+import com.psmo.service.UserService
+import com.psmo.service.TelegramAuthService
+import com.psmo.service.TelegramAuthException
+import io.ktor.server.application.*
+import io.ktor.server.auth.*
+import io.ktor.server.auth.jwt.*
+import io.ktor.server.config.*
+import io.ktor.server.request.*
+import io.ktor.server.response.*
+import io.ktor.server.routing.*
+import io.ktor.server.websocket.*
+import io.ktor.http.*
+import io.ktor.websocket.*
+import kotlinx.coroutines.*
 
 /**
  * API 라우팅 진입점. 의존성 간접 생성이 필요한 서비스들을 여기에서 조립한다.
