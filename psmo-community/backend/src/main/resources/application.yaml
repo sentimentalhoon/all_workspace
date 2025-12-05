@@ -8,6 +8,8 @@ ktor:
 # Active profile (dev or prod)
 profiles:
   active: ${KTOR_PROFILE:dev}
+
+# Fail fast if profile missing required secrets by using non-empty defaults in prod file
 # Common configuration
 # Profile-specific settings in application-dev.yaml and application-prod.yaml
 
