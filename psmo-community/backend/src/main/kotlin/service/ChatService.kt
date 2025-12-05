@@ -78,7 +78,8 @@ class ChatService(
 
     fun subscribe(scope: CoroutineScope, onMessage: (ChatBroadcastMessage) -> Unit) {
         scope.launch(Dispatchers.IO) {
-            while (scope.isActive) {
+            var keepRunning = true
+            while (keepRunning && scope.isActive) {
                 jedisPool.resource.use { jedis ->
                     val subscriber = object : JedisPubSub() {
                         override fun onMessage(channel: String, message: String) {
@@ -93,7 +94,8 @@ class ChatService(
                     } catch (_: Exception) {
                         if (!scope.isActive) {
                             subscriber.unsubscribe()
-                            break
+                            keepRunning = false
+                            return@use
                         }
                     }
                 }
