@@ -18,7 +18,9 @@
         <div class="progress">
           <div class="label">
             <span>점수 {{ score }}</span>
-            <span v-if="nextLevelInfo.nextLevel">다음 Lv.{{ nextLevelInfo.nextLevel }}까지 {{ nextLevelInfo.remaining }}점</span>
+            <span v-if="nextLevelInfo.nextLevel"
+              >다음 Lv.{{ nextLevelInfo.nextLevel }}까지 {{ nextLevelInfo.remaining }}점</span
+            >
             <span v-else>최고 레벨</span>
           </div>
           <div class="bar">
@@ -52,8 +54,8 @@
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue'
 import type { UserResponse } from '@/types/auth'
+import { computed } from 'vue'
 
 const props = withDefaults(
   defineProps<{
