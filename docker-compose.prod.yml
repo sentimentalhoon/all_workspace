@@ -97,12 +97,16 @@ services:
       MINIO_ENDPOINT: http://psmo-minio:9000
       MINIO_ACCESS_KEY: ${PSMO_MINIO_USER:?PSMO_MINIO_USER is required}
       MINIO_SECRET_KEY: ${PSMO_MINIO_PASSWORD:?PSMO_MINIO_PASSWORD is required}
+      MINIO_BUCKET: psmo
       CORS_ALLOWED_ORIGINS: ${PSMO_CORS_ORIGINS:-https://mycommunity.duckdns.org}
       MAIL_HOST: psmo-mailhog
       MAIL_PORT: 1025
       MAIL_USERNAME: ${MAIL_USERNAME:?MAIL_USERNAME is required}
       MAIL_PASSWORD: ${MAIL_PASSWORD:?MAIL_PASSWORD is required}
       MAIL_FROM: ${MAIL_FROM:?MAIL_FROM is required}
+      JWT_SECRET: ${JWT_SECRET:?JWT_SECRET is required}
+      JWT_ISSUER: psmo-community
+      JWT_AUDIENCE: psmo-app
       TELEGRAM_BOT_TOKEN: ${TELEGRAM_BOT_TOKEN:?TELEGRAM_BOT_TOKEN is required}
       TELEGRAM_AUTH_TOLERANCE: ${TELEGRAM_AUTH_TOLERANCE:-86400}
     depends_on:

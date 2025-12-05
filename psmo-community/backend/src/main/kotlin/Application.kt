@@ -11,6 +11,7 @@ import io.ktor.serialization.jackson.*
 import io.ktor.server.application.*
 import io.ktor.server.auth.*
 import io.ktor.server.auth.jwt.*
+import com.typesafe.config.ConfigException
 import io.ktor.server.config.ApplicationConfigurationException
 import io.ktor.server.config.tryGetString
 import io.ktor.server.plugins.contentnegotiation.*
@@ -35,13 +36,17 @@ fun main(args: Array<String>) {
  */
 fun Application.module() {
     val (activeProfile, activeConfig) = ProfiledConfigLoader.load(environment)
-    environment.log.info("Active KTOR_PROFILE: $activeProfile (application-$activeProfile.yaml)")
+    environment.log.info("Active KTOR_PROFILE/KTOR_ENV: $activeProfile (application.conf)")
 
     // profile 이 다를 때마다 allowedOrigins 형식이 list/string 으로 혼용되어 있어 보정한다.
     val allowedOrigins = activeConfig.propertyOrNull("cors.allowedOrigins")?.let { value ->
         try {
             value.getList()
         } catch (_: ApplicationConfigurationException) {
+            value.getString()
+                .split(',')
+                .mapNotNull { it.trim().takeIf(String::isNotEmpty) }
+        } catch (_: ConfigException.WrongType) {
             value.getString()
                 .split(',')
                 .mapNotNull { it.trim().takeIf(String::isNotEmpty) }
