@@ -125,15 +125,13 @@ export function useTelegramAuth() {
     }
   }
 
-  const handleLogout = () => {
-    authStore.logout()
+  const handleLogout = async () => {
     telegramError.value = null
 
-    // 로그아웃 후 로그인 페이지로 이동 (현재 위치를 redirect 로 보존)
+    // 세션 정리 후 명시적으로 로그인 페이지로 이동
+    await authStore.logout()
     const redirect = route.fullPath !== '/login' ? route.fullPath : undefined
-    router
-      .replace({ name: 'login', query: redirect ? { redirect } : undefined })
-      .catch(() => undefined)
+    await router.replace({ name: 'login', query: redirect ? { redirect } : undefined })
   }
 
   const refreshProfile = async () => {
