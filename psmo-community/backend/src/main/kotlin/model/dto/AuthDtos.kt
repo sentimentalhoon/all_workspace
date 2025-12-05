@@ -18,7 +18,10 @@ data class UserResponse(
     val telegramId: Long,
     val displayName: String?,
     val username: String?,
-    val photoUrl: String?
+    val photoUrl: String?,
+    val role: String,
+    val score: Int,
+    val activityLevel: Int
 )
 
 /**
@@ -37,5 +40,8 @@ fun User.toResponse(): UserResponse = UserResponse(
     telegramId = telegramId,
     displayName = displayName,
     username = username,
-    photoUrl = photoUrl
+    photoUrl = photoUrl,
+    role = role.name.lowercase(),
+    score = score,
+    activityLevel = activityLevel
 )

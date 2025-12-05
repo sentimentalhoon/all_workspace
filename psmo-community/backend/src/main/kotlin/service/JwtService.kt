@@ -38,6 +38,8 @@ class JwtService(
             .withSubject(user.id.toString())
             .withClaim("telegram_id", user.telegramId)
             .withClaim("username", user.username)
+            .withClaim("role", user.role.name)
+            .withClaim("activity_level", user.activityLevel)
             .withExpiresAt(expiresAt)
             .sign(algorithm)
 

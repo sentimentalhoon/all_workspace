@@ -9,6 +9,9 @@ export interface UserResponse {
   displayName?: string | null
   username?: string | null
   photoUrl?: string | null
+  role: string
+  score: number
+  activityLevel: number
 }
 
 export interface ProfileResponse {

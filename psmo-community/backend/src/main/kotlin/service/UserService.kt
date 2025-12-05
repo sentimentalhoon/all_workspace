@@ -2,6 +2,7 @@ package com.psmo.service
 
 import com.psmo.database.DatabaseConfig
 import com.psmo.model.User
+import com.psmo.model.UserRole
 import com.psmo.model.Users
 import com.psmo.model.toUser
 import io.ktor.server.config.ApplicationConfig
@@ -46,6 +47,9 @@ class UserService(
                 it[Users.displayName] = displayName
                 it[Users.username] = username
                 it[Users.photoUrl] = photoUrl
+                it[Users.role] = UserRole.MEMBER
+                it[Users.score] = 0
+                it[Users.activityLevel] = 1
                 it[Users.createdAt] = now
                 it[Users.updatedAt] = now
             }
@@ -72,6 +76,24 @@ class UserService(
             .andWhere { Users.id eq id }
             .singleOrNull()
             ?.toUser()
+    }
+
+    /**
+     * 점수를 증감시키고 활동 레벨을 재계산한다.
+     */
+    fun adjustScore(userId: Long, delta: Int): User? = transaction(database) {
+        val user = Users.selectAll().andWhere { Users.id eq userId }.singleOrNull() ?: return@transaction null
+        val currentScore = user[Users.score]
+        val newScore = (currentScore + delta).coerceAtLeast(0)
+        val newLevel = ActivityLevelPolicy.levelForScore(newScore)
+
+        Users.update({ Users.id eq userId }) {
+            it[score] = newScore
+            it[activityLevel] = newLevel
+            it[updatedAt] = LocalDateTime.now()
+        }
+
+        Users.selectAll().andWhere { Users.id eq userId }.single().toUser()
     }
 
     /**
