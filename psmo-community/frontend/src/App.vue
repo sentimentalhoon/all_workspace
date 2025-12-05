@@ -5,7 +5,7 @@ import { RouterView, useRoute } from 'vue-router'
 import PwaInstallPrompt from './components/PwaInstallPrompt.vue'
 
 const route = useRoute()
-const showBottomNav = computed(() => route.path !== '/admin')
+const showBottomNav = computed(() => route.path !== '/admin' && route.path !== '/login')
 </script>
 
 <template>
