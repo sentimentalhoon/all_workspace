@@ -4,11 +4,6 @@
 
 ### Domain Structure
 
-- **Campstation**
-
-  - Frontend: `https://mycamp.duckdns.org`
-  - Backend API: `https://mycamp.duckdns.org/api`
-
 - **PSMO Community**
   - Frontend: `https://mycommunity.duckdns.org`
   - Backend API: `https://mycommunity.duckdns.org/api`
@@ -27,34 +22,26 @@ Client → Nginx (443) → Frontend Container (80)
 - ❌ Without proxy: Need 2 certificates per project (frontend + api subdomain)
 - ✅ With proxy: Only 1 certificate per domain
 - **Cost**: Free with Let's Encrypt, but simpler management
-- **Example**: `mycamp.duckdns.org` covers both frontend and `/api`
+- **Example**: `mycommunity.duckdns.org` covers both frontend and `/api`
 
 ### 2. **No CORS Issues**
 
-- ❌ Subdomain (`api.mycamp.duckdns.org`): CORS headers required
-- ✅ Same origin (`mycamp.duckdns.org/api`): No CORS needed!
+- ❌ Subdomain (`api.mycommunity.duckdns.org`): CORS headers required
+- ✅ Same origin (`mycommunity.duckdns.org/api`): No CORS needed!
 - **Benefit**: Simpler configuration, fewer security concerns
 
 ### 3. **Easier SSL/TLS Management**
 
 ```bash
-# Only 2 certificates needed total
+# Only 1 certificate needed total
 certbot certonly --webroot -w /var/www/certbot \
-  -d mycamp.duckdns.org \
   -d mycommunity.duckdns.org
-
-# vs 4 certificates with subdomain approach
-# -d mycamp.duckdns.org
-# -d api.mycamp.duckdns.org
-# -d mycommunity.duckdns.org
-# -d api.mycommunity.duckdns.org
 ```
 
 ### 4. **Simplified DNS Configuration**
 
-- Only need 2 A records:
+- Only need 1 A record:
   ```
-  mycamp.duckdns.org → Your IP
   mycommunity.duckdns.org → Your IP
   ```
 
@@ -71,7 +58,7 @@ certbot certonly --webroot -w /var/www/certbot \
 const API_URL = "http://localhost:8080";
 
 // Production - Just change domain, path stays same
-const API_URL = "https://mycamp.duckdns.org";
+const API_URL = "https://mycommunity.duckdns.org";
 
 // API calls always use /api prefix
 fetch(`${API_URL}/api/health`);
@@ -82,20 +69,6 @@ fetch(`${API_URL}/api/health`);
 ### Nginx Configuration
 
 Located in `infrastructure/nginx/conf.d/`
-
-#### Campstation (`campstation.conf`)
-
-```nginx
-# Frontend - Serves Vue.js app
-location / {
-    proxy_pass http://campstation-frontend:80;
-}
-
-# Backend API - Proxies to Spring Boot
-location /api {
-    proxy_pass http://campstation-backend:8080;
-}
-```
 
 #### PSMO (`psmo-community.conf`)
 
@@ -116,10 +89,6 @@ location /api {
 #### Production (.env.prod)
 
 ```bash
-# Campstation
-CAMPSTATION_CORS_ORIGINS=https://mycamp.duckdns.org
-CAMPSTATION_API_URL=https://mycamp.duckdns.org
-
 # PSMO
 PSMO_CORS_ORIGINS=https://mycommunity.duckdns.org
 PSMO_API_URL=https://mycommunity.duckdns.org
@@ -127,7 +96,7 @@ PSMO_API_URL=https://mycommunity.duckdns.org
 
 ### Frontend Configuration
 
-#### Campstation
+#### PSMO
 
 ```typescript
 // vite.config.ts - proxy for development
@@ -159,10 +128,11 @@ fetch(`${apiBaseUrl}/api/test/all`)
 
 ### 2. **Simplified CORS Configuration**
 
-```java
-// Spring Boot - Only allow same origin
-@Value("${cors.allowed-origins:https://mycamp.duckdns.org}")
-private String allowedOrigins;
+```kotlin
+// Ktor - Only allow same origin
+install(CORS) {
+    allowHost("mycommunity.duckdns.org", schemes = listOf("https"))
+}
 ```
 
 ### 3. **Rate Limiting per Path**
@@ -183,18 +153,16 @@ location /api {
 ### 1. DNS Setup (DuckDNS)
 
 ```bash
-# Add both domains to DuckDNS
-mycamp.duckdns.org
+# Add domain to DuckDNS
 mycommunity.duckdns.org
 ```
 
 ### 2. SSL Certificate Generation
 
 ```bash
-# Single command for both domains
+# Single command for domain
 docker compose -f docker-compose.prod.yml run --rm certbot certonly \
   --webroot -w /var/www/certbot \
-  -d mycamp.duckdns.org \
   -d mycommunity.duckdns.org \
   --email your-email@example.com \
   --agree-tos \
@@ -219,12 +187,12 @@ docker compose -f docker-compose.prod.yml up -d
 
 ```bash
 # Test frontend
-curl https://mycamp.duckdns.org
+curl https://mycommunity.duckdns.org
 
 # Test API through proxy
-curl https://mycamp.duckdns.org/api/health
+curl https://mycommunity.duckdns.org/api/health
 
-# Should return: {"status":"UP","service":"Campstation Backend"}
+# Should return: {"status":"UP","service":"PSMO Backend"}
 ```
 
 ## 📊 Performance Benefits
@@ -248,10 +216,10 @@ curl https://mycamp.duckdns.org/api/health
 
 | Feature             | Subdomain Approach      | /api Proxy Approach     |
 | ------------------- | ----------------------- | ----------------------- |
-| SSL Certificates    | 4 total (2 per project) | 2 total (1 per project) |
+| SSL Certificates    | 2 total (2 per project) | 1 total (1 per project) |
 | CORS Configuration  | Required + Complex      | Not needed / Simple     |
-| DNS Records         | 4 A records             | 2 A records             |
-| Certificate Renewal | 4 renewals              | 2 renewals              |
+| DNS Records         | 2 A records             | 1 A records             |
+| Certificate Renewal | 2 renewals              | 1 renewals              |
 | Mobile App Config   | 2 endpoints             | 1 endpoint              |
 | Cookie Sharing      | ❌ Cross-domain         | ✅ Same-domain          |
 | Development Proxy   | Complex                 | Simple                  |
@@ -320,31 +288,31 @@ location /api {
 docker compose -f docker-compose.prod.yml ps
 
 # Check backend logs
-docker logs campstation-backend-prod
+docker logs psmo-backend-prod
 
 # Test direct backend connection
-docker exec -it nginx-proxy curl http://campstation-backend:8080/api/health
+docker exec -it nginx-proxy curl http://psmo-backend:8080/api/health
 ```
 
 ### Issue: CORS errors still appearing
 
 ```bash
 # Verify CORS is set to same domain
-echo $CAMPSTATION_CORS_ORIGINS
-# Should be: https://mycamp.duckdns.org
+echo $PSMO_CORS_ORIGINS
+# Should be: https://mycommunity.duckdns.org
 
 # Check Nginx is proxying correctly
-curl -H "Origin: https://mycamp.duckdns.org" https://mycamp.duckdns.org/api/health -v
+curl -H "Origin: https://mycommunity.duckdns.org" https://mycommunity.duckdns.org/api/health -v
 ```
 
 ### Issue: SSL certificate not working
 
 ```bash
 # Verify certificate files exist
-docker exec nginx-proxy ls -la /etc/letsencrypt/live/mycamp.duckdns.org/
+docker exec nginx-proxy ls -la /etc/letsencrypt/live/mycommunity.duckdns.org/
 
 # Test SSL
-curl -v https://mycamp.duckdns.org/api/health
+curl -v https://mycommunity.duckdns.org/api/health
 ```
 
 ## 📚 References

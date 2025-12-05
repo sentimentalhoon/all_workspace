@@ -1,7 +1,0 @@
-spring:
-  application:
-    name: campstation
-  profiles:
-    active: ${SPRING_PROFILES_ACTIVE:dev}
-# Common configuration
-# Profile-specific settings in application-dev.yaml and application-prod.yaml

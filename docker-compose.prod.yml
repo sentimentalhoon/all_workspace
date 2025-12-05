@@ -19,128 +19,8 @@ services:
       - proxy-network
     restart: unless-stopped
     depends_on:
-      - campstation-frontend
-      - campstation-backend
       - psmo-frontend
       - psmo-backend
-
-  # Campstation Services
-  campstation-postgres:
-    image: postgres:17-alpine
-    container_name: campstation-postgres-prod
-    environment:
-      POSTGRES_DB: ${CAMPSTATION_POSTGRES_DB:-campstation}
-      POSTGRES_USER: ${CAMPSTATION_POSTGRES_USER:-campstation}
-      POSTGRES_PASSWORD: ${CAMPSTATION_POSTGRES_PASSWORD:?CAMPSTATION_POSTGRES_PASSWORD is required}
-    volumes:
-      - campstation_postgres_data:/var/lib/postgresql/data
-    healthcheck:
-      test:
-        ["CMD-SHELL", "pg_isready -U ${CAMPSTATION_POSTGRES_USER:-campstation}"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
-    restart: unless-stopped
-    networks:
-      - campstation-network
-
-  campstation-redis:
-    image: redis:7-alpine
-    container_name: campstation-redis-prod
-    command: redis-server --appendonly yes --requirepass ${CAMPSTATION_REDIS_PASSWORD:?CAMPSTATION_REDIS_PASSWORD is required}
-    volumes:
-      - campstation_redis_data:/data
-    healthcheck:
-      test: ["CMD", "redis-cli", "--raw", "incr", "ping"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
-    restart: unless-stopped
-    networks:
-      - campstation-network
-
-  campstation-minio:
-    image: minio/minio:latest
-    container_name: campstation-minio-prod
-    environment:
-      MINIO_ROOT_USER: ${CAMPSTATION_MINIO_USER:?CAMPSTATION_MINIO_USER is required}
-      MINIO_ROOT_PASSWORD: ${CAMPSTATION_MINIO_PASSWORD:?CAMPSTATION_MINIO_PASSWORD is required}
-    volumes:
-      - campstation_minio_data:/data
-    command: server /data --console-address ":9001"
-    healthcheck:
-      test: ["CMD", "mc", "ready", "local"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
-    restart: unless-stopped
-    networks:
-      - campstation-network
-
-  campstation-mailhog:
-    image: mailhog/mailhog:latest
-    container_name: campstation-mailhog-prod
-    restart: unless-stopped
-    networks:
-      - campstation-network
-
-  campstation-backend:
-    build:
-      context: ./campstation/backend
-      dockerfile: Dockerfile
-    container_name: campstation-backend-prod
-    environment:
-      SPRING_PROFILES_ACTIVE: prod
-      DATABASE_URL: jdbc:postgresql://campstation-postgres:5432/${CAMPSTATION_POSTGRES_DB:-campstation}
-      DATABASE_USERNAME: ${CAMPSTATION_POSTGRES_USER:-campstation}
-      DATABASE_PASSWORD: ${CAMPSTATION_POSTGRES_PASSWORD:?CAMPSTATION_POSTGRES_PASSWORD is required}
-      JPA_DDL_AUTO: update
-      JPA_SHOW_SQL: "false"
-      REDIS_HOST: campstation-redis
-      REDIS_PORT: 6379
-      REDIS_PASSWORD: ${CAMPSTATION_REDIS_PASSWORD:?CAMPSTATION_REDIS_PASSWORD is required}
-      MINIO_ENDPOINT: http://campstation-minio:9000
-      MINIO_ACCESS_KEY: ${CAMPSTATION_MINIO_USER:?CAMPSTATION_MINIO_USER is required}
-      MINIO_SECRET_KEY: ${CAMPSTATION_MINIO_PASSWORD:?CAMPSTATION_MINIO_PASSWORD is required}
-      CORS_ALLOWED_ORIGINS: ${CAMPSTATION_CORS_ORIGINS:-https://mycamp.duckdns.org}
-      MAIL_HOST: campstation-mailhog
-      MAIL_PORT: 1025
-    depends_on:
-      campstation-postgres:
-        condition: service_healthy
-      campstation-redis:
-        condition: service_healthy
-      campstation-minio:
-        condition: service_healthy
-    restart: unless-stopped
-    networks:
-      - campstation-network
-      - proxy-network
-    healthcheck:
-      test:
-        [
-          "CMD",
-          "wget",
-          "--no-verbose",
-          "--tries=1",
-          "--spider",
-          "http://localhost:8080/api/health",
-        ]
-      interval: 30s
-      timeout: 10s
-      retries: 3
-
-  campstation-frontend:
-    build:
-      context: ./campstation/frontend
-      dockerfile: Dockerfile
-      # No build args needed - uses relative /api path
-    container_name: campstation-frontend-prod
-    depends_on:
-      - campstation-backend
-    restart: unless-stopped
-    networks:
-      - proxy-network
 
   # PSMO Community Services
   psmo-postgres:
@@ -262,11 +142,6 @@ services:
       - proxy-network
 
 volumes:
-  # Campstation volumes
-  campstation_postgres_data:
-  campstation_redis_data:
-  campstation_minio_data:
-
   # PSMO volumes
   psmo_postgres_data:
   psmo_redis_data:
@@ -278,8 +153,6 @@ volumes:
 
 networks:
   proxy-network:
-    driver: bridge
-  campstation-network:
     driver: bridge
   psmo-network:
     driver: bridge

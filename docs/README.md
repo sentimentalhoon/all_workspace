@@ -2,15 +2,9 @@
 
 ## 📋 프로젝트 구성
 
-이 워크스페이스는 단일 Ubuntu 서버에서 Docker Compose를 통해 두 개의 독립적인 프로젝트를 운영합니다.
+이 워크스페이스는 단일 Ubuntu 서버에서 Docker Compose를 통해 PSMO Community 프로젝트를 운영합니다.
 
-### 1. Campstation (캠핑장 관리 시스템)
-
-- **도메인**: https://mycamp.duckdns.org
-- **백엔드**: Spring Boot 4.0.0 + Java 21
-- **프론트엔드**: Vue.js 3.5.13 + Vite 6.0.3
-
-### 2. PSMO Community (커뮤니티 플랫폼)
+### PSMO Community (커뮤니티 플랫폼)
 
 - **도메인**: https://mycommunity.duckdns.org
 - **백엔드**: Ktor 3.0.2 + Kotlin 2.1.0 + Java 21
@@ -37,21 +31,20 @@
 │         Nginx Reverse Proxy             │
 │    (nginx-proxy 컨테이너)                │
 │                                          │
-│  mycamp.duckdns.org → Campstation       │
 │  mycommunity.duckdns.org → PSMO         │
 └────┬─────────────────────────────┬──────┘
      │                             │
      ▼                             ▼
 ┌──────────────┐            ┌──────────────┐
-│ Campstation  │            │     PSMO     │
-│   Services   │            │   Services   │
+│              │            │     PSMO     │
+│              │            │   Services   │
 ├──────────────┤            ├──────────────┤
-│ Frontend:80  │            │ Frontend:80  │
-│ Backend:8080 │            │ Backend:8080 │
-│ Postgres:5432│            │ Postgres:5433│
-│ Redis:6379   │            │ Redis:6380   │
-│ MinIO:9000   │            │ MinIO:9002   │
-│ MailHog:1025 │            │ MailHog:1026 │
+│              │            │ Frontend:80  │
+│              │            │ Backend:8080 │
+│              │            │ Postgres:5433│
+│              │            │ Redis:6380   │
+│              │            │ MinIO:9002   │
+│              │            │ MailHog:1026 │
 └──────────────┘            └──────────────┘
 ```
 
@@ -63,23 +56,6 @@
 - **웹 서버**: Nginx 1.27-alpine
 - **SSL**: Let's Encrypt (Certbot)
 - **DNS**: DuckDNS
-
-### Campstation
-
-| 구분            | 기술        | 버전      |
-| --------------- | ----------- | --------- |
-| 백엔드          | Spring Boot | 4.0.0     |
-| 언어            | Java        | 21        |
-| 빌드 도구       | Maven       | 3.9.6     |
-| 프론트엔드      | Vue.js      | 3.5.13    |
-| 번들러          | Vite        | 6.0.3     |
-| 상태 관리       | Pinia       | 2.3.0     |
-| 라우터          | Vue Router  | 4.5.0     |
-| HTTP 클라이언트 | Axios       | 1.7.9     |
-| 데이터베이스    | PostgreSQL  | 17-alpine |
-| 캐시            | Redis       | 7-alpine  |
-| 객체 스토리지   | MinIO       | latest    |
-| 메일 테스트     | MailHog     | latest    |
 
 ### PSMO Community
 
@@ -103,18 +79,6 @@
 
 ```
 all_workspace/
-├── campstation/
-│   ├── backend/              # Spring Boot 백엔드
-│   │   ├── src/
-│   │   ├── pom.xml
-│   │   ├── Dockerfile
-│   │   └── Dockerfile.dev
-│   └── frontend/             # Vue.js 프론트엔드
-│       ├── src/
-│       ├── package.json
-│       ├── Dockerfile
-│       └── nginx.conf
-│
 ├── psmo-community/
 │   ├── backend/              # Ktor 백엔드
 │   │   ├── src/
@@ -131,7 +95,6 @@ all_workspace/
 │   └── nginx/
 │       ├── nginx.conf
 │       ├── conf.d/
-│       │   ├── campstation.conf
 │       │   └── psmo-community.conf
 │       └── Dockerfile
 │
@@ -143,15 +106,6 @@ all_workspace/
 ```
 
 ## 🌐 포트 할당
-
-### Campstation
-
-- Frontend: 3000 (dev), 80 (container)
-- Backend: 8080 (dev/container)
-- PostgreSQL: 5432 (container)
-- Redis: 6379 (container)
-- MinIO: 9000 (container), 9001 (console)
-- MailHog: 1025 (SMTP), 8025 (Web UI)
 
 ### PSMO Community
 
@@ -172,7 +126,6 @@ all_workspace/
 - **도구**: Certbot
 - **갱신 주기**: 90일 (자동 갱신 필요)
 - **저장 위치**: `/etc/letsencrypt/live/`
-  - mycamp.duckdns.org
   - mycommunity.duckdns.org
 
 ## 🚀 배포 가이드
@@ -187,9 +140,6 @@ sudo docker compose -f docker-compose.prod.yml up -d
 ### 특정 서비스 재시작
 
 ```bash
-# Campstation 백엔드만
-sudo docker compose -f docker-compose.prod.yml restart campstation-backend
-
 # PSMO 프론트엔드만
 sudo docker compose -f docker-compose.prod.yml restart psmo-frontend
 ```
@@ -230,7 +180,6 @@ docker logs -f [container-name]
 docker logs --tail 100 [container-name]
 
 # Nginx 에러 로그
-docker exec nginx-proxy cat /var/log/nginx/campstation_error.log
 docker exec nginx-proxy cat /var/log/nginx/psmo_error.log
 ```
 
@@ -238,21 +187,13 @@ docker exec nginx-proxy cat /var/log/nginx/psmo_error.log
 
 ```bash
 # API 헬스체크
-curl https://mycamp.duckdns.org/api/health
 curl https://mycommunity.duckdns.org/api/health
 
 # 컨테이너 내부 헬스체크
-docker exec campstation-backend-prod wget -qO- http://localhost:8080/api/health
 docker exec psmo-backend-prod wget -qO- http://localhost:8080/api/health
 ```
 
 ## 🗄️ 데이터베이스 접속
-
-### Campstation PostgreSQL
-
-```bash
-docker exec -it campstation-postgres-prod psql -U campstation -d campstation
-```
 
 ### PSMO PostgreSQL
 
@@ -263,9 +204,6 @@ docker exec -it psmo-postgres-prod psql -U psmo -d psmo_community
 ### Redis
 
 ```bash
-# Campstation
-docker exec -it campstation-redis-prod redis-cli -a [REDIS_PASSWORD]
-
 # PSMO
 docker exec -it psmo-redis-prod redis-cli -a [REDIS_PASSWORD]
 ```
@@ -275,12 +213,6 @@ docker exec -it psmo-redis-prod redis-cli -a [REDIS_PASSWORD]
 프로덕션 배포 시 `.env` 파일 필요:
 
 ```bash
-# Campstation
-CAMPSTATION_POSTGRES_PASSWORD=
-CAMPSTATION_REDIS_PASSWORD=
-CAMPSTATION_MINIO_USER=
-CAMPSTATION_MINIO_PASSWORD=
-
 # PSMO
 PSMO_POSTGRES_PASSWORD=
 PSMO_REDIS_PASSWORD=
@@ -289,12 +221,6 @@ PSMO_MINIO_PASSWORD=
 ```
 
 ## 📝 주요 엔드포인트
-
-### Campstation
-
-- 메인: https://mycamp.duckdns.org
-- API: https://mycamp.duckdns.org/api/*
-- 헬스체크: https://mycamp.duckdns.org/api/health
 
 ### PSMO Community
 

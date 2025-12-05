@@ -2,16 +2,12 @@
 
 ## 🎯 개요
 
-하나의 서버에서 Campstation과 PSMO Community를 동시에 실행합니다.
+하나의 서버에서 PSMO Community를 실행합니다.
 
 ## 🏗️ 아키텍처
 
 ```
 인터넷
-  │
-  ├── https://mycamp.duckdns.org (443)
-  │   └── Nginx Proxy → Campstation Frontend (80)
-  │                   └── Campstation Backend (8080)
   │
   └── https://mycommunity.duckdns.org (443)
       └── Nginx Proxy → PSMO Frontend (80)
@@ -19,15 +15,6 @@
 ```
 
 ## 📦 서비스 구성
-
-### Campstation
-
-- Frontend (Vue.js + Nginx)
-- Backend (Spring Boot)
-- PostgreSQL
-- Redis
-- MinIO
-- MailHog
 
 ### PSMO Community
 
@@ -55,11 +42,9 @@ sudo apt update
 sudo apt install certbot python3-certbot-nginx
 
 # 인증서 발급 (Docker 실행 전, 80 포트가 비어있어야 함)
-sudo certbot certonly --standalone -d mycamp.duckdns.org
 sudo certbot certonly --standalone -d mycommunity.duckdns.org
 
 # 인증서 확인
-sudo ls -la /etc/letsencrypt/live/mycamp.duckdns.org/
 sudo ls -la /etc/letsencrypt/live/mycommunity.duckdns.org/
 ```
 
@@ -93,7 +78,6 @@ docker compose -f docker-compose.prod.yml logs -f
 
 ### 4. 접속 확인
 
-- **Campstation**: https://mycamp.duckdns.org
 - **PSMO Community**: https://mycommunity.duckdns.org
 
 ## 🔍 모니터링
@@ -104,7 +88,6 @@ docker compose -f docker-compose.prod.yml ps
 
 # 특정 서비스 로그
 docker compose -f docker-compose.prod.yml logs -f nginx
-docker compose -f docker-compose.prod.yml logs -f campstation-backend
 docker compose -f docker-compose.prod.yml logs -f psmo-backend
 
 # 리소스 사용량
@@ -120,7 +103,6 @@ docker stats
 docker compose -f docker-compose.prod.yml restart nginx
 
 # 특정 프로젝트 재시작
-docker compose -f docker-compose.prod.yml restart campstation-backend campstation-frontend
 docker compose -f docker-compose.prod.yml restart psmo-backend psmo-frontend
 ```
 
@@ -131,7 +113,7 @@ docker compose -f docker-compose.prod.yml restart psmo-backend psmo-frontend
 git pull
 
 # 특정 서비스만 재빌드
-docker compose -f docker-compose.prod.yml up --build -d campstation-backend
+docker compose -f docker-compose.prod.yml up --build -d psmo-backend
 
 # 또는 전체 재빌드
 docker compose -f docker-compose.prod.yml up --build -d
@@ -141,11 +123,10 @@ docker compose -f docker-compose.prod.yml up --build -d
 
 ```bash
 # 데이터베이스 백업
-docker compose -f docker-compose.prod.yml exec campstation-postgres pg_dump -U campstation campstation > backup_campstation_$(date +%Y%m%d).sql
 docker compose -f docker-compose.prod.yml exec psmo-postgres pg_dump -U psmo psmo_community > backup_psmo_$(date +%Y%m%d).sql
 
 # 볼륨 백업
-docker run --rm -v campstation_postgres_data:/data -v $(pwd):/backup alpine tar czf /backup/campstation_db_backup.tar.gz /data
+docker run --rm -v psmo_postgres_data:/data -v $(pwd):/backup alpine tar czf /backup/psmo_db_backup.tar.gz /data
 ```
 
 ## 🔒 보안 체크리스트
@@ -161,16 +142,16 @@ docker run --rm -v campstation_postgres_data:/data -v $(pwd):/backup alpine tar 
 
 ### 최소 사양
 
-- CPU: 4 cores
-- RAM: 8 GB
-- Disk: 50 GB SSD
+- CPU: 2 cores
+- RAM: 4 GB
+- Disk: 30 GB SSD
 - Network: 100 Mbps
 
 ### 권장 사양
 
-- CPU: 8 cores
-- RAM: 16 GB
-- Disk: 100 GB SSD
+- CPU: 4 cores
+- RAM: 8 GB
+- Disk: 50 GB SSD
 - Network: 1 Gbps
 
 ## 🆘 문제 해결
@@ -189,7 +170,6 @@ docker compose -f docker-compose.prod.yml logs nginx
 
 ```bash
 # 인증서 파일 확인
-ls -la infrastructure/nginx/ssl/campstation/
 ls -la infrastructure/nginx/ssl/psmo/
 
 # 권한 확인
@@ -201,7 +181,6 @@ chmod 600 infrastructure/nginx/ssl/*/privkey.pem
 
 ```bash
 # 헬스체크 확인
-curl http://localhost:8080/api/health  # Campstation
 curl http://localhost:8081/api/health  # PSMO (내부 포트)
 
 # 컨테이너 네트워크 확인
@@ -212,7 +191,6 @@ docker network inspect docker-compose-prod_proxy-network
 
 ```bash
 # PostgreSQL 상태 확인
-docker compose -f docker-compose.prod.yml exec campstation-postgres pg_isready -U campstation
 docker compose -f docker-compose.prod.yml exec psmo-postgres pg_isready -U psmo
 ```
 

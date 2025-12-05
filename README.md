@@ -1,14 +1,11 @@
 # All Workspace
 
-캠핑장 예약 시스템(Campstation)과 커뮤니티 플랫폼(PSMO Community)을 포함한 통합 워크스페이스입니다.
+커뮤니티 플랫폼(PSMO Community)을 포함한 워크스페이스입니다.
 
 ## 📁 프로젝트 구조
 
 ```
 .
-├── campstation/              # 캠핑장 예약 시스템
-│   ├── backend/             # Spring Boot 백엔드
-│   └── frontend/            # Vue.js 프론트엔드
 ├── psmo-community/          # 커뮤니티 플랫폼
 │   ├── backend/             # Ktor 백엔드
 │   └── frontend/            # Vue.js 프론트엔드
@@ -34,13 +31,9 @@
    ```
 
 3. **접속**
-   - Campstation Frontend: http://localhost:5173
-   - Campstation Backend: http://localhost:8080
    - PSMO Frontend: http://localhost:5174
    - PSMO Backend: http://localhost:8081
-   - Campstation MailHog: http://localhost:8025
    - PSMO MailHog: http://localhost:8026
-   - Campstation MinIO Console: http://localhost:9001
    - PSMO MinIO Console: http://localhost:9003
 
 ### 프로덕션 환경
@@ -63,7 +56,6 @@
    ```
 
 4. **접속**
-   - Campstation: https://campstation.your-domain.com
    - PSMO Community: https://psmo.your-domain.com
 
 ## 🛠️ 개발 환경 상세
@@ -72,12 +64,6 @@
 
 | 서비스               | 포트       | 설명           |
 | -------------------- | ---------- | -------------- |
-| Campstation Frontend | 5173       | Vue 개발 서버  |
-| Campstation Backend  | 8080       | Spring Boot    |
-| Campstation Postgres | 5432       | PostgreSQL     |
-| Campstation Redis    | 6379       | Redis          |
-| Campstation MinIO    | 9000, 9001 | MinIO 스토리지 |
-| Campstation MailHog  | 1025, 8025 | 이메일 테스트  |
 | PSMO Frontend        | 5174       | Vue 개발 서버  |
 | PSMO Backend         | 8081       | Ktor           |
 | PSMO Postgres        | 5433       | PostgreSQL     |
@@ -88,7 +74,7 @@
 ### 개발 환경 특징
 
 - **핫 리로딩**: 소스 코드 변경 시 자동 반영 (볼륨 마운트)
-- **디버깅**: 백엔드 디버깅 포트 개방 (5005, 5006)
+- **디버깅**: 백엔드 디버깅 포트 개방 (5006)
 - **데이터베이스**: 로컬 PostgreSQL 컨테이너
 - **이메일**: MailHog로 이메일 테스트
 - **스토리지**: MinIO로 파일 업로드 테스트
@@ -102,7 +88,7 @@
 docker-compose -f docker-compose.dev.yml up -d
 
 # 특정 프로젝트만 시작
-docker-compose -f docker-compose.dev.yml up -d campstation-backend campstation-frontend campstation-postgres campstation-redis
+docker-compose -f docker-compose.dev.yml up -d psmo-backend psmo-frontend psmo-postgres psmo-redis
 
 # 로그 확인
 docker-compose -f docker-compose.dev.yml logs -f
@@ -129,14 +115,6 @@ docker-compose -f docker-compose.dev.yml up -d --build
 ```
 
 ## 📚 기술 스택
-
-### Campstation
-
-- **Frontend**: Vue.js 3, Vite, Pinia, Vue Router
-- **Backend**: Spring Boot 4.0.0, Spring Security, JWT
-- **Database**: PostgreSQL 17
-- **Cache**: Redis 7
-- **Storage**: MinIO
 
 ### PSMO Community
 

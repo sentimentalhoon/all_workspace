@@ -57,12 +57,6 @@ docker compose --env-file .env.prod -f docker-compose.prod.yml up -d
 
 The script automatically generates secure passwords for:
 
-### Campstation Services
-
-- PostgreSQL database password
-- Redis cache password
-- MinIO object storage password
-
 ### PSMO Community Services
 
 - PostgreSQL database password

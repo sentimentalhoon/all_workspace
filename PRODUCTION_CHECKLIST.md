@@ -14,7 +14,6 @@
 
 - [ ] PostgreSQL passwords are strong and unique
 - [ ] Database names are appropriate for production
-- [ ] JPA ddl-auto is set to `validate` (not `update` or `create-drop`)
 - [ ] SQL logging is disabled (`show-sql: false`)
 
 ### 3. Security
@@ -26,15 +25,6 @@
 - [ ] Security headers are configured in Nginx
 
 ### 4. Backend Configuration
-
-#### Campstation (Spring Boot)
-
-- [ ] `SPRING_PROFILES_ACTIVE=prod`
-- [ ] `SPRING_JPA_DDL_AUTO=validate`
-- [ ] `SPRING_JPA_SHOW_SQL=false`
-- [ ] CORS origins match production frontend URL
-- [ ] Database connection pooling configured
-- [ ] Health check endpoint accessible
 
 #### PSMO (Ktor)
 
@@ -87,11 +77,9 @@ docker compose -f docker-compose.prod.yml ps
 
 ```bash
 # Check backend health (through Nginx proxy)
-curl https://mycamp.duckdns.org/api/health
 curl https://mycommunity.duckdns.org/api/health
 
 # Check database connections
-docker compose -f docker-compose.prod.yml logs campstation-backend
 docker compose -f docker-compose.prod.yml logs psmo-backend
 
 # Verify all services are healthy
@@ -105,7 +93,6 @@ docker compose -f docker-compose.prod.yml ps
 docker compose -f docker-compose.prod.yml logs -f
 
 # Check specific service
-docker compose -f docker-compose.prod.yml logs -f campstation-backend
 docker compose -f docker-compose.prod.yml logs -f psmo-backend
 ```
 
@@ -113,7 +100,6 @@ docker compose -f docker-compose.prod.yml logs -f psmo-backend
 
 ### Health Checks
 
-- [ ] Campstation backend: `/api/health` returns 200
 - [ ] PSMO backend: `/api/health` returns 200
 - [ ] PostgreSQL connections working
 - [ ] Redis connections working
@@ -121,13 +107,11 @@ docker compose -f docker-compose.prod.yml logs -f psmo-backend
 
 ### Database Tests
 
-- [ ] Campstation: `/api/test/all` succeeds
 - [ ] PSMO: `/api/test/all` succeeds
 - [ ] Data persists across container restarts
 
 ### Frontend Verification
 
-- [ ] Campstation frontend loads correctly
 - [ ] PSMO frontend loads correctly
 - [ ] API calls work from frontend
 - [ ] CORS is not blocking requests
@@ -192,10 +176,6 @@ docker compose -f docker-compose.prod.yml logs -f psmo-backend
 
 All variables marked with `:?` in docker-compose.prod.yml are **required**:
 
-- `CAMPSTATION_POSTGRES_PASSWORD`
-- `CAMPSTATION_REDIS_PASSWORD`
-- `CAMPSTATION_MINIO_USER`
-- `CAMPSTATION_MINIO_PASSWORD`
 - `PSMO_POSTGRES_PASSWORD`
 - `PSMO_REDIS_PASSWORD`
 - `PSMO_MINIO_USER`
@@ -203,10 +183,6 @@ All variables marked with `:?` in docker-compose.prod.yml are **required**:
 
 ### Optional Variables (with defaults)
 
-- `CAMPSTATION_POSTGRES_DB` (default: campstation)
-- `CAMPSTATION_POSTGRES_USER` (default: campstation)
-- `CAMPSTATION_CORS_ORIGINS` (default: https://mycamp.duckdns.org)
-- `CAMPSTATION_API_URL` (default: https://mycamp.duckdns.org)
 - `PSMO_POSTGRES_DB` (default: psmo_community)
 - `PSMO_POSTGRES_USER` (default: psmo)
 - `PSMO_CORS_ORIGINS` (default: https://mycommunity.duckdns.org)
@@ -221,8 +197,8 @@ All variables marked with `:?` in docker-compose.prod.yml are **required**:
 git pull origin main
 
 # Rebuild specific service
-docker compose -f docker-compose.prod.yml build campstation-backend
-docker compose -f docker-compose.prod.yml up -d campstation-backend
+docker compose -f docker-compose.prod.yml build psmo-backend
+docker compose -f docker-compose.prod.yml up -d psmo-backend
 
 # Or rebuild all
 docker compose -f docker-compose.prod.yml build
@@ -261,9 +237,6 @@ docker compose -f docker-compose.prod.yml logs --tail=100
 ### Database Backups
 
 ```bash
-# Backup Campstation database
-docker exec campstation-postgres-prod pg_dump -U campstation campstation > backup_campstation_$(date +%Y%m%d).sql
-
 # Backup PSMO database
 docker exec psmo-postgres-prod pg_dump -U psmo psmo_community > backup_psmo_$(date +%Y%m%d).sql
 ```
@@ -274,7 +247,7 @@ docker exec psmo-postgres-prod pg_dump -U psmo psmo_community > backup_psmo_$(da
 
 ```bash
 # Restart specific service
-docker compose -f docker-compose.prod.yml restart campstation-backend
+docker compose -f docker-compose.prod.yml restart psmo-backend
 
 # Restart all services
 docker compose -f docker-compose.prod.yml restart
@@ -294,5 +267,5 @@ docker compose -f docker-compose.prod.yml up -d
 
 ```bash
 # Restore database from backup
-docker exec -i campstation-postgres-prod psql -U campstation campstation < backup_campstation_20250101.sql
+docker exec -i psmo-postgres-prod psql -U psmo psmo_community < backup_psmo_20250101.sql
 ```

@@ -3,12 +3,6 @@
 ## 📁 Certbot으로 자동 발급된 인증서 위치
 
 ```
-/etc/letsencrypt/live/mycamp.duckdns.org/
-├── fullchain.pem
-├── privkey.pem
-├── cert.pem
-└── chain.pem
-
 /etc/letsencrypt/live/mycommunity.duckdns.org/
 ├── fullchain.pem
 ├── privkey.pem
@@ -27,13 +21,8 @@ sudo apt install certbot python3-certbot-nginx
 
 # 인증서 발급
 sudo certbot certonly --standalone \
-  -d mycamp.duckdns.org \
   -d mycommunity.duckdns.org \
   --preferred-challenges http
-
-# 또는 개별 발급
-sudo certbot certonly --standalone -d mycamp.duckdns.org
-sudo certbot certonly --standalone -d mycommunity.duckdns.org
 ```
 
 **주의**: 발급 시 80 포트가 비어있어야 합니다. Docker 실행 전에 발급받으세요!
@@ -44,13 +33,9 @@ sudo certbot certonly --standalone -d mycommunity.duckdns.org
 
 ```bash
 # 디렉토리 생성
-sudo mkdir -p /etc/letsencrypt/live/mycamp.duckdns.org
 sudo mkdir -p /etc/letsencrypt/live/mycommunity.duckdns.org
 
 # 인증서 복사
-sudo cp /your/cert/fullchain.pem /etc/letsencrypt/live/mycamp.duckdns.org/
-sudo cp /your/cert/privkey.pem /etc/letsencrypt/live/mycamp.duckdns.org/
-
 sudo cp /your/cert/fullchain.pem /etc/letsencrypt/live/mycommunity.duckdns.org/
 sudo cp /your/cert/privkey.pem /etc/letsencrypt/live/mycommunity.duckdns.org/
 
@@ -65,11 +50,10 @@ sudo chmod 600 /etc/letsencrypt/live/*/privkey.pem
 
 ```bash
 # 인증서 존재 확인
-sudo ls -la /etc/letsencrypt/live/mycamp.duckdns.org/
 sudo ls -la /etc/letsencrypt/live/mycommunity.duckdns.org/
 
 # 인증서 정보 확인
-sudo openssl x509 -in /etc/letsencrypt/live/mycamp.duckdns.org/fullchain.pem -text -noout
+sudo openssl x509 -in /etc/letsencrypt/live/mycommunity.duckdns.org/fullchain.pem -text -noout
 ```
 
 ### 2. 환경 변수 설정
@@ -95,7 +79,6 @@ docker compose -f docker-compose.prod.yml exec nginx nginx -t
 
 ### 4. 접속 확인
 
-- Campstation: https://mycamp.duckdns.org
 - PSMO Community: https://mycommunity.duckdns.org
 
 ## 🔄 자동 갱신 설정
@@ -151,11 +134,9 @@ certbot:
 
 ```bash
 # 호스트에서 인증서 확인
-sudo ls -la /etc/letsencrypt/live/mycamp.duckdns.org/
 sudo ls -la /etc/letsencrypt/live/mycommunity.duckdns.org/
 
 # 컨테이너 내부에서 확인
-docker compose -f docker-compose.prod.yml exec nginx ls -la /etc/nginx/ssl/campstation/
 docker compose -f docker-compose.prod.yml exec nginx ls -la /etc/nginx/ssl/psmo/
 ```
 
@@ -176,7 +157,7 @@ docker compose -f docker-compose.prod.yml logs nginx
 
 ```bash
 # 인증서 권한 확인
-sudo ls -l /etc/letsencrypt/live/mycamp.duckdns.org/
+sudo ls -l /etc/letsencrypt/live/mycommunity.duckdns.org/
 
 # 필요시 권한 조정 (보통 자동으로 올바르게 설정됨)
 sudo chmod 644 /etc/letsencrypt/live/*/fullchain.pem
@@ -186,9 +167,6 @@ sudo chmod 600 /etc/letsencrypt/live/*/privkey.pem
 ## 📝 인증서 정보 확인
 
 ```bash
-# Campstation 인증서
-openssl x509 -in infrastructure/nginx/ssl/campstation/fullchain.pem -text -noout
-
 # PSMO 인증서
 openssl x509 -in infrastructure/nginx/ssl/psmo/fullchain.pem -text -noout
 ```

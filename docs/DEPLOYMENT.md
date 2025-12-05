@@ -14,7 +14,6 @@
 
 - DuckDNS 계정 생성
 - 도메인 등록:
-  - mycamp.duckdns.org → 서버 공인 IP
   - mycommunity.duckdns.org → 서버 공인 IP
 
 ### 3. 방화벽 설정
@@ -59,12 +58,6 @@ nano .env
 필수 환경 변수:
 
 ```env
-# Campstation
-CAMPSTATION_POSTGRES_PASSWORD=강력한비밀번호
-CAMPSTATION_REDIS_PASSWORD=강력한비밀번호
-CAMPSTATION_MINIO_USER=admin
-CAMPSTATION_MINIO_PASSWORD=강력한비밀번호
-
 # PSMO
 PSMO_POSTGRES_PASSWORD=강력한비밀번호
 PSMO_REDIS_PASSWORD=강력한비밀번호
@@ -90,9 +83,6 @@ sudo apt install certbot -y
 #### 인증서 발급
 
 ```bash
-# Campstation
-sudo certbot certonly --standalone -d mycamp.duckdns.org
-
 # PSMO Community
 sudo certbot certonly --standalone -d mycommunity.duckdns.org
 ```
@@ -100,7 +90,6 @@ sudo certbot certonly --standalone -d mycommunity.duckdns.org
 #### 인증서 확인
 
 ```bash
-sudo ls -la /etc/letsencrypt/live/mycamp.duckdns.org/
 sudo ls -la /etc/letsencrypt/live/mycommunity.duckdns.org/
 ```
 
@@ -121,11 +110,9 @@ sudo docker compose -f docker-compose.prod.yml up -d
 docker ps
 
 # 헬스체크
-curl https://mycamp.duckdns.org/api/health
 curl https://mycommunity.duckdns.org/api/health
 
 # 로그 확인
-docker logs campstation-backend-prod
 docker logs psmo-backend-prod
 docker logs nginx-proxy
 ```
@@ -142,20 +129,6 @@ git pull
 ```
 
 #### 2. 특정 서비스 재배포
-
-**Campstation 백엔드**
-
-```bash
-sudo docker compose -f docker-compose.prod.yml build campstation-backend
-sudo docker compose -f docker-compose.prod.yml up -d campstation-backend
-```
-
-**Campstation 프론트엔드**
-
-```bash
-sudo docker compose -f docker-compose.prod.yml build campstation-frontend
-sudo docker compose -f docker-compose.prod.yml up -d campstation-frontend
-```
 
 **PSMO 백엔드**
 
@@ -233,7 +206,6 @@ sudo docker compose -f docker-compose.prod.yml up -d nginx
 sudo docker compose -f docker-compose.prod.yml logs -f
 
 # 특정 서비스
-docker logs -f campstation-backend-prod
 docker logs -f psmo-backend-prod
 docker logs -f nginx-proxy
 ```
@@ -262,12 +234,6 @@ docker volume ls
 
 ### 데이터베이스 백업
 
-#### Campstation PostgreSQL
-
-```bash
-docker exec campstation-postgres-prod pg_dump -U campstation campstation > backup_campstation_$(date +%Y%m%d).sql
-```
-
 #### PSMO PostgreSQL
 
 ```bash
@@ -281,8 +247,8 @@ docker exec psmo-postgres-prod pg_dump -U psmo psmo_community > backup_psmo_$(da
 docker volume ls
 
 # 특정 볼륨 백업 (예: PostgreSQL 데이터)
-sudo tar -czf campstation_postgres_backup.tar.gz \
-  /var/lib/docker/volumes/all_workspace_campstation_postgres_data
+sudo tar -czf psmo_postgres_backup.tar.gz \
+  /var/lib/docker/volumes/all_workspace_psmo_postgres_data
 ```
 
 ### 자동 백업 스크립트
@@ -295,10 +261,6 @@ BACKUP_DIR="/home/sentimentalhoon/backups"
 DATE=$(date +%Y%m%d_%H%M%S)
 
 mkdir -p $BACKUP_DIR
-
-# Campstation DB
-docker exec campstation-postgres-prod pg_dump -U campstation campstation \
-  > $BACKUP_DIR/campstation_$DATE.sql
 
 # PSMO DB
 docker exec psmo-postgres-prod pg_dump -U psmo psmo_community \
@@ -378,7 +340,7 @@ sudo docker compose -f docker-compose.prod.yml up -d
 
 ```yaml
 services:
-  campstation-backend:
+  psmo-backend:
     deploy:
       resources:
         limits:
@@ -399,7 +361,7 @@ PostgreSQL 설정 최적화 (필요 시):
 
 ```bash
 # postgresql.conf 수정
-docker exec -it campstation-postgres-prod bash
+docker exec -it psmo-postgres-prod bash
 vi /var/lib/postgresql/data/postgresql.conf
 ```
 
@@ -420,7 +382,7 @@ sudo docker compose -f docker-compose.prod.yml up -d --build
 
 ```bash
 # 백업에서 복구
-docker exec -i campstation-postgres-prod psql -U campstation campstation < backup_campstation_20251201.sql
+docker exec -i psmo-postgres-prod psql -U psmo psmo_community < backup_psmo_20251201.sql
 ```
 
 ## 📞 지원
