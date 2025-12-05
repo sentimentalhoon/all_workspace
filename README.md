@@ -62,14 +62,14 @@
 
 ### 포트 매핑 (개발)
 
-| 서비스               | 포트       | 설명           |
-| -------------------- | ---------- | -------------- |
-| PSMO Frontend        | 5174       | Vue 개발 서버  |
-| PSMO Backend         | 8081       | Ktor           |
-| PSMO Postgres        | 5433       | PostgreSQL     |
-| PSMO Redis           | 6380       | Redis          |
-| PSMO MinIO           | 9002, 9003 | MinIO 스토리지 |
-| PSMO MailHog         | 1026, 8026 | 이메일 테스트  |
+| 서비스        | 포트       | 설명           |
+| ------------- | ---------- | -------------- |
+| PSMO Frontend | 5174       | Vue 개발 서버  |
+| PSMO Backend  | 8081       | Ktor           |
+| PSMO Postgres | 5433       | PostgreSQL     |
+| PSMO Redis    | 6380       | Redis          |
+| PSMO MinIO    | 9002, 9003 | MinIO 스토리지 |
+| PSMO MailHog  | 1026, 8026 | 이메일 테스트  |
 
 ### 개발 환경 특징
 

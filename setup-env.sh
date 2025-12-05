@@ -44,6 +44,9 @@ echo ""
 echo "🔐 Generating secure passwords..."
 
 # Generate passwords
+CAMPSTATION_POSTGRES_PASSWORD=$(generate_password)
+CAMPSTATION_REDIS_PASSWORD=$(generate_password)
+CAMPSTATION_MINIO_PASSWORD=$(generate_password)
 PSMO_POSTGRES_PASSWORD=$(generate_password)
 PSMO_REDIS_PASSWORD=$(generate_password)
 PSMO_MINIO_PASSWORD=$(generate_password)
@@ -59,12 +62,36 @@ cat > .env.prod << EOF
 # =============================================================================
 # Domain Configuration
 # =============================================================================
+CAMPSTATION_DOMAIN=mycamp.duckdns.org
 PSMO_DOMAIN=mycommunity.duckdns.org
 
 # =============================================================================
 # SSL/TLS Configuration
 # =============================================================================
 CERTBOT_EMAIL=${CERTBOT_EMAIL}
+
+# =============================================================================
+# Campstation - PostgreSQL Database
+# =============================================================================
+CAMPSTATION_POSTGRES_DB=campstation
+CAMPSTATION_POSTGRES_USER=campstation
+CAMPSTATION_POSTGRES_PASSWORD=${CAMPSTATION_POSTGRES_PASSWORD}
+
+# =============================================================================
+# Campstation - Redis Cache
+# =============================================================================
+CAMPSTATION_REDIS_PASSWORD=${CAMPSTATION_REDIS_PASSWORD}
+
+# =============================================================================
+# Campstation - MinIO Object Storage
+# =============================================================================
+CAMPSTATION_MINIO_USER=minioadmin
+CAMPSTATION_MINIO_PASSWORD=${CAMPSTATION_MINIO_PASSWORD}
+
+# =============================================================================
+# Campstation - CORS Configuration
+# =============================================================================
+CAMPSTATION_CORS_ORIGINS=https://mycamp.duckdns.org
 
 # =============================================================================
 # PSMO Community - PostgreSQL Database
@@ -101,6 +128,11 @@ echo "  Generated Credentials Summary"
 echo "=================================================="
 echo ""
 echo "📧 SSL Email: ${CERTBOT_EMAIL}"
+echo ""
+echo "🔐 Campstation Passwords:"
+echo "   PostgreSQL: ${CAMPSTATION_POSTGRES_PASSWORD}"
+echo "   Redis:      ${CAMPSTATION_REDIS_PASSWORD}"
+echo "   MinIO:      ${CAMPSTATION_MINIO_PASSWORD}"
 echo ""
 echo "🔐 PSMO Passwords:"
 echo "   PostgreSQL: ${PSMO_POSTGRES_PASSWORD}"
