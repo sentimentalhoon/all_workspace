@@ -36,7 +36,7 @@ fun Application.configureRouting(config: ApplicationConfig) {
     val chatService = ChatService(config)
     val chatSubscriptionScope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
     val chatBroadcastScope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
-    val chatRoomManager = ChatRoomManager(chatService, chatSubscriptionScope, chatBroadcastScope)
+    val chatRoomManager = ChatRoomManager(chatService, userService, chatSubscriptionScope, chatBroadcastScope)
 
     monitor.subscribe(ApplicationStopped) {
         chatRoomManager.shutdown()

@@ -13,6 +13,10 @@
         :login-pending="loginPending"
         :error-message="errorMessage"
         :telegram-bot-username="telegramBotUsername"
+        :role="role"
+        :score="score"
+        :activity-level="activityLevel"
+        :next-level-info="nextLevelInfo"
         @login="handleTelegramLogin"
         @refresh="refreshProfile"
         @logout="handleLogout"
@@ -73,6 +77,10 @@ const {
   isAuthenticated,
   loading,
   avatarUrl,
+  role,
+  score,
+  activityLevel,
+  nextLevelInfo,
   errorMessage,
   loginPending,
   telegramBotUsername,

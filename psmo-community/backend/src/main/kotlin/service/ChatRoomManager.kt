@@ -22,6 +22,7 @@ import java.util.concurrent.ConcurrentHashMap
 
 class ChatRoomManager(
     private val chatService: ChatService,
+    private val userService: UserService,
     private val subscriptionScope: CoroutineScope,
     private val broadcasterScope: CoroutineScope
 ) {
@@ -46,6 +47,8 @@ class ChatRoomManager(
                 if (normalized.isBlank()) continue
                 val bounded = normalized.take(2000)
                 val saved = chatService.appendMessage(user, bounded)
+                // 활동 점수 +1 (채팅 기여)
+                runCatching { userService.adjustScore(user.id, 1) }
                 chatService.publish(saved)
             }
         } catch (_: Exception) {
