@@ -1,7 +1,7 @@
 # Multi-stage build for PSMO Backend
 
 # Build stage
-FROM gradle:8.5-jdk21-alpine AS build
+FROM gradle:8.10.2-jdk21-alpine AS build
 WORKDIR /app
 
 # Copy Gradle files

@@ -1,6 +1,6 @@
 [versions]
-kotlin = "2.2.20"
-ktor = "3.3.2"
+kotlin = "2.1.0"
+ktor = "3.0.1"
 logback = "1.4.14"
 exposed = "0.55.0"
 postgresql = "42.7.2"

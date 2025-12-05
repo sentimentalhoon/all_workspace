@@ -1,6 +1,6 @@
 plugins {
-    alias(libs.plugins.kotlin.jvm)
-    alias(libs.plugins.ktor)
+    kotlin("jvm") version "2.1.0"
+    id("io.ktor.plugin") version "3.0.1"
 }
 
 group = "com.psmo"

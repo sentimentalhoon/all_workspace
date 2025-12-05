@@ -1,11 +1,11 @@
 # Development Dockerfile for PSMO Backend
 
-FROM gradle:8.5-jdk21-alpine
+FROM gradle:8.10.2-jdk21
 
 WORKDIR /app
 
 # Install useful dev tools
-RUN apk add --no-cache curl wget
+# RUN apt-get update && apt-get install -y curl wget
 
 # Copy Gradle files
 COPY build.gradle.kts settings.gradle.kts gradle.properties ./
