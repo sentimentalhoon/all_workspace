@@ -24,8 +24,8 @@
 
 <script setup lang="ts">
 import { useTelegramAuth } from '@/composables/useTelegramAuth'
-import { useRoute, useRouter } from 'vue-router'
 import { computed, watchEffect } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
 
 const router = useRouter()
 const route = useRoute()
@@ -114,7 +114,9 @@ h1 {
   font-weight: 700;
   font-size: 16px;
   cursor: pointer;
-  transition: transform 0.15s ease, box-shadow 0.15s ease;
+  transition:
+    transform 0.15s ease,
+    box-shadow 0.15s ease;
 }
 
 .primary:disabled {

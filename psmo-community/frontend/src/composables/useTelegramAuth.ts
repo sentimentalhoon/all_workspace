@@ -1,6 +1,7 @@
 import { useAuthStore } from '@/stores/auth'
 import { storeToRefs } from 'pinia'
 import { computed, onMounted, ref } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
 
 const TELEGRAM_WIDGET_SRC = 'https://telegram.org/js/telegram-widget.js?22'
 const TELEGRAM_SCRIPT_ID = 'telegram-login-sdk'
@@ -90,6 +91,8 @@ const requestTelegramAuth = (botId: number, authStore: ReturnType<typeof useAuth
 
 export function useTelegramAuth() {
   const authStore = useAuthStore()
+  const router = useRouter()
+  const route = useRoute()
   const { user, isAuthenticated, loading, error } = storeToRefs(authStore)
 
   const loginPending = ref(false)
@@ -125,6 +128,12 @@ export function useTelegramAuth() {
   const handleLogout = () => {
     authStore.logout()
     telegramError.value = null
+
+    // 로그아웃 후 로그인 페이지로 이동 (현재 위치를 redirect 로 보존)
+    const redirect = route.fullPath !== '/login' ? route.fullPath : undefined
+    router
+      .replace({ name: 'login', query: redirect ? { redirect } : undefined })
+      .catch(() => undefined)
   }
 
   const refreshProfile = async () => {
