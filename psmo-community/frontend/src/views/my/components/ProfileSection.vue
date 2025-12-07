@@ -29,6 +29,7 @@
         </div>
 
         <div class="profile-actions">
+          <RouterLink to="/games" class="btn-primary">포인트 게임</RouterLink>
           <button class="btn-outline" @click="emit('refresh')" :disabled="loading">
             {{ loading ? '새로고침 중...' : '프로필 새로고침' }}
           </button>
