@@ -45,6 +45,12 @@ const router = createRouter({
       meta: { requiresAuth: true },
     },
     {
+      path: '/games/snail',
+      name: 'games-snail',
+      component: () => import('../views/games/SnailRaceView.vue'),
+      meta: { requiresAuth: true },
+    },
+    {
       path: '/board',
       name: 'board',
       component: () => import('../views/BoardView.vue'),

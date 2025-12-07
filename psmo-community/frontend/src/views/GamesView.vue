@@ -16,6 +16,17 @@
     </header>
 
     <section class="games-grid">
+      <article class="game-card highlight">
+        <div class="pill">신규</div>
+        <h3>달팽이 경주</h3>
+        <p>3마리 달팽이 중 우승을 맞추는 HTML5 캔버스 실시간 레이스.</p>
+        <div class="meta">
+          <span>실시간 애니메이션</span>
+          <span>포인트 베팅 연동 예정</span>
+        </div>
+        <RouterLink to="/games/snail" class="play-btn">경주장 입장</RouterLink>
+      </article>
+
       <article class="game-card">
         <div class="pill">저포인트</div>
         <h3>데일리 룰렛</h3>
@@ -170,6 +181,11 @@
   gap: 0.4rem;
 }
 
+.game-card.highlight {
+  border-color: #c7d2fe;
+  box-shadow: 0 10px 28px rgba(99, 102, 241, 0.1);
+}
+
 .game-card h3 {
   margin: 0;
   font-size: 1.05rem;
@@ -214,6 +230,8 @@
   transition:
     background 0.15s ease,
     border-color 0.15s ease;
+  text-decoration: none;
+  text-align: center;
 }
 
 .play-btn:hover {

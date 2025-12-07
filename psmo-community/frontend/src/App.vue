@@ -28,7 +28,11 @@ const showBottomNav = computed(() => route.path !== '/admin' && route.path !== '
         <span class="nav-icon">💬</span>
         <span class="nav-label">채팅</span>
       </RouterLink>
-      <RouterLink to="/games" class="nav-item" :class="{ active: route.path === '/games' }">
+      <RouterLink
+        to="/games"
+        class="nav-item"
+        :class="{ active: route.path.startsWith('/games') }
+      >
         <span class="nav-icon">🎮</span>
         <span class="nav-label">게임</span>
       </RouterLink>
