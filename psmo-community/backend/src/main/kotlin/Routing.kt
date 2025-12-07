@@ -6,10 +6,18 @@ import com.psmo.service.ChatRoomManager
 import com.psmo.service.ChatService
 import com.psmo.service.JwtService
 import com.psmo.service.RefreshTokenService
+import com.psmo.service.SnailRaceService
 import com.psmo.service.TestService
 import com.psmo.service.UserService
 import com.psmo.service.TelegramAuthService
 import com.psmo.service.TelegramAuthException
+import com.psmo.service.BetValidationException
+import com.psmo.service.CooldownException
+import com.psmo.service.RaceAlreadyReportedException
+import com.psmo.service.RaceExpiredException
+import com.psmo.service.RaceForbiddenException
+import com.psmo.service.RaceInternalException
+import com.psmo.service.RaceNotFoundException
 import io.ktor.server.application.*
 import io.ktor.server.auth.*
 import io.ktor.server.auth.jwt.*
@@ -22,6 +30,10 @@ import io.ktor.http.*
 import io.ktor.util.date.*
 import io.ktor.websocket.*
 import kotlinx.coroutines.*
+import java.util.UUID
+import org.slf4j.MDC
+import com.psmo.model.dto.SnailRaceStartRequestDto
+import com.psmo.model.dto.SnailRaceResultPayloadDto
 
 /**
  * API 라우팅 진입점. 의존성 간접 생성이 필요한 서비스들을 여기에서 조립한다.
@@ -33,6 +45,7 @@ fun Application.configureRouting(config: ApplicationConfig) {
     val jwtService = JwtService(config)
     val refreshTokenService = RefreshTokenService()
     val telegramAuthService = TelegramAuthService(config, userService, jwtService, refreshTokenService)
+    val snailRaceService = SnailRaceService(config, userService)
     val chatService = ChatService(config)
     val chatSubscriptionScope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
     val chatBroadcastScope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
@@ -176,6 +189,96 @@ fun Application.configureRouting(config: ApplicationConfig) {
                     )
 
                 call.respond(ProfileResponse(user = user.toResponse()))
+            }
+
+            route("/api/games/snail") {
+                post("/races") {
+                    val principal = call.principal<JWTPrincipal>() ?: return@post call.respond(
+                        HttpStatusCode.Unauthorized,
+                        mapOf("status" to "error", "message" to "Authentication required")
+                    )
+                    val userId = principal.subject?.toLongOrNull() ?: return@post call.respond(
+                        HttpStatusCode.BadRequest,
+                        mapOf("status" to "error", "message" to "Invalid token payload")
+                    )
+                    val user = userService.getUserById(userId) ?: return@post call.respond(
+                        HttpStatusCode.NotFound,
+                        mapOf("status" to "error", "message" to "User not found")
+                    )
+
+                    val traceId = call.request.headers["X-Request-ID"] ?: UUID.randomUUID().toString()
+                    val remote = call.request.local.remoteHost
+                    MDC.put("traceId", traceId)
+                    MDC.put("remote", remote)
+                    try {
+                        this@configureRouting.environment.log.info("snail-race start request userId={}", user.id)
+
+                        val payload = call.receive<SnailRaceStartRequestDto>()
+                        val response = snailRaceService.startRace(user, payload)
+                        call.respond(HttpStatusCode.OK, response)
+                    } catch (ex: BetValidationException) {
+                        call.respond(HttpStatusCode.BadRequest, mapOf("status" to "error", "code" to ex.code, "message" to ex.message))
+                    } catch (ex: CooldownException) {
+                        call.respond(HttpStatusCode.TooManyRequests, mapOf("status" to "error", "code" to "COOLDOWN", "remainingSeconds" to ex.remainingSeconds))
+                    } catch (ex: Exception) {
+                        this@configureRouting.environment.log.error("startRace failed", ex)
+                        call.respond(HttpStatusCode.InternalServerError, mapOf("status" to "error", "message" to "Internal server error"))
+                    } finally {
+                        MDC.clear()
+                    }
+                }
+
+                post("/races/{raceId}/complete") {
+                    val principal = call.principal<JWTPrincipal>() ?: return@post call.respond(
+                        HttpStatusCode.Unauthorized,
+                        mapOf("status" to "error", "message" to "Authentication required")
+                    )
+                    val userId = principal.subject?.toLongOrNull() ?: return@post call.respond(
+                        HttpStatusCode.BadRequest,
+                        mapOf("status" to "error", "message" to "Invalid token payload")
+                    )
+                    val user = userService.getUserById(userId) ?: return@post call.respond(
+                        HttpStatusCode.NotFound,
+                        mapOf("status" to "error", "message" to "User not found")
+                    )
+
+                    val raceId = call.parameters["raceId"]
+                        ?: return@post call.respond(HttpStatusCode.BadRequest, mapOf("status" to "error", "message" to "raceId missing"))
+                    val payload = call.receive<SnailRaceResultPayloadDto>()
+
+                    val traceId = call.request.headers["X-Request-ID"] ?: UUID.randomUUID().toString()
+                    val remote = call.request.local.remoteHost
+                    MDC.put("traceId", traceId)
+                    MDC.put("remote", remote)
+                    try {
+                        this@configureRouting.environment.log.info(
+                            "snail-race complete request userId={} raceId={}",
+                            user.id,
+                            raceId
+                        )
+
+                        val response = snailRaceService.completeRace(user, raceId, payload)
+                        call.respond(HttpStatusCode.OK, response)
+                    } catch (ex: RaceNotFoundException) {
+                        call.respond(HttpStatusCode.NotFound, mapOf("status" to "error", "code" to "RACE_NOT_FOUND"))
+                    } catch (ex: RaceForbiddenException) {
+                        call.respond(HttpStatusCode.Forbidden, mapOf("status" to "error", "code" to "RACE_FORBIDDEN", "message" to "Race not owned"))
+                    } catch (ex: RaceAlreadyReportedException) {
+                        call.respond(HttpStatusCode.Conflict, mapOf("status" to "error", "code" to "ALREADY_REPORTED"))
+                    } catch (ex: RaceExpiredException) {
+                        call.respond(HttpStatusCode.BadRequest, mapOf("status" to "error", "code" to "RACE_EXPIRED"))
+                    } catch (ex: BetValidationException) {
+                        call.respond(HttpStatusCode.BadRequest, mapOf("status" to "error", "code" to ex.code, "message" to ex.message))
+                    } catch (ex: RaceInternalException) {
+                        this@configureRouting.environment.log.error("completeRace internal", ex)
+                        call.respond(HttpStatusCode.InternalServerError, mapOf("status" to "error", "message" to ex.message))
+                    } catch (ex: Exception) {
+                        this@configureRouting.environment.log.error("completeRace failed", ex)
+                        call.respond(HttpStatusCode.InternalServerError, mapOf("status" to "error", "message" to "Internal server error"))
+                    } finally {
+                        MDC.clear()
+                    }
+                }
             }
 
             webSocket("/ws/chat") {

@@ -2,6 +2,7 @@
 import { computed } from 'vue'
 import { RouterView, useRoute } from 'vue-router'
 
+import GlobalToast from './components/GlobalToast.vue'
 import PwaInstallPrompt from './components/PwaInstallPrompt.vue'
 
 const route = useRoute()
@@ -13,6 +14,7 @@ const showBottomNav = computed(() => route.path !== '/admin' && route.path !== '
     <div class="content-wrapper" :class="{ 'with-bottom-nav': showBottomNav }">
       <RouterView />
       <PwaInstallPrompt :bottom-offset="showBottomNav ? 96 : 24" mobile-only />
+      <GlobalToast />
     </div>
 
     <nav v-if="showBottomNav" class="bottom-nav">
@@ -28,11 +30,7 @@ const showBottomNav = computed(() => route.path !== '/admin' && route.path !== '
         <span class="nav-icon">💬</span>
         <span class="nav-label">채팅</span>
       </RouterLink>
-      <RouterLink
-        to="/games"
-        class="nav-item"
-        :class="{ active: route.path.startsWith('/games') }
-      >
+      <RouterLink to="/games" class="nav-item" :class="{ active: route.path.startsWith('/games') }">
         <span class="nav-icon">🎮</span>
         <span class="nav-label">게임</span>
       </RouterLink>
