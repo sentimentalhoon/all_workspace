@@ -478,9 +478,10 @@ const tick = () => {
 
   const random = rng.value
   snails.value = snails.value.map((s) => {
-    const burst = random() * 0.6
-    const drift = random() * 0.25
-    const delta = s.baseSpeed + burst - drift * 0.3
+    // 서버 시뮬레이션과 동일한 변동성 파라미터를 사용한다.
+    const burst = random() * 0.9
+    const drift = random() * 0.35
+    const delta = s.baseSpeed + burst - drift * 0.45
     const next = Math.min(trackLength.value, s.position + delta)
     return { ...s, position: next }
   })
@@ -523,11 +524,12 @@ const draw = () => {
     ctx.setLineDash([])
 
     const x = margin + snail.position
-    ctx.fillStyle = snail.color
-    ctx.beginPath()
-    ctx.arc(x, y, 14, 0, Math.PI * 2)
-    ctx.fill()
 
+    // 달팽이 이모지로 캐릭터를 표현해 시각적 재미를 높인다.
+    ctx.font = '22px "Noto Color Emoji", "Apple Color Emoji", "Segoe UI Emoji", system-ui'
+    ctx.fillText('🐌', x - 12, y + 8)
+
+    // 이름 배지
     ctx.fillStyle = '#111827'
     ctx.font = '12px "Inter", system-ui'
     ctx.fillText(snail.name, x - 16, y - 18)

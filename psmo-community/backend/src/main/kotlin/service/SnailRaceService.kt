@@ -188,9 +188,10 @@ class SnailRaceService(
         while (true) {
             frames += 1
             for (snail in state) {
-                val burst = rng() * 0.6
-                val drift = rng() * 0.25
-                val delta = snail.baseSpeed + burst - drift * 0.3
+                // 약간 더 큰 변동성을 주어 승률 편향을 줄이고 재미를 높인다.
+                val burst = rng() * 0.9      // 가속 상한 ↑
+                val drift = rng() * 0.35     // 감속 상한 ↑
+                val delta = snail.baseSpeed + burst - drift * 0.45
                 snail.position = max(snail.position + delta, 0.0)
             }
             val reached = state.any { it.position >= trackLength }
