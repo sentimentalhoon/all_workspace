@@ -47,9 +47,10 @@ class SnailRaceService(
 
     private val cooldowns = ConcurrentHashMap<Long, Instant>()
     private val snails: List<SnailRunnerDto> = listOf(
-        SnailRunnerDto(1, "루나", "#6366f1", 1.05),
+        // baseSpeed를 동일하게 맞춰 기본 승률 편향을 제거하고, 랜덤 요소에만 의존하게 한다.
+        SnailRunnerDto(1, "루나", "#6366f1", 1.0),
         SnailRunnerDto(2, "모코", "#10b981", 1.0),
-        SnailRunnerDto(3, "보라", "#f59e0b", 0.95)
+        SnailRunnerDto(3, "보라", "#f59e0b", 1.0)
     )
 
     fun startRace(user: User, request: SnailRaceStartRequestDto): SnailRaceStartResponseDto {

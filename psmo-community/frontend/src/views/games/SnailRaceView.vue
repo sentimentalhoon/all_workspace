@@ -200,9 +200,10 @@ const canvasRef = ref<HTMLCanvasElement | null>(null)
 const containerRef = ref<HTMLElement | null>(null)
 const trackLength = ref(520)
 const snails = ref<Snail[]>([
-  { id: 1, name: '루나', color: '#6366f1', baseSpeed: 1.05, position: 0 },
+  // baseSpeed를 동일하게 맞춰 기본 승률 편향을 제거하고, 랜덤 요소에만 의존하도록 맞춘다.
+  { id: 1, name: '루나', color: '#6366f1', baseSpeed: 1.0, position: 0 },
   { id: 2, name: '모코', color: '#10b981', baseSpeed: 1.0, position: 0 },
-  { id: 3, name: '보라', color: '#f59e0b', baseSpeed: 0.95, position: 0 },
+  { id: 3, name: '보라', color: '#f59e0b', baseSpeed: 1.0, position: 0 },
 ])
 
 const selectedSnailId = ref<number>(1)
