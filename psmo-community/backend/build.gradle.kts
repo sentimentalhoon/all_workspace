@@ -22,6 +22,8 @@ dependencies {
     implementation(libs.ktor.server.status.pages)
     implementation(libs.ktor.server.call.logging)
     implementation(libs.ktor.server.websockets)
+    implementation(libs.ktor.server.swagger)
+
     
     // Logging
     implementation(libs.logback.classic)
@@ -44,4 +46,8 @@ dependencies {
     // Testing
     testImplementation(libs.ktor.server.test.host)
     testImplementation(libs.kotlin.test.junit)
+}
+
+tasks.test {
+    useJUnitPlatform()
 }

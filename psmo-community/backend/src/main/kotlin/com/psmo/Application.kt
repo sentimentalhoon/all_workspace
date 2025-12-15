@@ -18,6 +18,7 @@ import io.ktor.server.plugins.contentnegotiation.*
 import io.ktor.server.plugins.cors.routing.*
 import io.ktor.server.response.*
 import io.ktor.server.websocket.*
+import com.psmo.plugins.configureSwagger
 
 /**
  * PSMO 커뮤니티 백엔드 서버의 진입점.
@@ -121,4 +122,5 @@ fun Application.module() {
     }
 
     configureRouting(activeConfig)
+    configureSwagger()
 }

@@ -1,0 +1,38 @@
+openapi: 3.0.3
+info:
+  title: PSMO Community API
+  description: API documentation for PSMO Community Backend
+  version: 0.0.1
+servers:
+  - url: http://localhost:8080
+    description: Local Development Server
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+security:
+  - bearerAuth: []
+paths:
+  /api/me:
+    get:
+      summary: Get current user profile
+      responses:
+        "200":
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  username:
+                    type: string
+                  displayName:
+                    type: string
+  /api/auth/telegram:
+    post:
+      summary: Telegram Login
+      responses:
+        "200":
+          description: Login successful
