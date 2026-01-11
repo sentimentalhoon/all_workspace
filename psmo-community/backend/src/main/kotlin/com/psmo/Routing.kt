@@ -11,6 +11,8 @@ import com.psmo.service.TestService
 import com.psmo.service.UserService
 import com.psmo.service.TelegramAuthService
 import com.psmo.service.TelegramAuthException
+import com.psmo.service.TelegramBotService
+import com.psmo.service.TelegramAuthResponse
 import com.psmo.service.BetValidationException
 import com.psmo.service.CooldownException
 import com.psmo.service.RaceAlreadyReportedException
@@ -52,7 +54,7 @@ fun Application.configureRouting(config: ApplicationConfig) {
     val telegramAuthService by inject<TelegramAuthService>()
     val telegramBotService by inject<TelegramBotService>()
     val snailRaceService by inject<SnailRaceService>()
-    val chatService by inject<ChatService>()
+    // val chatService by inject<ChatService>() // Unused
     val chatRoomManager by inject<ChatRoomManager>()
 
     monitor.subscribe(ApplicationStarted) {
@@ -180,13 +182,9 @@ fun Application.configureRouting(config: ApplicationConfig) {
         
         post<QrApi.Auth.Qr.Init> {
             val uuid = telegramBotService.createSession()
-            val botName = telegramBotService.getBotUsername() // We need bot name to construct deep link
-            // Assuming bot name is known or we can get it. For now, let's hardcode or fetch.
-            // Simplified: Just return UUID. Frontend constructs URL: https://t.me/<BOT_NAME>?start=login_<UUID>
-            // Better: Return full URL.
-            // Let's assume bot name from config or env.
-            val botNameFromConfig = "psmo_bot" // TODO: Get from config
-            val deepLink = "https://t.me/$botNameFromConfig?start=login_$uuid"
+            val botName = telegramBotService.getBotUsername() 
+            // Return deep link using global bot name
+            val deepLink = "https://t.me/$botName?start=login_$uuid"
             
             call.respond(mapOf(
                 "uuid" to uuid,

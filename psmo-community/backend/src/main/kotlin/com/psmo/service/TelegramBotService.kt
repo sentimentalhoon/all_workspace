@@ -185,4 +185,7 @@ class TelegramBotService(
             }
         }
     }
+    fun getBotUsername(): String {
+        return "Psmo_community_bot" 
+    }
 }
