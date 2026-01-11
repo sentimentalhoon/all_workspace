@@ -23,6 +23,12 @@ dependencies {
     implementation(libs.ktor.server.call.logging)
     implementation(libs.ktor.server.websockets)
     implementation(libs.ktor.server.swagger)
+    implementation(libs.ktor.server.resources)
+    
+    // DI
+    implementation(libs.koin.ktor)
+    implementation(libs.koin.logger.slf4j)
+
 
     
     // Logging
