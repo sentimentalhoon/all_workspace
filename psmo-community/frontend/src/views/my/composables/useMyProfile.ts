@@ -22,13 +22,18 @@ export function useMyProfile() {
   const score = computed(() => user.value?.score ?? 0)
   const activityLevel = computed(() => user.value?.activityLevel ?? 1)
 
-  const thresholds = [
-    { level: 1, min: 0 },
-    { level: 2, min: 100 },
-    { level: 3, min: 300 },
-    { level: 4, min: 700 },
-    { level: 5, min: 1500 },
-  ]
+  /* 
+    Backend Logic: Score = 50 * (level - 1) * level
+    Level 1: 0
+    Level 2: 100
+    Level 3: 300
+    ...
+  */
+  const thresholds = Array.from({ length: 100 }, (_, i) => {
+    const level = i + 1
+    const min = 50 * (level - 1) * level
+    return { level, min }
+  })
 
   const nextLevelInfo = computed(() => {
     const current = activityLevel.value

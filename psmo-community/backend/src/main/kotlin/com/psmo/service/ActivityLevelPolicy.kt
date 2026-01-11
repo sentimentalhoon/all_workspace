@@ -7,15 +7,17 @@ package com.psmo.service
  */
 object ActivityLevelPolicy {
     /**
-     * 레벨-최소점수 테이블. 오름차순 정렬 필수.
+     * 레벨-최소점수 테이블. 1~100 레벨.
+     * 공식: Score = 50 * (level - 1) * level
+     * Level 1: 0
+     * Level 2: 100
+     * Level 3: 300
+     * ...
+     * Level 100: 495,000
      */
-    private val thresholds: List<Pair<Int, Int>> = listOf(
-        1 to 0,
-        2 to 100,
-        3 to 300,
-        4 to 700,
-        5 to 1500
-    )
+    private val thresholds: List<Pair<Int, Int>> = (1..100).map { level ->
+        level to 50 * (level - 1) * level
+    }
 
     fun levelForScore(score: Int): Int {
         val safeScore = score.coerceAtLeast(0)
