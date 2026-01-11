@@ -14,9 +14,14 @@ export function useMyProfile() {
     refreshProfile,
   } = useTelegramAuth()
 
-  const avatarUrl = computed(
-    () => user.value?.photoUrl || 'https://via.placeholder.com/80?text=PSMO',
-  )
+  const avatarUrl = computed(() => {
+    const u = user.value
+    if (u?.photoUrl) return u.photoUrl
+
+    // Default Avatar (UI Avatars)
+    const name = u?.displayName || u?.username || 'User'
+    return `https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&background=random&color=fff&rounded=true&bold=true`
+  })
 
   const role = computed(() => user.value?.role ?? 'member')
   const score = computed(() => user.value?.score ?? 0)
