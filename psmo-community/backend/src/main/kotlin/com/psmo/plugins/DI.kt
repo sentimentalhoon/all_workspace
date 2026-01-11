@@ -30,7 +30,10 @@ fun appModule(config: ApplicationConfig) = module {
     single { TelegramAuthService(get(), get(), get(), get()) }
     single { SnailRaceService(get(), get()) }
     single { TelegramBotService(get()) }
+    single { TelegramBotService(get()) }
     single { ChatService(get()) }
+    single { CloudflareStreamService(get()) } // Placeholder for Video Upload
+
     
     // Coroutine Scopes for Chat
     // distinct qualifiers could be used if we need to distinguish scopes, 
