@@ -126,6 +126,12 @@ export const useAuthStore = defineStore('auth', () => {
     localStorage.removeItem('wasLoggedIn')
   }
 
+  function setAuthSuccess(userData: UserResponse, token: string) {
+    user.value = userData
+    setAccessToken(token)
+    localStorage.setItem('wasLoggedIn', 'true')
+  }
+
   return {
     user,
     loading,
@@ -135,5 +141,6 @@ export const useAuthStore = defineStore('auth', () => {
     fetchProfile,
     checkAuth,
     logout,
+    setAuthSuccess,
   }
 })

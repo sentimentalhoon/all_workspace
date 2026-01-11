@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import { useAuthStore } from '@/stores/auth' // Assuming existing auth store
 import { useQuery } from '@tanstack/vue-query'
-import axios from 'axios'
 import QrcodeVue from 'qrcode.vue'
 import { ref, watch } from 'vue'
 import { useRouter } from 'vue-router'
@@ -20,8 +19,9 @@ const {
 } = useQuery({
   queryKey: ['qr-init'],
   queryFn: async () => {
-    const res = await axios.post('/api/auth/qr/init')
-    return res.data // { uuid, deepLink, expiresIn }
+    const res = await fetch('/api/auth/qr/init', { method: 'POST' })
+    if (!res.ok) throw new Error('Failed to init QR session')
+    return res.json() // { uuid, deepLink, expiresIn }
   },
   staleTime: 0, // Always fetch fresh session on mount
   refetchOnWindowFocus: false,
@@ -33,16 +33,21 @@ const { data: statusData, error: statusError } = useQuery({
   queryKey: ['qr-check', () => initData.value?.uuid],
   queryFn: async () => {
     if (!initData.value?.uuid) return null
-    const res = await axios.get('/api/auth/qr/check', {
-      params: { uuid: initData.value.uuid },
-      validateStatus: (status) => status < 500, // Allow 404
-    })
-    return res.data // { status: 'pending' | 'verified' | undefined (expired/404) }
+    const url = new URL('/api/auth/qr/check', window.location.origin)
+    url.searchParams.append('uuid', initData.value.uuid)
+
+    const res = await fetch(url.toString())
+    // 404 means expired or invalid. 200 means pending or verified.
+    if (!res.ok) {
+      if (res.status === 404) return { status: 'expired' }
+      throw new Error('Check failed')
+    }
+    return res.json() // { status: 'pending' | 'verified' }
   },
   enabled: () => !!initData.value?.uuid && !loginSuccess.value,
   refetchInterval: (query) => {
     const data = query.state.data
-    // If verified or expired (404/undefined), stop polling
+    // If verified or expired/error, stop polling
     if (loginSuccess.value || (data && data.status !== 'pending')) return false
     return 2000 // Poll every 2s
   },
@@ -55,14 +60,18 @@ watch(statusData, async (newVal) => {
     loginSuccess.value = true
     try {
       // Claim the session
-      const claimRes = await axios.post('/api/auth/qr/claim', {
-        uuid: initData.value?.uuid,
+      const claimRes = await fetch('/api/auth/qr/claim', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ uuid: initData.value?.uuid }),
       })
 
-      const { user, token } = claimRes.data
+      if (!claimRes.ok) throw new Error('Claim failed')
+
+      const { user, token } = await claimRes.json()
 
       // Update Client State
-      authStore.setAuth(user, token.accessToken) // Assuming setAuth actions exist
+      authStore.setAuthSuccess(user, token.accessToken) // Assuming setAuth actions exist
 
       // Redirect
       router.push('/')
