@@ -20,7 +20,7 @@ export const useReportForm = ({ getPhotoCount, clearPhotos }: UseReportFormOptio
   const content = ref('')
   const severity = ref('medium')
   const hashtags = ref<string[]>([])
-  
+
   // Auto-generate hashtags based on structured input
   watch(
     [selectedType, region, pcRoomName],
@@ -30,54 +30,31 @@ export const useReportForm = ({ getPhotoCount, clearPhotos }: UseReportFormOptio
       // Helper to replace tag
       const replaceTag = (oldVal: string, newVal: string) => {
         if (!oldVal) {
-             if (newVal && !tags.includes(newVal)) tags.push(newVal)
-             return
+          if (newVal && !tags.includes(newVal)) tags.push(newVal)
+          return
         }
         const idx = tags.indexOf(oldVal)
         if (idx !== -1) {
-            if (newVal) tags[idx] = newVal
-            else tags.splice(idx, 1) // Remove if new value is empty
+          if (newVal) tags[idx] = newVal
+          else tags.splice(idx, 1) // Remove if new value is empty
         } else {
-            if (newVal && !tags.includes(newVal)) tags.push(newVal)
+          if (newVal && !tags.includes(newVal)) tags.push(newVal)
         }
       }
-      
+
       // Update Type Tag
       replaceTag(oldType, newType)
-      
+
       // Update Region Tag
       replaceTag(oldRegion, newRegion)
-      
+
       // Update PCRoom Tag (remove spaces for hashtag)
       const fmtPc = (s: string) => s.trim().replace(/\s+/g, '')
       replaceTag(fmtPc(oldPcRoom), fmtPc(newPcRoom))
-      
+
       hashtags.value = tags
-    }
+    },
   )
-
-  const reportTypes = [
-    // ... existing report types
-  ]
-// ... existing rest of file
-  value: string
-  label: string
-  class: string
-}
-
-interface UseReportFormOptions {
-  getPhotoCount: () => number
-  clearPhotos: () => void
-}
-
-export const useReportForm = ({ getPhotoCount, clearPhotos }: UseReportFormOptions) => {
-  const selectedType = ref('')
-  const region = ref('')
-  const pcRoomName = ref('')
-  const incidentDate = ref('')
-  const characteristic = ref('')
-  const content = ref('')
-  const severity = ref('medium')
 
   const reportTypes = [
     '욕설/폭언',
@@ -163,6 +140,7 @@ export const useReportForm = ({ getPhotoCount, clearPhotos }: UseReportFormOptio
       severity: severity.value,
       photoCount: getPhotoCount(),
       videoFile: videoFile.value ? videoFile.value.name : null,
+      hashtags: hashtags.value,
     })
     alert('진상 정보가 등록되었습니다.')
     resetForm()
