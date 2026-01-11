@@ -26,7 +26,7 @@ fun appModule(config: ApplicationConfig) = module {
     single { TestService(get()) }
     single { UserService(get()) }
     single { JwtService(get()) }
-    single { RefreshTokenService() }
+    single { RefreshTokenService(get(), get()) }
     single { TelegramAuthService(get(), get(), get(), get()) }
     single { SnailRaceService(get(), get()) }
     single { ChatService(get()) }
