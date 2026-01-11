@@ -95,6 +95,24 @@
     </div>
 
     <div class="form-group">
+      <label>영상 업로드 (1분 미만)</label>
+      <VideoUploader
+        :video-file="videoFile"
+        @upload="emit('video-upload', $event)"
+        @remove="emit('remove-video')"
+      />
+    </div>
+
+    <div class="form-group">
+      <label>영상 업로드 (1분 미만)</label>
+      <VideoUploader
+        :video-file="videoFile"
+        @upload="emit('video-upload', $event)"
+        @remove="emit('remove-video')"
+      />
+    </div>
+
+    <div class="form-group">
       <label>심각도</label>
       <div class="severity-buttons">
         <button
@@ -119,6 +137,7 @@
 <script setup lang="ts">
 import type { SeverityLevel } from '../useReportForm'
 import PhotoUploader from './PhotoUploader.vue'
+import VideoUploader from './VideoUploader.vue'
 
 defineProps({
   reportTypes: {
@@ -173,6 +192,10 @@ defineProps({
     type: Boolean,
     required: true,
   },
+  videoFile: {
+    type: Object as () => File | null,
+    default: null,
+  },
 })
 
 const emit = defineEmits<{
@@ -185,6 +208,8 @@ const emit = defineEmits<{
   (event: 'update:severity', value: string): void
   (event: 'photo-upload', payload: Event): void
   (event: 'remove-photo', index: number): void
+  (event: 'video-upload', file: File): void
+  (event: 'remove-video'): void
   (event: 'submit'): void
   (event: 'reset'): void
 }>()

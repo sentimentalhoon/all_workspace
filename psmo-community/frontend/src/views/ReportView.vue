@@ -20,6 +20,9 @@
         :max-file-size-mb="MAX_FILE_SIZE_MB"
         :photo-previews="photoPreviews"
         :is-optimizing-photos="isOptimizingPhotos"
+        :video-file="videoFile"
+        @video-upload="handleVideoUpload"
+        @remove-video="handleVideoRemove"
         @photo-upload="handlePhotoUpload"
         @remove-photo="removePhoto"
         @submit="submitReport"
@@ -63,6 +66,9 @@ const {
   recentReports,
   submitReport,
   resetForm,
+  videoFile,
+  handleVideoUpload,
+  handleVideoRemove,
 } = useReportForm({
   getPhotoCount: () => photoUpload.photos.value.length,
   clearPhotos: photoUpload.clearPhotos,

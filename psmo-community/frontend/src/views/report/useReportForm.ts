@@ -85,6 +85,10 @@ export const useReportForm = ({ getPhotoCount, clearPhotos }: UseReportFormOptio
     },
   ])
 
+  const photoCount = getPhotoCount() // Keep this for photo count
+
+  const videoFile = ref<File | null>(null)
+
   const submitReport = () => {
     if (!selectedType.value || !region.value || !incidentDate.value || !content.value) {
       alert('필수 항목을 모두 입력해주세요.')
@@ -99,6 +103,7 @@ export const useReportForm = ({ getPhotoCount, clearPhotos }: UseReportFormOptio
       content: content.value,
       severity: severity.value,
       photoCount: getPhotoCount(),
+      videoFile: videoFile.value ? videoFile.value.name : null,
     })
     alert('진상 정보가 등록되었습니다.')
     resetForm()
@@ -112,7 +117,16 @@ export const useReportForm = ({ getPhotoCount, clearPhotos }: UseReportFormOptio
     characteristic.value = ''
     content.value = ''
     severity.value = 'medium'
+    videoFile.value = null
     clearPhotos()
+  }
+
+  const handleVideoUpload = (file: File) => {
+    videoFile.value = file
+  }
+
+  const handleVideoRemove = () => {
+    videoFile.value = null
   }
 
   return {
@@ -128,5 +142,8 @@ export const useReportForm = ({ getPhotoCount, clearPhotos }: UseReportFormOptio
     recentReports,
     submitReport,
     resetForm,
+    videoFile,
+    handleVideoUpload,
+    handleVideoRemove,
   }
 }
