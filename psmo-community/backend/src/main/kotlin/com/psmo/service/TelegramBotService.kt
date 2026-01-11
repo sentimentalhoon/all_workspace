@@ -109,6 +109,9 @@ class TelegramBotService(
                 return
             }
             
+            // Fetch User Profile Photo
+            val photoUrl = fetchUserProfilePhotoUrl(telegramId)
+
             // 2. Update Redis with user info (Status: Verified)
             // Store JSON payload for frontend to claim
             val payload = mapOf(
@@ -116,6 +119,7 @@ class TelegramBotService(
                 "firstName" to firstName,
                 "lastName" to lastName,
                 "username" to username,
+                "photoUrl" to photoUrl, // Added photoUrl
                 "status" to "verified"
             )
             val jsonPayload = mapper.writeValueAsString(payload)
@@ -128,6 +132,48 @@ class TelegramBotService(
             
             log.info("QR Login Verified: $uuid for user $telegramId")
             sendMessage(chatId, "✅ 로그인이 확인되었습니다! 웹 브라우저로 돌아가세요.")
+        }
+    }
+    
+    private suspend fun fetchUserProfilePhotoUrl(userId: Long): String? {
+        try {
+            // 1. Get User Profile Photos
+            val photosResponse = client.get("https://api.telegram.org/bot$botToken/getUserProfilePhotos") {
+                parameter("user_id", userId)
+                parameter("limit", 1)
+            }
+            
+            val photosBody = photosResponse.bodyAsText()
+            val photosRoot = mapper.readTree(photosBody)
+            
+            if (!photosRoot["ok"].asBoolean()) return null
+            
+            val photos = photosRoot["result"]["photos"]
+            if (photos.isEmpty) return null
+            
+            // Get the biggest size (last item in the array) of the first photo
+            val firstPhotoVariants = photos[0]
+            if (firstPhotoVariants.isEmpty) return null
+            val fileId = firstPhotoVariants[firstPhotoVariants.size() - 1]["file_id"].asText()
+            
+            // 2. Get File Path
+            val fileResponse = client.get("https://api.telegram.org/bot$botToken/getFile") {
+                parameter("file_id", fileId)
+            }
+            
+            val fileBody = fileResponse.bodyAsText()
+            val fileRoot = mapper.readTree(fileBody)
+            
+            if (!fileRoot["ok"].asBoolean()) return null
+            
+            val filePath = fileRoot["result"]["file_path"].asText()
+            
+            // 3. Construct URL
+            return "https://api.telegram.org/file/bot$botToken/$filePath"
+            
+        } catch (e: Exception) {
+            log.warn("Failed to fetch profile photo for user $userId", e)
+            return null
         }
     }
     

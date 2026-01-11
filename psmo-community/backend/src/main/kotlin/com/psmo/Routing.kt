@@ -217,8 +217,7 @@ fun Application.configureRouting(config: ApplicationConfig) {
                 val firstName = claimData["firstName"] as? String
                 val lastName = claimData["lastName"] as? String
                 val username = claimData["username"] as? String
-                // photoUrl is not available via Message update easily unless we fetch profile photos.
-                // We can skip photo or fetch later.
+                val photoUrl = claimData["photoUrl"] as? String
                 
                 // Reuse existing upsert logic
                 val userRecord = userService.upsertTelegramUser(
@@ -226,7 +225,7 @@ fun Application.configureRouting(config: ApplicationConfig) {
                     firstName = firstName,
                     lastName = lastName,
                     username = username,
-                    photoUrl = null 
+                    photoUrl = photoUrl
                 )
                 
                 val accessToken = jwtService.generateAccessToken(userRecord)
