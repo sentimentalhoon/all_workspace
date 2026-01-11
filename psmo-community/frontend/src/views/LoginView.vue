@@ -9,12 +9,25 @@
         </p>
       </header>
 
-      <div class="actions">
+      <div class="tabs">
+        <button :class="{ active: loginMethod === 'widget' }" @click="loginMethod = 'widget'">
+          기본 로그인
+        </button>
+        <button :class="{ active: loginMethod === 'qr' }" @click="loginMethod = 'qr'">
+          QR 코드
+        </button>
+      </div>
+
+      <div v-if="loginMethod === 'widget'" class="actions">
         <button class="primary" :disabled="loginPending" @click="handleLogin">
           <span v-if="loginPending">로그인 중...</span>
-          <span v-else>텔레그램으로 계속하기 (@{{ telegramBotUsername }})</span>
+          <span v-else>텔레그램 앱으로 계속하기 (@{{ telegramBotUsername }})</span>
         </button>
         <p v-if="errorMessage" class="error">{{ errorMessage }}</p>
+      </div>
+
+      <div v-else class="qr-section">
+        <TelegramQrLogin />
       </div>
 
       <p class="hint">로그인 완료 시 요청하신 페이지로 이동합니다.</p>
@@ -23,13 +36,16 @@
 </template>
 
 <script setup lang="ts">
+import TelegramQrLogin from '@/components/auth/TelegramQrLogin.vue' // Import QR Component
 import { useTelegramAuth } from '@/composables/useTelegramAuth'
-import { computed, watchEffect } from 'vue'
+import { computed, ref, watchEffect } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 
 const router = useRouter()
 const route = useRoute()
 const redirectTo = computed(() => (route.query.redirect as string | undefined) ?? '/')
+
+const loginMethod = ref<'widget' | 'qr'>('qr') // Default to QR for better UX? Or remember last choice? Let's default to QR as it's the new feature.
 
 const { isAuthenticated, loginPending, errorMessage, handleTelegramLogin, telegramBotUsername } =
   useTelegramAuth()
@@ -99,9 +115,42 @@ h1 {
   margin: 0;
 }
 
+/* Tabs */
+.tabs {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 20px;
+  background: rgba(255, 255, 255, 0.05);
+  padding: 4px;
+  border-radius: 10px;
+}
+
+.tabs button {
+  flex: 1;
+  background: transparent;
+  border: none;
+  color: #9fb1cc;
+  padding: 8px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 600;
+  transition: all 0.2s;
+}
+
+.tabs button.active {
+  background: rgba(255, 255, 255, 0.1);
+  color: white;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
 .actions {
   display: grid;
   gap: 12px;
+}
+
+.qr-section {
+  display: flex;
+  justify-content: center;
 }
 
 .primary {
@@ -141,6 +190,7 @@ h1 {
 .hint {
   color: #9fb1cc;
   font-size: 13px;
-  margin-top: 4px;
+  margin-top: 16px;
+  text-align: center;
 }
 </style>

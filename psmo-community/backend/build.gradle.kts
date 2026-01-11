@@ -26,6 +26,11 @@ dependencies {
     implementation(libs.ktor.server.swagger)
     implementation(libs.ktor.server.resources)
     
+    // Client (for Telegram Bot)
+    implementation(libs.ktor.client.core)
+    implementation(libs.ktor.client.cio)
+    implementation(libs.ktor.client.content.negotiation)
+    
     // DI
     implementation(libs.koin.ktor)
     implementation(libs.koin.logger.slf4j)

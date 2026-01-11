@@ -29,6 +29,7 @@ fun appModule(config: ApplicationConfig) = module {
     single { RefreshTokenService(get(), get()) }
     single { TelegramAuthService(get(), get(), get(), get()) }
     single { SnailRaceService(get(), get()) }
+    single { TelegramBotService(get()) }
     single { ChatService(get()) }
     
     // Coroutine Scopes for Chat

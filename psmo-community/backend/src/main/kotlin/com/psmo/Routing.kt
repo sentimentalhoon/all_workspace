@@ -50,12 +50,18 @@ fun Application.configureRouting(config: ApplicationConfig) {
     val jwtService by inject<JwtService>()
     val refreshTokenService by inject<RefreshTokenService>()
     val telegramAuthService by inject<TelegramAuthService>()
+    val telegramBotService by inject<TelegramBotService>()
     val snailRaceService by inject<SnailRaceService>()
     val chatService by inject<ChatService>()
     val chatRoomManager by inject<ChatRoomManager>()
 
+    monitor.subscribe(ApplicationStarted) {
+        launch { telegramBotService.startPolling() } // Launch in a coroutine
+    }
+    
     monitor.subscribe(ApplicationStopped) {
         chatRoomManager.shutdown()
+        telegramBotService.stopPolling()
     }
 
     routing {
@@ -168,6 +174,86 @@ fun Application.configureRouting(config: ApplicationConfig) {
             }
             call.response.cookies.append(name = "refresh_token", value = "", maxAge = 0, expires = GMTDate.START, path = "/api/auth")
             call.respond(HttpStatusCode.OK, mapOf("status" to "success"))
+        }
+
+        // --- QR Code Login Routes ---
+        
+        post<QrApi.Auth.Qr.Init> {
+            val uuid = telegramBotService.createSession()
+            val botName = telegramBotService.getBotUsername() // We need bot name to construct deep link
+            // Assuming bot name is known or we can get it. For now, let's hardcode or fetch.
+            // Simplified: Just return UUID. Frontend constructs URL: https://t.me/<BOT_NAME>?start=login_<UUID>
+            // Better: Return full URL.
+            // Let's assume bot name from config or env.
+            val botNameFromConfig = "psmo_bot" // TODO: Get from config
+            val deepLink = "https://t.me/$botNameFromConfig?start=login_$uuid"
+            
+            call.respond(mapOf(
+                "uuid" to uuid,
+                "deepLink" to deepLink,
+                "expiresIn" to 300
+            ))
+        }
+
+        get<QrApi.Auth.Qr.Check> {
+            val uuid = call.request.queryParameters["uuid"] 
+                ?: return@get call.respond(HttpStatusCode.BadRequest, mapOf("status" to "error", "message" to "uuid missing"))
+            
+            val statusMap = telegramBotService.checkSession(uuid)
+            if (statusMap == null) {
+                call.respond(HttpStatusCode.NotFound, mapOf("status" to "expired"))
+            } else {
+                call.respond(statusMap)
+            }
+        }
+
+        post<QrApi.Auth.Qr.Claim> {
+            val params = call.receive<Map<String, String>>()
+            val uuid = params["uuid"] ?: return@post call.respond(HttpStatusCode.BadRequest, mapOf("status" to "error", "message" to "uuid missing"))
+            
+            val claimData = telegramBotService.claimSession(uuid)
+            if (claimData != null) {
+                // Login Success!
+                // Extract user data from claimData (which was stored by Bot)
+                val telegramId = (claimData["telegramId"] as Number).toLong()
+                val firstName = claimData["firstName"] as? String
+                val lastName = claimData["lastName"] as? String
+                val username = claimData["username"] as? String
+                // photoUrl is not available via Message update easily unless we fetch profile photos.
+                // We can skip photo or fetch later.
+                
+                // Reuse existing upsert logic
+                val userRecord = userService.upsertTelegramUser(
+                    telegramId = telegramId,
+                    firstName = firstName,
+                    lastName = lastName,
+                    username = username,
+                    photoUrl = null 
+                )
+                
+                val accessToken = jwtService.generateAccessToken(userRecord)
+                val refreshToken = refreshTokenService.createRefreshToken(userRecord, jwtService.getRefreshExpirationSeconds())
+                
+                // Cookie Settings
+                call.response.cookies.append(
+                    name = "refresh_token",
+                    value = refreshToken,
+                    httpOnly = true,
+                    secure = true, 
+                    path = "/api/auth",
+                    maxAge = jwtService.getRefreshExpirationSeconds(),
+                    extensions = mapOf("SameSite" to "Lax")
+                )
+                
+                call.respond(TelegramAuthResponse(
+                    user = userRecord.toResponse(),
+                    token = accessToken,
+                    authDate = System.currentTimeMillis() / 1000,
+                    verifiedAt = System.currentTimeMillis() / 1000
+                ))
+            } else {
+                call.respond(HttpStatusCode.Unauthorized, mapOf("status" to "error", "message" to "Session not verified or expired"))
+            }
         }
 
         authenticate("auth-jwt") {
