@@ -43,6 +43,19 @@
             :max="betLimits.maxBet"
             :step="betLimits.step"
           />
+          <div class="bet-presets">
+            <button
+              v-for="amount in [100, 500, 1000, 5000, 10000]"
+              :key="amount"
+              class="preset-btn"
+              @click="betAmount = amount"
+            >
+              +{{ amount.toLocaleString() }}
+            </button>
+            <button class="preset-btn" @click="betAmount = Math.min(balance, betLimits.maxBet)">
+              MAX
+            </button>
+          </div>
           <div class="bet-hint">
             <span
               >최소 {{ formatPoints(betLimits.minBet) }}p · 최대
@@ -118,6 +131,35 @@
         >
           {{ isReporting ? '보고 중...' : serverResult?.verified ? '검증 완료' : '결과 다시 보고' }}
         </button>
+      </div>
+
+      <!-- Winner Overlay -->
+      <div v-if="raceState === 'finished' && winnerIds.length > 0" class="winner-overlay">
+        <div class="winner-card">
+          <h2>🏁 경기 종료!</h2>
+          <p class="winner-text">
+            우승:
+            <span :style="{ color: snails.find((s) => s.id === winnerIds[0])?.color }">{{
+              snails.find((s) => s.id === winnerIds[0])?.name
+            }}</span>
+          </p>
+          <p
+            class="result-message"
+            :class="{
+              win: winnerIds.includes(selectedSnailId),
+              lose: !winnerIds.includes(selectedSnailId),
+            }"
+          >
+            {{
+              winnerIds.includes(selectedSnailId)
+                ? '🎉 축하합니다! 승리하셨습니다!'
+                : '😭 아쉽네요! 다음 기회에...'
+            }}
+          </p>
+          <div class="payout-info" v-if="serverResult">
+            {{ serverResult.payout >= 0 ? '+' : '' }}{{ formatPoints(serverResult.payout) }}p
+          </div>
+        </div>
       </div>
     </section>
 
@@ -396,8 +438,16 @@ const startRace = async () => {
     raceMeta.value = { id: null, seed: clientSeed, fairnessHash: null }
     resetPositions()
     started = true
+    resetPositions()
+    started = true
   } finally {
     isStarting.value = false
+  }
+
+  // Optimistic update: Deduct bet amount immediately
+  if (started) {
+    const currentScore = auth.user?.score ?? 0
+    auth.updateScore(currentScore - betAmount.value)
   }
 
   if (!started) return
@@ -430,6 +480,11 @@ const reportResultToServer = async () => {
     statusText.value = result.verified
       ? '서버 검증 완료! 결과가 저장되었습니다.'
       : '결과 저장은 완료, 추가 검증이 필요합니다.'
+
+    // Update Score with server result
+    if (result.balance !== undefined) {
+      auth.updateScore(result.balance)
+    }
   } catch (err) {
     if (err instanceof GameApiError) {
       serverError.value = err.message
@@ -525,14 +580,27 @@ const draw = () => {
 
     const x = margin + snail.position
 
-    // 달팽이 이모지로 캐릭터를 표현해 시각적 재미를 높인다.
-    ctx.font = '22px "Noto Color Emoji", "Apple Color Emoji", "Segoe UI Emoji", system-ui'
-    ctx.fillText('🐌', x - 12, y + 8)
+    // Draw Snail Body (Colored Circle)
+    ctx.beginPath()
+    ctx.arc(x, y, 15, 0, Math.PI * 2)
+    ctx.fillStyle = snail.color
+    ctx.fill()
+    ctx.strokeStyle = '#fff'
+    ctx.lineWidth = 2
+    ctx.stroke()
 
-    // 이름 배지
+    // Draw Snail Head/Emoji
+    ctx.font = '20px "Noto Color Emoji", "Apple Color Emoji", "Segoe UI Emoji", system-ui'
+    ctx.fillStyle = '#fff'
+    ctx.textAlign = 'center'
+    ctx.textBaseline = 'middle'
+    ctx.fillText('🐌', x, y + 2)
+
+    // Name Badge
     ctx.fillStyle = '#111827'
-    ctx.font = '12px "Inter", system-ui'
-    ctx.fillText(snail.name, x - 16, y - 18)
+    ctx.font = 'bold 12px "Inter", system-ui'
+    ctx.textAlign = 'center'
+    ctx.fillText(snail.name, x, y - 22)
   })
 }
 
@@ -638,7 +706,30 @@ h1 {
 
 .bet-input {
   display: grid;
-  gap: 0.35rem;
+  gap: 0.5rem;
+}
+
+.bet-presets {
+  display: flex;
+  gap: 0.25rem;
+  flex-wrap: wrap;
+}
+
+.preset-btn {
+  background: #f3f4f6;
+  border: 1px solid #e5e7eb;
+  border-radius: 6px;
+  padding: 0.25rem 0.6rem;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: #4b5563;
+  cursor: pointer;
+  transition: all 0.1s;
+}
+
+.preset-btn:hover {
+  background: #e5e7eb;
+  color: #111827;
 }
 
 .bet-input input {
@@ -787,6 +878,75 @@ h1 {
   padding: 0.75rem;
   box-shadow: 0 6px 18px rgba(0, 0, 0, 0.04);
   margin-bottom: 1rem;
+  position: relative; /* For overlay */
+}
+
+.winner-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(255, 255, 255, 0.85);
+  backdrop-filter: blur(2px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 12px;
+  z-index: 10;
+  animation: fadeIn 0.3s ease;
+}
+
+.winner-card {
+  background: #fff;
+  padding: 2rem;
+  border-radius: 16px;
+  box-shadow:
+    0 20px 25px -5px rgba(0, 0, 0, 0.1),
+    0 10px 10px -5px rgba(0, 0, 0, 0.04);
+  text-align: center;
+  border: 1px solid #e5e7eb;
+  min-width: 200px;
+}
+
+.winner-card h2 {
+  margin: 0 0 0.5rem 0;
+  font-size: 1.5rem;
+  color: #111827;
+}
+
+.winner-text {
+  font-size: 1.25rem;
+  font-weight: 800;
+  margin: 0 0 1rem 0;
+}
+
+.result-message {
+  font-size: 1rem;
+  margin: 0 0 0.5rem 0;
+  font-weight: 600;
+}
+
+.result-message.win {
+  color: #059669;
+}
+.result-message.lose {
+  color: #dc2626;
+}
+
+.payout-info {
+  font-size: 1.5rem;
+  font-weight: 900;
+  color: #0f172a;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
 }
 
 .meta-bar {

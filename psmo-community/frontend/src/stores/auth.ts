@@ -132,6 +132,12 @@ export const useAuthStore = defineStore('auth', () => {
     localStorage.setItem('wasLoggedIn', 'true')
   }
 
+  function updateScore(score: number) {
+    if (user.value) {
+      user.value.score = score
+    }
+  }
+
   return {
     user,
     loading,
@@ -142,5 +148,6 @@ export const useAuthStore = defineStore('auth', () => {
     checkAuth,
     logout,
     setAuthSuccess,
+    updateScore,
   }
 })
