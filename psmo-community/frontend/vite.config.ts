@@ -8,7 +8,7 @@ import vueDevTools from 'vite-plugin-vue-devtools'
 
 // https://vite.dev/config/
 export default defineConfig(() => {
-  const backendPort = process.env.VITE_BACKEND_PORT || '8081'
+  const backendPort = process.env.VITE_BACKEND_PORT || '8080'
   const backendHost = process.env.VITE_BACKEND_HOST || 'localhost'
 
   return {
