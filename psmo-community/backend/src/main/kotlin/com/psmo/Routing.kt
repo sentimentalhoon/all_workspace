@@ -180,7 +180,7 @@ fun Application.configureRouting(config: ApplicationConfig) {
 
         // --- QR Code Login Routes ---
         
-        post<QrApi.Auth.Qr.Init> {
+        post<Qr.Init> {
             val uuid = telegramBotService.createSession()
             val botName = telegramBotService.getBotUsername() 
             // Return deep link using global bot name
@@ -193,7 +193,7 @@ fun Application.configureRouting(config: ApplicationConfig) {
             ))
         }
 
-        get<QrApi.Auth.Qr.Check> {
+        get<Qr.Check> {
             val uuid = call.request.queryParameters["uuid"] 
                 ?: return@get call.respond(HttpStatusCode.BadRequest, mapOf("status" to "error", "message" to "uuid missing"))
             
@@ -205,7 +205,7 @@ fun Application.configureRouting(config: ApplicationConfig) {
             }
         }
 
-        post<QrApi.Auth.Qr.Claim> {
+        post<Qr.Claim> {
             val params = call.receive<Map<String, String>>()
             val uuid = params["uuid"] ?: return@post call.respond(HttpStatusCode.BadRequest, mapOf("status" to "error", "message" to "uuid missing"))
             
