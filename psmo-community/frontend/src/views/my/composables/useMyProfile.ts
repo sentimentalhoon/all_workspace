@@ -15,12 +15,7 @@ export function useMyProfile() {
   } = useTelegramAuth()
 
   const avatarUrl = computed(() => {
-    const u = user.value
-    if (u?.photoUrl) return u.photoUrl
-
-    // Default Avatar (UI Avatars)
-    const name = u?.displayName || u?.username || 'User'
-    return `https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&background=random&color=fff&rounded=true&bold=true`
+    return user.value?.photoUrl || '/default_avatar.svg'
   })
 
   const role = computed(() => user.value?.role ?? 'member')
