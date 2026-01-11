@@ -104,15 +104,6 @@
     </div>
 
     <div class="form-group">
-      <label>영상 업로드 (1분 미만)</label>
-      <VideoUploader
-        :video-file="videoFile"
-        @upload="emit('video-upload', $event)"
-        @remove="emit('remove-video')"
-      />
-    </div>
-
-    <div class="form-group">
       <label>심각도</label>
       <div class="severity-buttons">
         <button
