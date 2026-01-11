@@ -1,6 +1,6 @@
 import { onBeforeUnmount, ref } from 'vue'
 
-const MAX_PHOTOS = 5
+const MAX_PHOTOS = 20
 const MAX_FILE_SIZE_MB = 10
 const MAX_FILE_SIZE_BYTES = MAX_FILE_SIZE_MB * 1024 * 1024
 const MAX_IMAGE_DIMENSION = 1920
