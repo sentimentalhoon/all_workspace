@@ -62,6 +62,7 @@ const handleFileChange = (event: Event) => {
   if (!input.files || input.files.length === 0) return
 
   const file = input.files[0]
+  if (!file) return
   validateAndEmit(file)
 
   // Reset input so same file can be selected again if needed (after remove)
