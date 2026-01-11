@@ -1,6 +1,65 @@
-import { ref } from 'vue'
+import { ref, watch } from 'vue'
 
 export type SeverityLevel = {
+  value: string
+  label: string
+  class: string
+}
+
+interface UseReportFormOptions {
+  getPhotoCount: () => number
+  clearPhotos: () => void
+}
+
+export const useReportForm = ({ getPhotoCount, clearPhotos }: UseReportFormOptions) => {
+  const selectedType = ref('')
+  const region = ref('')
+  const pcRoomName = ref('')
+  const incidentDate = ref('')
+  const characteristic = ref('')
+  const content = ref('')
+  const severity = ref('medium')
+  const hashtags = ref<string[]>([])
+  
+  // Auto-generate hashtags based on structured input
+  watch(
+    [selectedType, region, pcRoomName],
+    ([newType, newRegion, newPcRoom], [oldType, oldRegion, oldPcRoom]) => {
+      let tags = [...hashtags.value]
+
+      // Helper to replace tag
+      const replaceTag = (oldVal: string, newVal: string) => {
+        if (!oldVal) {
+             if (newVal && !tags.includes(newVal)) tags.push(newVal)
+             return
+        }
+        const idx = tags.indexOf(oldVal)
+        if (idx !== -1) {
+            if (newVal) tags[idx] = newVal
+            else tags.splice(idx, 1) // Remove if new value is empty
+        } else {
+            if (newVal && !tags.includes(newVal)) tags.push(newVal)
+        }
+      }
+      
+      // Update Type Tag
+      replaceTag(oldType, newType)
+      
+      // Update Region Tag
+      replaceTag(oldRegion, newRegion)
+      
+      // Update PCRoom Tag (remove spaces for hashtag)
+      const fmtPc = (s: string) => s.trim().replace(/\s+/g, '')
+      replaceTag(fmtPc(oldPcRoom), fmtPc(newPcRoom))
+      
+      hashtags.value = tags
+    }
+  )
+
+  const reportTypes = [
+    // ... existing report types
+  ]
+// ... existing rest of file
   value: string
   label: string
   class: string
@@ -118,6 +177,7 @@ export const useReportForm = ({ getPhotoCount, clearPhotos }: UseReportFormOptio
     content.value = ''
     severity.value = 'medium'
     videoFile.value = null
+    hashtags.value = []
     clearPhotos()
   }
 
@@ -137,6 +197,7 @@ export const useReportForm = ({ getPhotoCount, clearPhotos }: UseReportFormOptio
     characteristic,
     content,
     severity,
+    hashtags,
     reportTypes,
     severityLevels,
     recentReports,

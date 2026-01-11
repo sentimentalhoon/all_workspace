@@ -83,6 +83,11 @@
     </div>
 
     <div class="form-group">
+      <label>해시태그 (자동 생성 + 직접 입력)</label>
+      <HashtagInput :model-value="hashtags" @update:model-value="emit('update:hashtags', $event)" />
+    </div>
+
+    <div class="form-group">
       <label>사진 업로드 (최대 {{ maxPhotos }}장)</label>
       <PhotoUploader
         :max-photos="maxPhotos"
