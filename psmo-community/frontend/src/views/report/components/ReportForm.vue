@@ -132,6 +132,7 @@
 
 <script setup lang="ts">
 import type { SeverityLevel } from '../useReportForm'
+import HashtagInput from './HashtagInput.vue'
 import PhotoUploader from './PhotoUploader.vue'
 import VideoUploader from './VideoUploader.vue'
 
@@ -172,6 +173,10 @@ defineProps({
     type: String,
     required: true,
   },
+  hashtags: {
+    type: Array as () => string[],
+    default: () => [],
+  },
   maxPhotos: {
     type: Number,
     required: true,
@@ -202,6 +207,7 @@ const emit = defineEmits<{
   (event: 'update:characteristic', value: string): void
   (event: 'update:content', value: string): void
   (event: 'update:severity', value: string): void
+  (event: 'update:hashtags', value: string[]): void
   (event: 'photo-upload', payload: Event): void
   (event: 'remove-photo', index: number): void
   (event: 'video-upload', file: File): void
