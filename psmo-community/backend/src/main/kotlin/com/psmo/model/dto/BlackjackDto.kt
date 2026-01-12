@@ -1,13 +1,13 @@
 package com.psmo.model.dto
 
-data class BlackjackStartRequestDto(
-    val betAmount: Int = 0
-)
-
 import com.psmo.model.BlackjackGame
 import com.psmo.model.Card
 import com.psmo.model.GameResult
 import com.psmo.model.GameStatus
+
+data class BlackjackStartRequestDto(
+    val betAmount: Int = 0
+)
 
 data class BlackjackGameResponse(
     val id: String,
@@ -20,7 +20,7 @@ data class BlackjackGameResponse(
     val payout: Int
 )
 
-fun BlackjackGame.toResponse(): BlackjackGameResponse {
+fun BlackjackGame.toBlackjackResponse(): BlackjackGameResponse {
     return BlackjackGameResponse(
         id = this.id,
         userId = this.userId,

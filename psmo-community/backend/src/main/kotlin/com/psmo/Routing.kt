@@ -2,6 +2,7 @@ package com.psmo
 
 import com.psmo.model.dto.ProfileResponse
 import com.psmo.model.dto.toResponse
+import com.psmo.model.dto.toBlackjackResponse
 import com.psmo.service.ChatRoomManager
 import com.psmo.service.ChatService
 import com.psmo.service.JwtService
@@ -376,7 +377,7 @@ fun Application.configureRouting(config: ApplicationConfig) {
                     try {
                         val payload = call.receive<com.psmo.model.dto.BlackjackStartRequestDto>()
                         val game = blackjackService.startGame(user, payload.betAmount)
-                        call.respond(game.toResponse())
+                        call.respond(game.toBlackjackResponse())
                     } catch (e: Exception) {
                         call.respond(HttpStatusCode.BadRequest, mapOf("error" to e.message))
                     }
@@ -389,7 +390,7 @@ fun Application.configureRouting(config: ApplicationConfig) {
                     
                     try {
                         val game = blackjackService.hit(gameId, userId)
-                        call.respond(game.toResponse())
+                        call.respond(game.toBlackjackResponse())
                     } catch (e: Exception) {
                          call.respond(HttpStatusCode.BadRequest, mapOf("error" to e.message))
                     }
@@ -402,7 +403,7 @@ fun Application.configureRouting(config: ApplicationConfig) {
                     
                     try {
                         val game = blackjackService.stand(gameId, userId)
-                        call.respond(game.toResponse())
+                        call.respond(game.toBlackjackResponse())
                     } catch (e: Exception) {
                         call.respond(HttpStatusCode.BadRequest, mapOf("error" to e.message))
                     }
