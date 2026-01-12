@@ -218,6 +218,7 @@ const startGame = async () => {
   try {
     const res = await fetchClient('/api/games/blackjack/start', {
       method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ betAmount: betAmount.value }),
     })
     const data = await res.json()
