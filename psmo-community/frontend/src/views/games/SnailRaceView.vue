@@ -140,6 +140,7 @@ const canvasRef = ref<HTMLCanvasElement | null>(null)
 const containerRef = ref<HTMLElement | null>(null)
 const animationId = ref<number | null>(null)
 const frameCount = ref(0)
+let resizeObserver: ResizeObserver | null = null
 
 // Game State
 const raceState = ref<RaceState>('idle')
@@ -219,8 +220,8 @@ const resetRace = () => {
   betAmount.value = 100
   serverResult.value = null
 
-  // Double raf to ensure UI paint first then canvas draw
-  requestAnimationFrame(() => {
+  // Wait for DOM update then force draw
+  nextTick(() => {
     requestAnimationFrame(draw)
   })
 }
@@ -484,11 +485,21 @@ onMounted(() => {
   if (containerRef.value) {
     draw() // Initial draw
   }
+
+  // Use ResizeObserver for robust sizing during layout changes
+  if (canvasRef.value) {
+    resizeObserver = new ResizeObserver(() => {
+      requestAnimationFrame(draw)
+    })
+    resizeObserver.observe(canvasRef.value)
+  }
+
   window.addEventListener('resize', draw)
 })
 
 onBeforeUnmount(() => {
   if (animationId.value) cancelAnimationFrame(animationId.value)
+  if (resizeObserver) resizeObserver.disconnect()
   window.removeEventListener('resize', draw)
 })
 </script>
