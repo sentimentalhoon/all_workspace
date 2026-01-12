@@ -197,13 +197,17 @@ const addBet = (amt: number) => {
 const selectSnail = (id: number) => (selectedSnailId.value = id)
 
 const resetRace = () => {
+  if (animationId.value) cancelAnimationFrame(animationId.value)
   raceState.value = 'idle'
+
   // Deep reset to trigger reactivity and ensure cleaner state
   snails.value = snails.value.map((s) => ({ ...s, position: 0 }))
   particles = []
+  shakeIntensity = 0
   statusText.value = 'READY TO RACE'
-  betAmount.value = 100 // Reset or keep? Keep is better UX actually, but let's reset for safety
+  betAmount.value = 100
   serverResult.value = null
+
   // Force a clean draw frame
   requestAnimationFrame(draw)
 }
@@ -311,16 +315,17 @@ const tick = () => {
 const finishRace = async () => {
   raceState.value = 'finished'
   statusText.value = 'FINISHING...'
+
   if (raceMeta.value.id) {
     try {
       const durationMs = 0 // Mock, backend mainly verifies sequence
       const winnerIds = sortedSnails.value
         .filter((s) => s.position >= trackLength.value)
-        .map((s) => s.id) // Simplified
+        .map((s) => s.id)
 
       const res = await completeSnailRace(raceMeta.value.id, {
         raceId: raceMeta.value.id,
-        winnerIds: [winnerSnail.value!.id], // Send only first for now, complex win logic handled by backend sim anyway
+        winnerIds: [winnerSnail.value!.id],
         durationMs,
         frames: frameCount.value,
         seed: raceMeta.value.seed!,
@@ -328,10 +333,15 @@ const finishRace = async () => {
         betSnailId: selectedSnailId.value,
         clientLog: { positions: snails.value.map((s) => Math.round(s.position)) },
       })
+
+      // Guard: If user already reset the race, ignore this result to prevent state corruption
+      if (raceState.value !== 'finished') return
+
       serverResult.value = res
       if (res.balance) auth.updateScore(res.balance)
       statusText.value = 'VERIFIED'
     } catch (e) {
+      if (raceState.value !== 'finished') return
       console.error(e)
       statusText.value = 'NETWORK ERROR'
     }
