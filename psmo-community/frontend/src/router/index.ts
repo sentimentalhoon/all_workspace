@@ -51,6 +51,12 @@ const router = createRouter({
       meta: { requiresAuth: true },
     },
     {
+      path: '/games/blackjack',
+      name: 'games-blackjack',
+      component: () => import('../views/games/BlackjackView.vue'),
+      meta: { requiresAuth: true },
+    },
+    {
       path: '/board',
       name: 'board',
       component: () => import('../views/BoardView.vue'),

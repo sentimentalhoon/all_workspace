@@ -27,6 +27,17 @@
         <RouterLink to="/games/snail" class="play-btn">경주장 입장</RouterLink>
       </article>
 
+      <article class="game-card highlight">
+        <div class="pill">인기</div>
+        <h3>블랙잭 21</h3>
+        <p>딜러와 1:1 진검승부. 21에 가장 가까운 사람이 승리합니다. (Casino Noir)</p>
+        <div class="meta">
+          <span>실감형 UI</span>
+          <span>고품질 애니메이션</span>
+        </div>
+        <RouterLink to="/games/blackjack" class="play-btn">테이블 입장</RouterLink>
+      </article>
+
       <article class="game-card">
         <div class="pill">저포인트</div>
         <h3>데일리 룰렛</h3>
