@@ -125,7 +125,7 @@
 import { useAuthStore } from '@/stores/auth'
 import type { SnailRaceResultResponse, SnailRunner } from '@/types/games'
 import { completeSnailRace, startSnailRace } from '@/utils/gameApi'
-import { computed, onBeforeUnmount, onMounted, ref } from 'vue'
+import { computed, nextTick, onBeforeUnmount, onMounted, ref } from 'vue'
 
 // Types
 type RaceState = 'idle' | 'running' | 'finished'
