@@ -366,8 +366,6 @@ fun Application.configureRouting(config: ApplicationConfig) {
                     }
                 }
             }
-
-            }
             
             route("/api/games/blackjack") {
                 post("/start") {
