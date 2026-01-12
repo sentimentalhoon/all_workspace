@@ -367,6 +367,50 @@ fun Application.configureRouting(config: ApplicationConfig) {
                 }
             }
 
+            }
+            
+            route("/api/games/blackjack") {
+                post("/start") {
+                    val principal = call.principal<JWTPrincipal>()
+                    val userId = principal?.subject?.toLongOrNull() ?: return@post call.respond(HttpStatusCode.Unauthorized)
+                    val user = userService.getUserById(userId) ?: return@post call.respond(HttpStatusCode.NotFound)
+                    
+                    try {
+                        val payload = call.receive<com.psmo.model.dto.BlackjackStartRequestDto>()
+                        val game = blackjackService.startGame(user, payload.betAmount)
+                        call.respond(game)
+                    } catch (e: Exception) {
+                        call.respond(HttpStatusCode.BadRequest, mapOf("error" to e.message))
+                    }
+                }
+                
+                post("/{gameId}/hit") {
+                    val principal = call.principal<JWTPrincipal>()
+                    val userId = principal?.subject?.toLongOrNull() ?: return@post call.respond(HttpStatusCode.Unauthorized)
+                    val gameId = call.parameters["gameId"] ?: return@post call.respond(HttpStatusCode.BadRequest)
+                    
+                    try {
+                        val game = blackjackService.hit(gameId, userId)
+                        call.respond(game)
+                    } catch (e: Exception) {
+                         call.respond(HttpStatusCode.BadRequest, mapOf("error" to e.message))
+                    }
+                }
+                
+                post("/{gameId}/stand") {
+                    val principal = call.principal<JWTPrincipal>()
+                    val userId = principal?.subject?.toLongOrNull() ?: return@post call.respond(HttpStatusCode.Unauthorized)
+                    val gameId = call.parameters["gameId"] ?: return@post call.respond(HttpStatusCode.BadRequest)
+                    
+                    try {
+                        val game = blackjackService.stand(gameId, userId)
+                        call.respond(game)
+                    } catch (e: Exception) {
+                        call.respond(HttpStatusCode.BadRequest, mapOf("error" to e.message))
+                    }
+                }
+            }
+
             webSocket("/ws/chat") {
                 val principal = call.principal<JWTPrincipal>()
                 if (principal == null) {
