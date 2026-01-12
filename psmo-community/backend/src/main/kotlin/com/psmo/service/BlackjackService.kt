@@ -1,7 +1,6 @@
 package com.psmo.service
 
 import com.psmo.model.*
-import com.psmo.model.dto.toResponse
 import java.time.LocalDateTime
 import java.util.concurrent.ConcurrentHashMap
 
@@ -24,8 +23,8 @@ class BlackjackService(
         userService.adjustScore(user.id, -betAmount)
 
         val deck = createDeck().toMutableList()
-        val playerHand = mutableListOf(deck.removeFirst(), deck.removeFirst())
-        val dealerHand = mutableListOf(deck.removeFirst(), deck.removeFirst())
+        val playerHand = mutableListOf(deck.removeAt(0), deck.removeAt(0))
+        val dealerHand = mutableListOf(deck.removeAt(0), deck.removeAt(0))
 
         val game = BlackjackGame(
             userId = user.id,
@@ -61,7 +60,7 @@ class BlackjackService(
         if (game.userId != userId) throw IllegalArgumentException("Not your game")
         if (game.status != GameStatus.PLAYER_TURN) throw IllegalStateException("Cannot hit now")
 
-        val card = game.deck.removeFirst()
+        val card = game.deck.removeAt(0)
         game.playerHand.add(card)
 
         val value = calculateHandValue(game.playerHand)
@@ -90,7 +89,7 @@ class BlackjackService(
         
         // Dealer logic: Hit until 17
         while (calculateHandValue(game.dealerHand) < 17) {
-            game.dealerHand.add(game.deck.removeFirst())
+            game.dealerHand.add(game.deck.removeAt(0))
         }
 
         val playerVal = calculateHandValue(game.playerHand)
