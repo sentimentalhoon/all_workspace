@@ -375,8 +375,9 @@ fun Application.configureRouting(config: ApplicationConfig) {
                     
                     try {
                         val payload = call.receive<com.psmo.model.dto.BlackjackStartRequestDto>()
+                        val payload = call.receive<com.psmo.model.dto.BlackjackStartRequestDto>()
                         val game = blackjackService.startGame(user, payload.betAmount)
-                        call.respond(game)
+                        call.respond(game.toResponse())
                     } catch (e: Exception) {
                         call.respond(HttpStatusCode.BadRequest, mapOf("error" to e.message))
                     }
@@ -389,7 +390,7 @@ fun Application.configureRouting(config: ApplicationConfig) {
                     
                     try {
                         val game = blackjackService.hit(gameId, userId)
-                        call.respond(game)
+                        call.respond(game.toResponse())
                     } catch (e: Exception) {
                          call.respond(HttpStatusCode.BadRequest, mapOf("error" to e.message))
                     }
@@ -402,7 +403,7 @@ fun Application.configureRouting(config: ApplicationConfig) {
                     
                     try {
                         val game = blackjackService.stand(gameId, userId)
-                        call.respond(game)
+                        call.respond(game.toResponse())
                     } catch (e: Exception) {
                         call.respond(HttpStatusCode.BadRequest, mapOf("error" to e.message))
                     }
