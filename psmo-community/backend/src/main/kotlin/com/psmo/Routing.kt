@@ -54,6 +54,7 @@ fun Application.configureRouting(config: ApplicationConfig) {
     val telegramAuthService by inject<TelegramAuthService>()
     val telegramBotService by inject<TelegramBotService>()
     val snailRaceService by inject<SnailRaceService>()
+    val blackjackService by inject<com.psmo.service.BlackjackService>()
     // val chatService by inject<ChatService>() // Unused
     val chatRoomManager by inject<ChatRoomManager>()
 
