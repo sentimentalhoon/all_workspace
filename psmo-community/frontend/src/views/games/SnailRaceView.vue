@@ -198,12 +198,14 @@ const selectSnail = (id: number) => (selectedSnailId.value = id)
 
 const resetRace = () => {
   raceState.value = 'idle'
-  snails.value.forEach((s) => (s.position = 0))
+  // Deep reset to trigger reactivity and ensure cleaner state
+  snails.value = snails.value.map((s) => ({ ...s, position: 0 }))
   particles = []
   statusText.value = 'READY TO RACE'
   betAmount.value = 100 // Reset or keep? Keep is better UX actually, but let's reset for safety
   serverResult.value = null
-  draw()
+  // Force a clean draw frame
+  requestAnimationFrame(draw)
 }
 
 // PRNG (Copy from old impl)
