@@ -375,7 +375,6 @@ fun Application.configureRouting(config: ApplicationConfig) {
                     
                     try {
                         val payload = call.receive<com.psmo.model.dto.BlackjackStartRequestDto>()
-                        val payload = call.receive<com.psmo.model.dto.BlackjackStartRequestDto>()
                         val game = blackjackService.startGame(user, payload.betAmount)
                         call.respond(game.toResponse())
                     } catch (e: Exception) {
