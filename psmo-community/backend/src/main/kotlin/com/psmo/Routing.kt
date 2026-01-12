@@ -3,6 +3,7 @@ package com.psmo
 import com.psmo.model.dto.ProfileResponse
 import com.psmo.model.dto.toResponse
 import com.psmo.model.dto.toBlackjackResponse
+import com.psmo.model.BlackjackGame
 import com.psmo.service.ChatRoomManager
 import com.psmo.service.ChatService
 import com.psmo.service.JwtService
