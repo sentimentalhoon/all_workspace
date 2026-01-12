@@ -197,19 +197,32 @@ const addBet = (amt: number) => {
 const selectSnail = (id: number) => (selectedSnailId.value = id)
 
 const resetRace = () => {
-  if (animationId.value) cancelAnimationFrame(animationId.value)
+  if (animationId.value) {
+    cancelAnimationFrame(animationId.value)
+    animationId.value = null
+  }
   raceState.value = 'idle'
 
-  // Deep reset to trigger reactivity and ensure cleaner state
-  snails.value = snails.value.map((s) => ({ ...s, position: 0 }))
+  // Explicitly clear canvas to remove any artifacts immediately
+  const canvas = canvasRef.value
+  const ctx = canvas?.getContext('2d')
+  if (canvas && ctx) {
+    ctx.setTransform(1, 0, 0, 1, 0, 0)
+    ctx.clearRect(0, 0, canvas.width, canvas.height)
+  }
+
+  // Deep reset
+  snails.value = snails.value.map((s) => ({ ...s, position: 0, rank: 0 }))
   particles = []
   shakeIntensity = 0
   statusText.value = 'READY TO RACE'
   betAmount.value = 100
   serverResult.value = null
 
-  // Force a clean draw frame
-  requestAnimationFrame(draw)
+  // Double raf to ensure UI paint first then canvas draw
+  requestAnimationFrame(() => {
+    requestAnimationFrame(draw)
+  })
 }
 
 // PRNG (Copy from old impl)
@@ -373,8 +386,10 @@ const draw = () => {
   const scale = (canvas.width - marginX * 2) / trackLength.value
 
   // Clear & Background
+  // Reset transform to handle shake cleanups or resizing artifacts
+  ctx.setTransform(1, 0, 0, 1, 0, 0)
   ctx.fillStyle = '#111'
-  ctx.fillRect(0, 0, canvas.width, canvas.height) // or transparent if handled by CSS
+  ctx.fillRect(0, 0, canvas.width, canvas.height)
 
   // Shake
   ctx.save()
