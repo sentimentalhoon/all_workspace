@@ -2,9 +2,8 @@ package com.psmo
 
 import com.psmo.model.dto.ProfileResponse
 import com.psmo.model.dto.toResponse
-
-
 import com.psmo.service.*
+import com.psmo.controller.productRoutes
 
 import io.ktor.server.application.*
 import io.ktor.server.auth.*
@@ -20,7 +19,6 @@ import io.ktor.websocket.*
 import kotlinx.coroutines.*
 import java.util.UUID
 import org.slf4j.MDC
-
 
 import org.koin.ktor.ext.inject
 import io.ktor.server.resources.get
@@ -80,6 +78,9 @@ fun Application.configureRouting(config: ApplicationConfig) {
                 call.respond(testService.testAll())
             }
         }
+
+        // Market Routes
+        productRoutes()
 
         // Type-Safe Routing for Auth
         post<Api.Auth.Telegram> {

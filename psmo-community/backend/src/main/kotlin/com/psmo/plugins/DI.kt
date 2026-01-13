@@ -22,6 +22,9 @@ fun Application.configureDI(config: ApplicationConfig) {
 fun appModule(config: ApplicationConfig) = module {
     single { config }
     
+    // Repositories
+    single { com.psmo.repository.ProductRepository(get()) }
+
     // Services
     single { TestService(get()) }
     single { UserService(get()) }
@@ -29,6 +32,7 @@ fun appModule(config: ApplicationConfig) = module {
     single { RefreshTokenService(get(), get()) }
     single { TelegramAuthService(get(), get(), get(), get()) }
     single { TelegramBotService(get()) }
+    single { ProductService(get()) }
 
     single { CloudflareStreamService(get()) } // Placeholder for Video Upload
     
