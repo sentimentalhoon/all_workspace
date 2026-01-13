@@ -34,6 +34,7 @@ fun appModule(config: ApplicationConfig) = module {
     single { TelegramBotService(get()) }
     single { ProductService(get()) }
 
+    single { ImageService(get()) }
     single { CloudflareStreamService(get()) } // Placeholder for Video Upload
     
 

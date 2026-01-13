@@ -11,8 +11,13 @@ import java.time.format.DateTimeFormatter
 
 class ProductService(private val repository: ProductRepository) {
 
-    fun createProduct(request: ProductCreateRequest, sellerId: Long): ProductResponse {
+    fun createProduct(request: ProductCreateRequest, sellerId: Long, images: List<Pair<String, com.psmo.model.ProductMediaType>> = emptyList()): ProductResponse {
         val product = repository.create(request, sellerId)
+        
+        // Save Images
+        if (images.isNotEmpty()) {
+            repository.saveImages(product.id, images)
+        }
         // Note: product.sellerId is Long. 
         // We need ResultRow to get full user info easily, or fetch User separately.
         // In Repository.create, we fetched (Products innerJoin Users), so the result Product 
@@ -34,19 +39,26 @@ class ProductService(private val repository: ProductRepository) {
         return repository.findAll(page, size, categoryEnum).map { row ->
             val product = row.toProduct()
             val user = row.toUser()
+            // Fetch images for each product (N+1 issue here, but optimizing later if needed)
+            val images = repository.getImages(product.id).map { 
+                com.psmo.model.dto.ProductImageDto(
+                    it[com.psmo.model.ProductImages.id].value,
+                    it[com.psmo.model.ProductImages.url],
+                    it[com.psmo.model.ProductImages.type],
+                    it[com.psmo.model.ProductImages.orderIndex]
+                )
+            }
             
-            ProductResponse(
-                id = product.id,
-                title = product.title,
-                description = product.description,
-                price = product.price,
-                status = product.status,
-                category = product.category,
-                seller = user.toResponse(),
-                viewCount = product.viewCount,
-                createdAt = product.createdAt.format(DateTimeFormatter.ISO_DATE_TIME),
-                updatedAt = product.updatedAt.format(DateTimeFormatter.ISO_DATE_TIME)
-            )
+            // Re-construct with full details
+            val extendedDateProduct = product.copy(images = images.map { 
+                com.psmo.model.ProductImage(it.id, it.url, it.type, it.orderIndex) 
+            }) // Wait, Product.images is List<ProductImage>, ProductResponse uses DTO.
+            
+            // Mapping to Response
+            product.copy(
+                images = images.map { com.psmo.model.ProductImage(it.id, it.url, it.type, it.orderIndex) }
+                // RealEstate populated by join in repo if present in Product object
+            ).toResponse().copy(seller = user.toResponse())
         }
     }
 
@@ -55,18 +67,18 @@ class ProductService(private val repository: ProductRepository) {
         val product = row.toProduct()
         val user = row.toUser()
         
-        return ProductResponse(
-             id = product.id,
-                title = product.title,
-                description = product.description,
-                price = product.price,
-                status = product.status,
-                category = product.category,
-                seller = user.toResponse(),
-                viewCount = product.viewCount,
-                createdAt = product.createdAt.format(DateTimeFormatter.ISO_DATE_TIME),
-                updatedAt = product.updatedAt.format(DateTimeFormatter.ISO_DATE_TIME)
-        )
+        val imagesDto = repository.getImages(product.id).map { 
+             com.psmo.model.dto.ProductImageDto(
+                it[com.psmo.model.ProductImages.id].value,
+                it[com.psmo.model.ProductImages.url],
+                it[com.psmo.model.ProductImages.type],
+                it[com.psmo.model.ProductImages.orderIndex]
+            )
+        }
+
+        return product.copy(
+            images = imagesDto.map { com.psmo.model.ProductImage(it.id, it.url, it.type, it.orderIndex) }
+        ).toResponse().copy(seller = user.toResponse())
     }
     
     fun updateProduct(id: Long, request: ProductUpdateRequest, userId: Long): ProductResponse? {

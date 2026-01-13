@@ -14,6 +14,10 @@ import io.ktor.server.resources.post
 import io.ktor.server.resources.put
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
+import io.ktor.http.content.*
+import io.ktor.server.plugins.*
+import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
+import com.fasterxml.jackson.module.kotlin.readValue
 import org.koin.ktor.ext.inject
 
 @Resource("/api/v1/market")
@@ -43,12 +47,55 @@ fun Route.productRoutes(service: ProductService) {
     }
 
     authenticate("auth-jwt") {
+    authenticate("auth-jwt") {
         post<MarketResources.Products> {
-            val request = call.receive<ProductCreateRequest>()
             val principal = call.principal<JWTPrincipal>()
             val userId = principal!!.payload.getClaim("id").asLong()
 
-            val created = service.createProduct(request, userId)
+            // Handle Multipart
+            var productRequest: ProductCreateRequest? = null
+            val uploadedImages = mutableListOf<Pair<String, com.psmo.model.ProductMediaType>>()
+            
+            val multipart = call.receiveMultipart()
+            multipart.forEachPart { part ->
+                when (part) {
+                    is PartData.FormItem -> {
+                        if (part.name == "product") {
+                            // Deserialize JSON
+                             val jackson = io.ktor.serialization.jackson.jacksonObjectMapper()
+                             productRequest = jackson.readValue(part.value, ProductCreateRequest::class.java)
+                        }
+                    }
+                    is PartData.FileItem -> {
+                        val fileName = part.originalFileName as String
+                        val contentType = part.contentType?.toString() ?: "application/octet-stream"
+                        val bytes = part.streamProvider().readBytes() // Read to memory for simplicity, or stream
+                        val inputStream = java.io.ByteArrayInputStream(bytes)
+                         
+                        // Determine type
+                        val type = if (contentType.startsWith("video")) com.psmo.model.ProductMediaType.VIDEO else com.psmo.model.ProductMediaType.IMAGE
+                        val imageService by inject<com.psmo.service.ImageService>()
+                        
+                        // Upload
+                        val url = if (type == com.psmo.model.ProductMediaType.VIDEO) {
+                            imageService.uploadVideo(inputStream, fileName, contentType)
+                        } else {
+                            imageService.uploadImage(inputStream, fileName, contentType)
+                        }
+                        
+                        uploadedImages.add(url to type)
+                    }
+                    else -> {}
+                }
+                part.dispose()
+            }
+            
+            if (productRequest == null) {
+                call.respond(HttpStatusCode.BadRequest, mapOf("status" to "error", "message" to "Missing product data"))
+                return@post
+            }
+
+            val created = service.createProduct(productRequest!!, userId, uploadedImages)
             call.respond(HttpStatusCode.Created, mapOf("status" to "success", "data" to created))
         }
         
