@@ -57,10 +57,7 @@ export default defineConfig(() => {
               form_factor: 'narrow',
             },
           ],
-          shortcuts: [
-            { name: '게시판 바로가기', url: '/board', description: '인기 캠핑 게시판' },
-            { name: '채팅 열기', url: '/chat', description: '실시간 커뮤니티 채팅' },
-          ],
+          shortcuts: [{ name: '게시판 바로가기', url: '/board', description: '인기 캠핑 게시판' }],
         },
       }),
     ],

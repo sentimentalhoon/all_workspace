@@ -8,7 +8,6 @@ interface ImportMetaEnv {
   readonly VITE_TELEGRAM_BOT_USERNAME?: string
   readonly VITE_BACKEND_HOST?: string
   readonly VITE_BACKEND_PORT?: string
-  readonly VITE_CHAT_WS_URL?: string
 }
 
 interface ImportMeta {
