@@ -36,6 +36,7 @@ fun Application.configureRouting(config: ApplicationConfig) {
     val refreshTokenService by inject<RefreshTokenService>()
     val telegramAuthService by inject<TelegramAuthService>()
     val telegramBotService by inject<TelegramBotService>()
+    val productService by inject<ProductService>()
 
     monitor.subscribe(ApplicationStarted) {
         launch { telegramBotService.startPolling() } // Launch in a coroutine
@@ -80,7 +81,7 @@ fun Application.configureRouting(config: ApplicationConfig) {
         }
 
         // Market Routes
-        productRoutes()
+        productRoutes(productService)
 
         // Type-Safe Routing for Auth
         post<Api.Auth.Telegram> {
