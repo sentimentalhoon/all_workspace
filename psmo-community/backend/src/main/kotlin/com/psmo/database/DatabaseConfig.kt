@@ -96,6 +96,7 @@ object DatabaseConfig {
                 .validateMigrationNaming(true)
                 .load()
 
+            flyway.repair()
             flyway.migrate()
             true
         }
