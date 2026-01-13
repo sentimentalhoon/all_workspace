@@ -21,6 +21,7 @@ import io.ktor.server.websocket.*
 import io.ktor.server.resources.*
 import com.psmo.plugins.configureSwagger
 import com.psmo.plugins.configureDI
+import com.psmo.plugins.configureStatusPages
 
 /**
  * PSMO 커뮤니티 백엔드 서버의 진입점.
@@ -42,6 +43,7 @@ fun Application.module() {
     environment.log.info("Active KTOR_PROFILE/KTOR_ENV: $activeProfile (application.conf)")
 
     configureDI(activeConfig)
+    configureStatusPages()
 
     // profile 이 다를 때마다 allowedOrigins 형식이 list/string 으로 혼용되어 있어 보정한다.
     val allowedOrigins = activeConfig.propertyOrNull("cors.allowedOrigins")?.let { value ->

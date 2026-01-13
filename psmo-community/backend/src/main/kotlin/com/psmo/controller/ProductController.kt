@@ -29,13 +29,8 @@ fun Route.productRoutes(service: ProductService) {
 
 
     get<MarketResources.Products> { params ->
-        try {
-            val products = service.getProducts(params.page, params.size, params.category)
-            call.respond(mapOf("status" to "success", "data" to products))
-        } catch (e: Throwable) {
-            e.printStackTrace() // Log to console
-            call.respond(HttpStatusCode.InternalServerError, mapOf("status" to "error", "message" to e.stackTraceToString()))
-        }
+        val products = service.getProducts(params.page, params.size, params.category)
+        call.respond(mapOf("status" to "success", "data" to products))
     }
 
     get<MarketResources.Products.Id> { params ->
