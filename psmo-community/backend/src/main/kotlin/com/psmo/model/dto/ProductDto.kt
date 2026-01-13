@@ -44,7 +44,7 @@ data class ProductResponse(
     val price: Int,
     val status: ProductStatus,
     val category: ProductCategory,
-    val sellerId: Long,
+    val seller: UserResponse,
     val viewCount: Int,
     val createdAt: String,
     val updatedAt: String,
@@ -62,7 +62,7 @@ data class ProductUpdateRequest(
     val realEstate: ProductRealEstateDto? = null
 )
 
-fun Product.toResponse(): ProductResponse {
+fun Product.toResponse(seller: UserResponse): ProductResponse {
     return ProductResponse(
         id = this.id,
         title = this.title,
@@ -70,7 +70,7 @@ fun Product.toResponse(): ProductResponse {
         price = this.price,
         status = this.status,
         category = this.category,
-        sellerId = this.sellerId,
+        seller = seller,
         viewCount = this.viewCount,
         createdAt = this.createdAt.toString(),
         updatedAt = this.updatedAt.toString(),

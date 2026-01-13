@@ -20,26 +20,27 @@ class ProductRepository(private val config: ApplicationConfig) {
 
     fun create(request: ProductCreateRequest, sellerId: Long): Product = transaction(database) {
         val id = Products.insertAndGetId {
-            it[title] = request.title
-            it[description] = request.description
-            it[price] = request.price
-            it[category] = request.category
+            it[Products.title] = request.title
+            it[Products.description] = request.description
+            it[Products.price] = request.price
+            it[Products.category] = request.category
             it[Products.sellerId] = sellerId
         }
 
         // Insert Real Estate Info if present
+        // Insert Real Estate Info if present
         request.realEstate?.let { info ->
             ProductRealEstateInfos.insert {
-                it[productId] = id
-                it[locationCity] = info.locationCity
-                it[locationDistrict] = info.locationDistrict
-                it[pcCount] = info.pcCount
-                it[deposit] = info.deposit
-                it[monthlyRent] = info.monthlyRent
-                it[managementFee] = info.managementFee
-                it[averageMonthlyRevenue] = info.averageMonthlyRevenue
-                it[floor] = info.floor
-                it[areaMeters] = info.areaMeters
+                it[ProductRealEstateInfos.id] = id.value // Shared PK
+                it[ProductRealEstateInfos.locationCity] = info.locationCity
+                it[ProductRealEstateInfos.locationDistrict] = info.locationDistrict
+                it[ProductRealEstateInfos.pcCount] = info.pcCount
+                it[ProductRealEstateInfos.deposit] = info.deposit
+                it[ProductRealEstateInfos.monthlyRent] = info.monthlyRent
+                it[ProductRealEstateInfos.managementFee] = info.managementFee
+                it[ProductRealEstateInfos.averageMonthlyRevenue] = info.averageMonthlyRevenue
+                it[ProductRealEstateInfos.floor] = info.floor
+                it[ProductRealEstateInfos.areaMeters] = info.areaMeters
             }
         }
 
@@ -79,50 +80,50 @@ class ProductRepository(private val config: ApplicationConfig) {
         // Assuming append for now or handled by service.
         images.forEachIndexed { index, (url, type) -> 
              ProductImages.insert {
-                 it[this.productId] = productId
-                 it[this.url] = url
-                 it[this.type] = type
-                 it[orderIndex] = index
+                 it[ProductImages.productId] = productId
+                 it[ProductImages.url] = url
+                 it[ProductImages.type] = type
+                 it[ProductImages.orderIndex] = index
              }
         }
     }
     
     fun update(id: Long, request: ProductUpdateRequest): Boolean = transaction(database) {
         val updated = Products.update({ Products.id eq id }) { stmt ->
-            request.title?.let { stmt[title] = it }
-            request.description?.let { stmt[description] = it }
-            request.price?.let { stmt[price] = it }
-            request.category?.let { stmt[category] = it }
-            request.status?.let { stmt[status] = it }
+            request.title?.let { stmt[Products.title] = it }
+            request.description?.let { stmt[Products.description] = it }
+            request.price?.let { stmt[Products.price] = it }
+            request.category?.let { stmt[Products.category] = it }
+            request.status?.let { stmt[Products.status] = it }
         } > 0
         
         request.realEstate?.let { info ->
             // Check if exists, update or insert
-            val existing = ProductRealEstateInfos.selectAll().andWhere { ProductRealEstateInfos.productId eq id }.count() > 0
+            val existing = ProductRealEstateInfos.selectAll().andWhere { ProductRealEstateInfos.id eq id }.count() > 0
             if (existing) {
-                 ProductRealEstateInfos.update({ ProductRealEstateInfos.productId eq id }) {
-                    it[locationCity] = info.locationCity
-                    it[locationDistrict] = info.locationDistrict
-                    it[pcCount] = info.pcCount
-                    it[deposit] = info.deposit
-                    it[monthlyRent] = info.monthlyRent
-                    it[managementFee] = info.managementFee
-                    it[averageMonthlyRevenue] = info.averageMonthlyRevenue
-                    it[floor] = info.floor
-                    it[areaMeters] = info.areaMeters
+                 ProductRealEstateInfos.update({ ProductRealEstateInfos.id eq id }) {
+                    it[ProductRealEstateInfos.locationCity] = info.locationCity
+                    it[ProductRealEstateInfos.locationDistrict] = info.locationDistrict
+                    it[ProductRealEstateInfos.pcCount] = info.pcCount
+                    it[ProductRealEstateInfos.deposit] = info.deposit
+                    it[ProductRealEstateInfos.monthlyRent] = info.monthlyRent
+                    it[ProductRealEstateInfos.managementFee] = info.managementFee
+                    it[ProductRealEstateInfos.averageMonthlyRevenue] = info.averageMonthlyRevenue
+                    it[ProductRealEstateInfos.floor] = info.floor
+                    it[ProductRealEstateInfos.areaMeters] = info.areaMeters
                  }
             } else {
                 ProductRealEstateInfos.insert {
-                    it[productId] = id
-                    it[locationCity] = info.locationCity
-                    it[locationDistrict] = info.locationDistrict
-                    it[pcCount] = info.pcCount
-                    it[deposit] = info.deposit
-                    it[monthlyRent] = info.monthlyRent
-                    it[managementFee] = info.managementFee
-                    it[averageMonthlyRevenue] = info.averageMonthlyRevenue
-                    it[floor] = info.floor
-                    it[areaMeters] = info.areaMeters
+                    it[ProductRealEstateInfos.id] = id
+                    it[ProductRealEstateInfos.locationCity] = info.locationCity
+                    it[ProductRealEstateInfos.locationDistrict] = info.locationDistrict
+                    it[ProductRealEstateInfos.pcCount] = info.pcCount
+                    it[ProductRealEstateInfos.deposit] = info.deposit
+                    it[ProductRealEstateInfos.monthlyRent] = info.monthlyRent
+                    it[ProductRealEstateInfos.managementFee] = info.managementFee
+                    it[ProductRealEstateInfos.averageMonthlyRevenue] = info.averageMonthlyRevenue
+                    it[ProductRealEstateInfos.floor] = info.floor
+                    it[ProductRealEstateInfos.areaMeters] = info.areaMeters
                 }
             }
         }

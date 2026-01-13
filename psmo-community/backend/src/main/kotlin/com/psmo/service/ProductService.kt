@@ -58,7 +58,7 @@ class ProductService(private val repository: ProductRepository) {
             product.copy(
                 images = images.map { com.psmo.model.ProductImage(it.id, it.url, it.type, it.orderIndex) }
                 // RealEstate populated by join in repo if present in Product object
-            ).toResponse().copy(seller = user.toResponse())
+            ).toResponse(user.toResponse())
         }
     }
 
@@ -78,7 +78,7 @@ class ProductService(private val repository: ProductRepository) {
 
         return product.copy(
             images = imagesDto.map { com.psmo.model.ProductImage(it.id, it.url, it.type, it.orderIndex) }
-        ).toResponse().copy(seller = user.toResponse())
+        ).toResponse(user.toResponse())
     }
     
     fun updateProduct(id: Long, request: ProductUpdateRequest, userId: Long): ProductResponse? {

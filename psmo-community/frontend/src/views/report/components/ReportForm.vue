@@ -131,10 +131,10 @@
 </template>
 
 <script setup lang="ts">
+import PhotoUploader from '@/components/common/media/PhotoUploader.vue'
+import VideoUploader from '@/components/common/media/VideoUploader.vue'
 import type { SeverityLevel } from '../useReportForm'
 import HashtagInput from './HashtagInput.vue'
-import PhotoUploader from './PhotoUploader.vue'
-import VideoUploader from './VideoUploader.vue'
 
 defineProps({
   reportTypes: {

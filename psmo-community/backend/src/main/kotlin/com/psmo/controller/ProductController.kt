@@ -19,6 +19,8 @@ import io.ktor.server.plugins.*
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.fasterxml.jackson.module.kotlin.readValue
 import org.koin.ktor.ext.inject
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 
 @Resource("/api/v1/market")
 class MarketResources {
@@ -57,7 +59,7 @@ fun Route.productRoutes(service: ProductService) {
             
             // Inject services and mapper once
             val imageService by inject<com.psmo.service.ImageService>()
-            val jackson = io.ktor.serialization.jackson.jacksonObjectMapper()
+            val jackson = jacksonObjectMapper()
 
             val multipart = call.receiveMultipart()
             
@@ -75,7 +77,7 @@ fun Route.productRoutes(service: ProductService) {
                         
                         // Use streamProvider directly for efficiency (Streaming)
                         // MinIO SDK is blocking, so offload to IO dispatcher
-                        val url = kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.IO) {
+                        val url = withContext(Dispatchers.IO) {
                             part.streamProvider().use { inputStream ->
                                 val type = if (contentType.startsWith("video")) com.psmo.model.ProductMediaType.VIDEO else com.psmo.model.ProductMediaType.IMAGE
                                 val uploadedUrl = if (type == com.psmo.model.ProductMediaType.VIDEO) {

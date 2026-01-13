@@ -27,12 +27,12 @@ const images = computed(() => product.value?.images || [])
       <div v-if="images.length > 0" class="gallery">
         <div class="main-image">
           <video
-            v-if="images[activeImageIndex].type === 'VIDEO'"
+            v-if="images[activeImageIndex]?.type === 'VIDEO'"
             controls
-            :src="images[activeImageIndex].url"
+            :src="images[activeImageIndex]?.url"
             class="media-content"
           ></video>
-          <img v-else :src="images[activeImageIndex].url" class="media-content" />
+          <img v-else :src="images[activeImageIndex]?.url" class="media-content" />
         </div>
         <div class="thumbnails">
           <div
