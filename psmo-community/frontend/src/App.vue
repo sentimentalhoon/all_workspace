@@ -26,10 +26,6 @@ const showBottomNav = computed(() => route.path !== '/admin' && route.path !== '
         <span class="nav-icon">⚠️</span>
         <span class="nav-label">진상등록</span>
       </RouterLink>
-      <RouterLink to="/chat" class="nav-item" :class="{ active: route.path === '/chat' }">
-        <span class="nav-icon">💬</span>
-        <span class="nav-label">채팅</span>
-      </RouterLink>
 
       <RouterLink to="/board" class="nav-item" :class="{ active: route.path === '/board' }">
         <span class="nav-icon">📋</span>
@@ -93,7 +89,7 @@ header h1 {
   background: white;
   border-top: 1px solid #e0e0e0;
   display: grid;
-  grid-template-columns: repeat(5, 1fr);
+  grid-template-columns: repeat(4, 1fr);
   padding: 0.4rem 0;
   z-index: 1000;
   box-shadow: 0 -2px 8px rgba(0, 0, 0, 0.1);

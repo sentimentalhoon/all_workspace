@@ -3,8 +3,7 @@ package com.psmo
 import com.psmo.model.dto.ProfileResponse
 import com.psmo.model.dto.toResponse
 
-import com.psmo.service.ChatRoomManager
-import com.psmo.service.ChatService
+
 import com.psmo.service.JwtService
 import com.psmo.service.RefreshTokenService
 
@@ -41,15 +40,11 @@ fun Application.configureRouting(config: ApplicationConfig) {
     val telegramAuthService by inject<TelegramAuthService>()
     val telegramBotService by inject<TelegramBotService>()
 
-    // val chatService by inject<ChatService>() // Unused
-    val chatRoomManager by inject<ChatRoomManager>()
-
     monitor.subscribe(ApplicationStarted) {
         launch { telegramBotService.startPolling() } // Launch in a coroutine
     }
     
     monitor.subscribe(ApplicationStopped) {
-        chatRoomManager.shutdown()
         telegramBotService.stopPolling()
     }
 
@@ -265,27 +260,7 @@ fun Application.configureRouting(config: ApplicationConfig) {
 
 
 
-            webSocket("/ws/chat") {
-                val principal = call.principal<JWTPrincipal>()
-                if (principal == null) {
-                    close(CloseReason(CloseReason.Codes.VIOLATED_POLICY, "Authentication required"))
-                    return@webSocket
-                }
 
-                val userId = principal.subject?.toLongOrNull()
-                if (userId == null) {
-                    close(CloseReason(CloseReason.Codes.CANNOT_ACCEPT, "Invalid token"))
-                    return@webSocket
-                }
-
-                val user = userService.getUserById(userId)
-                if (user == null) {
-                    close(CloseReason(CloseReason.Codes.CANNOT_ACCEPT, "User not found"))
-                    return@webSocket
-                }
-
-                chatRoomManager.handleSession(this, user)
-            }
         }
     }
 }

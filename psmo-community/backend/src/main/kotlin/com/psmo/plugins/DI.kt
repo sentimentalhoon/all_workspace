@@ -29,13 +29,8 @@ fun appModule(config: ApplicationConfig) = module {
     single { RefreshTokenService(get(), get()) }
     single { TelegramAuthService(get(), get(), get(), get()) }
     single { TelegramBotService(get()) }
-    single { ChatService(get()) }
+
     single { CloudflareStreamService(get()) } // Placeholder for Video Upload
     
-    // Coroutine Scopes for Chat
-    single { 
-        val subScope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
-        val broadcastScope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
-        ChatRoomManager(get(), get(), subScope, broadcastScope)
-    }
+
 }
