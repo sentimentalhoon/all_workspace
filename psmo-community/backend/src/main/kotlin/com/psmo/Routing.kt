@@ -4,8 +4,7 @@ import com.psmo.model.dto.ProfileResponse
 import com.psmo.model.dto.toResponse
 
 
-import com.psmo.service.JwtService
-import com.psmo.service.RefreshTokenService
+import com.psmo.service.*
 
 import io.ktor.server.application.*
 import io.ktor.server.auth.*
@@ -257,10 +256,6 @@ fun Application.configureRouting(config: ApplicationConfig) {
 
                 call.respond(ProfileResponse(user = user.toResponse()))
             }
-
-
-
-
         }
     }
 }
