@@ -28,6 +28,11 @@ class TelegramBotService(
         install(ContentNegotiation) {
             jackson()
         }
+        install(io.ktor.client.plugins.HttpTimeout) {
+            requestTimeoutMillis = 60000 // 60 seconds (covers 30s long polling)
+            connectTimeoutMillis = 15000
+            socketTimeoutMillis = 60000
+        }
     }
 
     private var lastUpdateId = 0L
