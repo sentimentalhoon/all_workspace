@@ -47,7 +47,6 @@ fun Route.productRoutes(service: ProductService) {
     }
 
     authenticate("auth-jwt") {
-    authenticate("auth-jwt") {
         post<MarketResources.Products> {
             val principal = call.principal<JWTPrincipal>()
             val userId = principal!!.payload.getClaim("id").asLong()
@@ -56,34 +55,38 @@ fun Route.productRoutes(service: ProductService) {
             var productRequest: ProductCreateRequest? = null
             val uploadedImages = mutableListOf<Pair<String, com.psmo.model.ProductMediaType>>()
             
+            // Inject services and mapper once
+            val imageService by inject<com.psmo.service.ImageService>()
+            val jackson = io.ktor.serialization.jackson.jacksonObjectMapper()
+
             val multipart = call.receiveMultipart()
+            
+            // Process parts
             multipart.forEachPart { part ->
                 when (part) {
                     is PartData.FormItem -> {
                         if (part.name == "product") {
-                            // Deserialize JSON
-                             val jackson = io.ktor.serialization.jackson.jacksonObjectMapper()
-                             productRequest = jackson.readValue(part.value, ProductCreateRequest::class.java)
+                            productRequest = jackson.readValue(part.value, ProductCreateRequest::class.java)
                         }
                     }
                     is PartData.FileItem -> {
                         val fileName = part.originalFileName as String
                         val contentType = part.contentType?.toString() ?: "application/octet-stream"
-                        val bytes = part.streamProvider().readBytes() // Read to memory for simplicity, or stream
-                        val inputStream = java.io.ByteArrayInputStream(bytes)
-                         
-                        // Determine type
-                        val type = if (contentType.startsWith("video")) com.psmo.model.ProductMediaType.VIDEO else com.psmo.model.ProductMediaType.IMAGE
-                        val imageService by inject<com.psmo.service.ImageService>()
                         
-                        // Upload
-                        val url = if (type == com.psmo.model.ProductMediaType.VIDEO) {
-                            imageService.uploadVideo(inputStream, fileName, contentType)
-                        } else {
-                            imageService.uploadImage(inputStream, fileName, contentType)
+                        // Use streamProvider directly for efficiency (Streaming)
+                        // MinIO SDK is blocking, so offload to IO dispatcher
+                        val url = kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.IO) {
+                            part.streamProvider().use { inputStream ->
+                                val type = if (contentType.startsWith("video")) com.psmo.model.ProductMediaType.VIDEO else com.psmo.model.ProductMediaType.IMAGE
+                                val uploadedUrl = if (type == com.psmo.model.ProductMediaType.VIDEO) {
+                                    imageService.uploadVideo(inputStream, fileName, contentType)
+                                } else {
+                                    imageService.uploadImage(inputStream, fileName, contentType)
+                                }
+                                uploadedUrl to type
+                            }
                         }
-                        
-                        uploadedImages.add(url to type)
+                        uploadedImages.add(url)
                     }
                     else -> {}
                 }
