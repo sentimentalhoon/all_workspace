@@ -28,18 +28,11 @@ fun appModule(config: ApplicationConfig) = module {
     single { JwtService(get()) }
     single { RefreshTokenService(get(), get()) }
     single { TelegramAuthService(get(), get(), get(), get()) }
-    single { SnailRaceService(get(), get()) }
     single { TelegramBotService(get()) }
     single { ChatService(get()) }
-    single { BlackjackService(get()) } // Blackjack
     single { CloudflareStreamService(get()) } // Placeholder for Video Upload
     
     // Coroutine Scopes for Chat
-    // distinct qualifiers could be used if we need to distinguish scopes, 
-    // but for now creating them inside the factory is safer or just passing them directly.
-    // However, ChatRoomManager needs them.
-    // Let's create a named definition or just instantiate them here.
-    
     single { 
         val subScope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
         val broadcastScope = CoroutineScope(SupervisorJob() + Dispatchers.IO)

@@ -2,26 +2,12 @@ package com.psmo
 
 import com.psmo.model.dto.ProfileResponse
 import com.psmo.model.dto.toResponse
-import com.psmo.model.dto.toBlackjackResponse
-import com.psmo.model.BlackjackGame
+
 import com.psmo.service.ChatRoomManager
 import com.psmo.service.ChatService
 import com.psmo.service.JwtService
 import com.psmo.service.RefreshTokenService
-import com.psmo.service.SnailRaceService
-import com.psmo.service.TestService
-import com.psmo.service.UserService
-import com.psmo.service.TelegramAuthService
-import com.psmo.service.TelegramAuthException
-import com.psmo.service.TelegramBotService
-import com.psmo.service.TelegramAuthResponse
-import com.psmo.service.BetValidationException
-import com.psmo.service.CooldownException
-import com.psmo.service.RaceAlreadyReportedException
-import com.psmo.service.RaceExpiredException
-import com.psmo.service.RaceForbiddenException
-import com.psmo.service.RaceInternalException
-import com.psmo.service.RaceNotFoundException
+
 import io.ktor.server.application.*
 import io.ktor.server.auth.*
 import io.ktor.server.auth.jwt.*
@@ -36,8 +22,7 @@ import io.ktor.websocket.*
 import kotlinx.coroutines.*
 import java.util.UUID
 import org.slf4j.MDC
-import com.psmo.model.dto.SnailRaceStartRequestDto
-import com.psmo.model.dto.SnailRaceResultPayloadDto
+
 
 import org.koin.ktor.ext.inject
 import io.ktor.server.resources.get
@@ -55,8 +40,7 @@ fun Application.configureRouting(config: ApplicationConfig) {
     val refreshTokenService by inject<RefreshTokenService>()
     val telegramAuthService by inject<TelegramAuthService>()
     val telegramBotService by inject<TelegramBotService>()
-    val snailRaceService by inject<SnailRaceService>()
-    val blackjackService by inject<com.psmo.service.BlackjackService>()
+
     // val chatService by inject<ChatService>() // Unused
     val chatRoomManager by inject<ChatRoomManager>()
 
@@ -279,137 +263,7 @@ fun Application.configureRouting(config: ApplicationConfig) {
                 call.respond(ProfileResponse(user = user.toResponse()))
             }
 
-            route("/api/games/snail") {
-                post("/races") {
-                    val principal = call.principal<JWTPrincipal>() ?: return@post call.respond(
-                        HttpStatusCode.Unauthorized,
-                        mapOf("status" to "error", "message" to "Authentication required")
-                    )
-                    val userId = principal.subject?.toLongOrNull() ?: return@post call.respond(
-                        HttpStatusCode.BadRequest,
-                        mapOf("status" to "error", "message" to "Invalid token payload")
-                    )
-                    val user = userService.getUserById(userId) ?: return@post call.respond(
-                        HttpStatusCode.NotFound,
-                        mapOf("status" to "error", "message" to "User not found")
-                    )
 
-                    val traceId = call.request.headers["X-Request-ID"] ?: UUID.randomUUID().toString()
-                    val remote = call.request.local.remoteHost
-                    MDC.put("traceId", traceId)
-                    MDC.put("remote", remote)
-                    try {
-                        this@configureRouting.environment.log.info("snail-race start request userId={}", user.id)
-
-                        val payload = call.receive<SnailRaceStartRequestDto>()
-                        val response = snailRaceService.startRace(user, payload)
-                        call.respond(HttpStatusCode.OK, response)
-                    } catch (ex: BetValidationException) {
-                        call.respond(HttpStatusCode.BadRequest, mapOf("status" to "error", "code" to ex.code, "message" to ex.message))
-                    } catch (ex: CooldownException) {
-                        call.respond(HttpStatusCode.TooManyRequests, mapOf("status" to "error", "code" to "COOLDOWN", "remainingSeconds" to ex.remainingSeconds))
-                    } catch (ex: Exception) {
-                        this@configureRouting.environment.log.error("startRace failed", ex)
-                        call.respond(HttpStatusCode.InternalServerError, mapOf("status" to "error", "message" to "Internal server error"))
-                    } finally {
-                        MDC.clear()
-                    }
-                }
-
-                post("/races/{raceId}/complete") {
-                    val principal = call.principal<JWTPrincipal>() ?: return@post call.respond(
-                        HttpStatusCode.Unauthorized,
-                        mapOf("status" to "error", "message" to "Authentication required")
-                    )
-                    val userId = principal.subject?.toLongOrNull() ?: return@post call.respond(
-                        HttpStatusCode.BadRequest,
-                        mapOf("status" to "error", "message" to "Invalid token payload")
-                    )
-                    val user = userService.getUserById(userId) ?: return@post call.respond(
-                        HttpStatusCode.NotFound,
-                        mapOf("status" to "error", "message" to "User not found")
-                    )
-
-                    val raceId = call.parameters["raceId"]
-                        ?: return@post call.respond(HttpStatusCode.BadRequest, mapOf("status" to "error", "message" to "raceId missing"))
-                    val payload = call.receive<SnailRaceResultPayloadDto>()
-
-                    val traceId = call.request.headers["X-Request-ID"] ?: UUID.randomUUID().toString()
-                    val remote = call.request.local.remoteHost
-                    MDC.put("traceId", traceId)
-                    MDC.put("remote", remote)
-                    try {
-                        this@configureRouting.environment.log.info(
-                            "snail-race complete request userId={} raceId={}",
-                            user.id,
-                            raceId
-                        )
-
-                        val response = snailRaceService.completeRace(user, raceId, payload)
-                        call.respond(HttpStatusCode.OK, response)
-                    } catch (ex: RaceNotFoundException) {
-                        call.respond(HttpStatusCode.NotFound, mapOf("status" to "error", "code" to "RACE_NOT_FOUND"))
-                    } catch (ex: RaceForbiddenException) {
-                        call.respond(HttpStatusCode.Forbidden, mapOf("status" to "error", "code" to "RACE_FORBIDDEN", "message" to "Race not owned"))
-                    } catch (ex: RaceAlreadyReportedException) {
-                        call.respond(HttpStatusCode.Conflict, mapOf("status" to "error", "code" to "ALREADY_REPORTED"))
-                    } catch (ex: RaceExpiredException) {
-                        call.respond(HttpStatusCode.BadRequest, mapOf("status" to "error", "code" to "RACE_EXPIRED"))
-                    } catch (ex: BetValidationException) {
-                        call.respond(HttpStatusCode.BadRequest, mapOf("status" to "error", "code" to ex.code, "message" to ex.message))
-                    } catch (ex: RaceInternalException) {
-                        this@configureRouting.environment.log.error("completeRace internal", ex)
-                        call.respond(HttpStatusCode.InternalServerError, mapOf("status" to "error", "message" to ex.message))
-                    } catch (ex: Exception) {
-                        this@configureRouting.environment.log.error("completeRace failed", ex)
-                        call.respond(HttpStatusCode.InternalServerError, mapOf("status" to "error", "message" to "Internal server error"))
-                    } finally {
-                        MDC.clear()
-                    }
-                }
-            }
-            
-            route("/api/games/blackjack") {
-                post("/start") {
-                    val principal = call.principal<JWTPrincipal>()
-                    val userId = principal?.subject?.toLongOrNull() ?: return@post call.respond(HttpStatusCode.Unauthorized)
-                    val user = userService.getUserById(userId) ?: return@post call.respond(HttpStatusCode.NotFound)
-                    
-                    try {
-                        val payload = call.receive<com.psmo.model.dto.BlackjackStartRequestDto>()
-                        val game = blackjackService.startGame(user, payload.betAmount)
-                        call.respond(game.toBlackjackResponse())
-                    } catch (e: Exception) {
-                        call.respond(HttpStatusCode.BadRequest, mapOf("error" to e.message))
-                    }
-                }
-                
-                post("/{gameId}/hit") {
-                    val principal = call.principal<JWTPrincipal>()
-                    val userId = principal?.subject?.toLongOrNull() ?: return@post call.respond(HttpStatusCode.Unauthorized)
-                    val gameId = call.parameters["gameId"] ?: return@post call.respond(HttpStatusCode.BadRequest)
-                    
-                    try {
-                        val game = blackjackService.hit(gameId, userId)
-                        call.respond(game.toBlackjackResponse())
-                    } catch (e: Exception) {
-                         call.respond(HttpStatusCode.BadRequest, mapOf("error" to e.message))
-                    }
-                }
-                
-                post("/{gameId}/stand") {
-                    val principal = call.principal<JWTPrincipal>()
-                    val userId = principal?.subject?.toLongOrNull() ?: return@post call.respond(HttpStatusCode.Unauthorized)
-                    val gameId = call.parameters["gameId"] ?: return@post call.respond(HttpStatusCode.BadRequest)
-                    
-                    try {
-                        val game = blackjackService.stand(gameId, userId)
-                        call.respond(game.toBlackjackResponse())
-                    } catch (e: Exception) {
-                        call.respond(HttpStatusCode.BadRequest, mapOf("error" to e.message))
-                    }
-                }
-            }
 
             webSocket("/ws/chat") {
                 val principal = call.principal<JWTPrincipal>()

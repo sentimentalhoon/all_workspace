@@ -38,24 +38,7 @@ const router = createRouter({
       component: () => import('../views/ChatView.vue'),
       meta: { requiresAuth: true },
     },
-    {
-      path: '/games',
-      name: 'games',
-      component: () => import('../views/GamesView.vue'),
-      meta: { requiresAuth: true },
-    },
-    {
-      path: '/games/snail',
-      name: 'games-snail',
-      component: () => import('../views/games/SnailRaceView.vue'),
-      meta: { requiresAuth: true },
-    },
-    {
-      path: '/games/blackjack',
-      name: 'games-blackjack',
-      component: () => import('../views/games/BlackjackView.vue'),
-      meta: { requiresAuth: true },
-    },
+
     {
       path: '/board',
       name: 'board',
