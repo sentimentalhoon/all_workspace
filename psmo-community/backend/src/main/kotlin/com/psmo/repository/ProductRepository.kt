@@ -49,8 +49,8 @@ class ProductRepository(private val config: ApplicationConfig) {
     }
 
     fun findAll(page: Int, size: Int, category: ProductCategory?): List<ResultRow> = transaction(database) {
-        // Left Join to include optional Real Estate info using explicit PK/FK
-        val query = (Products innerJoin Users).leftJoin(ProductRealEstateInfos, { Products.id }, { ProductRealEstateInfos.id }).selectAll()
+        // Left Join to include optional Real Estate info using specific constraint
+        val query = (Products innerJoin Users).leftJoin(ProductRealEstateInfos) { Products.id eq ProductRealEstateInfos.id }.selectAll()
         
         category?.let {
             query.andWhere { Products.category eq it }
@@ -62,7 +62,7 @@ class ProductRepository(private val config: ApplicationConfig) {
     }
 
     fun findById(id: Long): ResultRow? = transaction(database) {
-        (Products innerJoin Users).leftJoin(ProductRealEstateInfos, { Products.id }, { ProductRealEstateInfos.id }).selectAll()
+        (Products innerJoin Users).leftJoin(ProductRealEstateInfos) { Products.id eq ProductRealEstateInfos.id }.selectAll()
             .andWhere { Products.id eq id }
             .singleOrNull()
     }
