@@ -1,5 +1,5 @@
-# Production Dockerfile for PSMO Frontend
-FROM node:22.12-alpine AS build
+# Production Dockerfile for PSMO Nuxt Frontend
+FROM node:22-alpine AS build
 
 WORKDIR /app
 
@@ -12,28 +12,29 @@ RUN npm ci
 # Copy source code
 COPY . .
 
-# Build arguments for Telegram widget (optional defaults)
+# Build arguments (if needed for build-time config, though Nuxt runtime config is preferred)
 ARG VITE_TELEGRAM_BOT_ID
 ARG VITE_TELEGRAM_BOT_USERNAME
 ENV VITE_TELEGRAM_BOT_ID=${VITE_TELEGRAM_BOT_ID}
 ENV VITE_TELEGRAM_BOT_USERNAME=${VITE_TELEGRAM_BOT_USERNAME}
 
-# Build application (uses relative /api path, no API_URL needed)
+# Build application
 RUN npm run build
 
-# Production stage with Nginx
-FROM nginx:alpine
+# Production runtime stage
+FROM node:22-alpine
 
-# Copy nginx configuration
-COPY nginx.conf /etc/nginx/conf.d/default.conf
+WORKDIR /app
 
-# Copy built application
-COPY --from=build /app/dist /usr/share/nginx/html
+# Copy built artifacts from build stage
+COPY --from=build /app/.output ./.output
 
-# Health check
-HEALTHCHECK --interval=30s --timeout=3s --start-period=10s --retries=3 \
-  CMD wget --no-verbose --tries=1 --spider http://127.0.0.1:80/ || exit 1
+# Set environment variables for Nitro server
+ENV NUXT_HOST=0.0.0.0
+ENV NUXT_PORT=3000
 
-EXPOSE 80
+# Expose port
+EXPOSE 3000
 
-CMD ["nginx", "-g", "daemon off;"]
+# Start server
+CMD ["node", ".output/server/index.mjs"]
