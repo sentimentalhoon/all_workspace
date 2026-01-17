@@ -1,10 +1,15 @@
 <script setup lang="ts">
 const { fetchClient } = useApiClient();
 
+/**
+ * 장터 목록 페이지입니다.
+ * useAsyncData: 서버 사이드 렌더링(SSR)을 위해 데이터를 미리 가져오는 Nuxt 전용 함수입니다.
+ * 페이지가 열릴 때 '/market/products' API를 호출해서 상품 목록을 가져옵니다.
+ */
 const {
   data: products,
-  pending,
-  error,
+  pending, // 로딩 중인지 여부
+  error, // 에러 발생 여부
 } = await useAsyncData("products", () => fetchClient("/market/products"));
 
 const goToCreate = () => {

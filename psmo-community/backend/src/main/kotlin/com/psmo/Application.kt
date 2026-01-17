@@ -24,19 +24,30 @@ import com.psmo.plugins.configureDI
 import com.psmo.plugins.configureStatusPages
 
 /**
- * PSMO 커뮤니티 백엔드 서버의 진입점.
- * Ktor EngineMain 을 그대로 사용하지만, 배포 환경에 따라 JVM 옵션을 다르게 주입할 수 있으므로
- * 별도 래핑 함수를 유지한다.
+ * PSMO 커뮤니티 백엔드 서버의 진입점(Entry Point)입니다.
+ *
+ * 이 함수는 프로그램이 시작될 때 가장 먼저 실행되는 곳입니다.
+ * 마치 학교 정문과 같아서, 모든 요청은 이곳을 통해 들어오게 됩니다.
+ *
+ * Ktor 프레임워크의 EngineMain을 사용하여 서버를 켭니다.
+ * 배포 환경(개발 서버, 운영 서버 등)에 따라 설정을 다르게 할 수 있도록 도와줍니다.
  */
 fun main(args: Array<String>) {
     io.ktor.server.netty.EngineMain.main(args)
 }
 
 /**
- * 애플리케이션 전역 모듈을 구성한다.
- * - profile 별 application-<profile>.yaml 을 로드
- * - CORS/ContentNegotiation/JWT 인증 플러그인 설치
- * - 실제 라우팅은 configureRouting 으로 위임
+ * 애플리케이션의 전체적인 설정을 담당하는 모듈 함수입니다.
+ *
+ * 여기서 하는 일:
+ * 1. 설정 로드: 'dev'(개발) 또는 'prod'(운영) 같은 환경 설정을 읽어옵니다.
+ * 2. 플러그인 설치:
+ *    - CORS: 다른 웹사이트(프론트엔드)에서 이 서버로 요청을 보낼 수 있게 허락해줍니다.
+ *    - ContentNegotiation: 데이터를 JSON 형식(자바스크립트 객체 모양)으로 주고받을 수 있게 합니다.
+ *    - Authentication (JWT): 로그인한 사용자만 사용할 수 있는 기능을 위해 '출입증(토큰)'을 검사하는 기능을 켭니다.
+ * 3. 기능 연결:
+ *    - configureRouting: 실제 api 주소들(/login, /market 등)을 연결합니다.
+ *    - configureDI: 필요한 부품들(Service, Repository)을 조립합니다.
  */
 fun Application.module() {
     val (activeProfile, activeConfig) = ProfiledConfigLoader.load(environment)

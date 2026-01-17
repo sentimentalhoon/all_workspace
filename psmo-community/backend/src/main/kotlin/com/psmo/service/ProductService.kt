@@ -9,6 +9,15 @@ import com.psmo.model.toUser
 import com.psmo.repository.ProductRepository
 import java.time.format.DateTimeFormatter
 
+/**
+ * 상품 관련 비즈니스 로직을 처리하는 곳입니다.
+ * (컨트롤러와 리포지토리 사이의 중간 다리)
+ *
+ * 예: "상품을 등록한다"라고 하면,
+ * 1. 리포지토리에게 데이터를 저장하라고 시키고
+ * 2. 이미지가 있으면 이미지도 저장하고
+ * 3. 저장된 결과를 예쁘게 포장해서 돌려줍니다.
+ */
 class ProductService(private val repository: ProductRepository) {
 
     fun createProduct(request: ProductCreateRequest, sellerId: Long, images: List<Pair<String, com.psmo.model.ProductMediaType>> = emptyList()): ProductResponse {
@@ -31,6 +40,9 @@ class ProductService(private val repository: ProductRepository) {
         return getProductById(product.id) ?: throw IllegalStateException("Created product not found")
     }
 
+    /**
+     * 상품 목록을 가져와서 화면에 보여줄 수 있는 형태(DTO)로 변환합니다.
+     */
     fun getProducts(page: Int, size: Int, category: String?): List<ProductResponse> {
         val categoryEnum = category?.let { 
             try { com.psmo.model.ProductCategory.valueOf(it) } catch (e: Exception) { null } 
@@ -39,7 +51,7 @@ class ProductService(private val repository: ProductRepository) {
         return repository.findAll(page, size, categoryEnum).map { row ->
             val product = row.toProduct()
             val user = row.toUser()
-            // Fetch images for each product (N+1 issue here, but optimizing later if needed)
+            // 각 상품마다 이미지들을 따로 가져옵니다. (나중에 최적화 필요)
             val images = repository.getImages(product.id).map { 
                 com.psmo.model.dto.ProductImageDto(
                     it[com.psmo.model.ProductImages.id].value,
@@ -49,12 +61,7 @@ class ProductService(private val repository: ProductRepository) {
                 )
             }
             
-            // Re-construct with full details
-            val extendedDateProduct = product.copy(images = images.map { 
-                com.psmo.model.ProductImage(it.id, it.url, it.type, it.orderIndex) 
-            }) // Wait, Product.images is List<ProductImage>, ProductResponse uses DTO.
-            
-            // Mapping to Response
+            // 모든 정보를 합쳐서 응답 객체(ProductResponse)로 만듭니다.
             product.copy(
                 images = images.map { com.psmo.model.ProductImage(it.id, it.url, it.type, it.orderIndex) }
                 // RealEstate populated by join in repo if present in Product object

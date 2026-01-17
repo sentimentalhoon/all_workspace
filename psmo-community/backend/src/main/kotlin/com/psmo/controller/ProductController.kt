@@ -22,6 +22,16 @@ import org.koin.ktor.ext.inject
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 
+/**
+ * 장터(Market) API 주소를 정의하는 곳입니다.
+ *
+ * @Resource("/api/v1/market"): 이 주소로 시작하는 모든 요청을 여기서 처리합니다.
+ *
+ * 구조:
+ * - /api/v1/market
+ *   - /products (상품 목록)
+ *     - /{id} (특정 상품 상세)
+ */
 @Resource("/api/v1/market")
 class MarketResources {
     @Resource("products")
@@ -39,6 +49,7 @@ fun Route.productRoutes(service: ProductService) {
         call.respond(mapOf("status" to "success", "data" to products))
     }
 
+    // 상품 상세 조회 (누구나 볼 수 있음)
     get<MarketResources.Products.Id> { params ->
         val product = service.getProductById(params.id)
         if (product == null) {
@@ -49,11 +60,13 @@ fun Route.productRoutes(service: ProductService) {
     }
 
     authenticate("auth-jwt") {
+        // 상품 등록 (로그인 필요)
         post<MarketResources.Products> {
             val principal = call.principal<JWTPrincipal>()
             val userId = principal!!.payload.getClaim("id").asLong()
 
-            // Handle Multipart
+            // Handle Multipart (파일 업로드 처리)
+            // 상품 정보(JSON)와 사진 파일(File)이 섞여서 들어오기 때문에 복잡한 처리가 필요합니다.
             var productRequest: ProductCreateRequest? = null
             val uploadedImages = mutableListOf<Pair<String, com.psmo.model.ProductMediaType>>()
             

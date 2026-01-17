@@ -6,15 +6,31 @@ import org.jetbrains.exposed.sql.javatime.CurrentDateTime
 import org.jetbrains.exposed.sql.javatime.datetime
 import java.time.LocalDateTime
 
+/**
+ * 상품의 상태를 나타냅니다.
+ * SALE: 판매 중
+ * RESERVED: 예약 중
+ * SOLD: 판매 완료
+ */
 enum class ProductStatus {
     SALE, RESERVED, SOLD
 }
 
+/**
+ * 상품 카테고리 목록입니다.
+ * 컴퓨터 부품 위주로 구성되어 있습니다.
+ */
 enum class ProductCategory {
     PC_FULL, CPU, GPU, RAM, MAINBOARD, SSD_HDD, CASE, POWER, MONITOR, GEAR, SOFTWARE, ETC,
     PC_BUSINESS // PC방 매매
 }
 
+/**
+ * 'products' 테이블 정의.
+ * 장터에 올라온 물건 정보를 저장합니다.
+ *
+ * seller_id: 판매자(User)의 ID와 연결됩니다(Foreign Key).
+ */
 object Products : LongIdTable("products") {
     val title = varchar("title", 255)
     val description = text("description").nullable()
@@ -50,6 +66,12 @@ object ProductImages : LongIdTable("product_images") {
     val createdAt = datetime("created_at").defaultExpression(CurrentDateTime)
 }
 
+/**
+ * 상품 도메인 객체(Entity)입니다.
+ *
+ * realEstateInfo: 만약 PC방 매매인 경우, 부동산 정보가 여기에 담깁니다.
+ * images: 상품 이미지 목록
+ */
 data class Product(
     val id: Long,
     val title: String,

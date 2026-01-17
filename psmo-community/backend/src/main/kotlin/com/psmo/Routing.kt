@@ -29,6 +29,12 @@ import com.psmo.resources.*
  * API 라우팅 진입점. 의존성 간접 생성이 필요한 서비스들을 여기에서 조립한다.
  * NOTE: Koin DI 가 도입되어 의존성을 주입받는다.
  */
+/**
+ * API 라우팅 진입점입니다. (길 안내소)
+ * "어떤 주소(/login, /market)로 요청이 오면, 어떤 함수를 실행해라"라고 정해주는 곳입니다.
+ *
+ * 여기서 Koin(inject)을 사용해서 필요한 서비스(UserService 등)를 가져와서 연결해줍니다.
+ */
 fun Application.configureRouting(config: ApplicationConfig) {
     val testService by inject<TestService>()
     val userService by inject<UserService>()
@@ -38,10 +44,12 @@ fun Application.configureRouting(config: ApplicationConfig) {
     val telegramBotService by inject<TelegramBotService>()
     val productService by inject<ProductService>()
 
+    // 서버가 켜질 때(ApplicationStarted) 텔레그램 봇도 같이 일을 시작하라고 시킵니다.
     monitor.subscribe(ApplicationStarted) {
         launch { telegramBotService.startPolling() } // Launch in a coroutine
     }
     
+    // 서버가 꺼질 때(ApplicationStopped) 텔레그램 봇도 퇴근시킵니다.
     monitor.subscribe(ApplicationStopped) {
         telegramBotService.stopPolling()
     }
@@ -80,10 +88,14 @@ fun Application.configureRouting(config: ApplicationConfig) {
             }
         }
 
+        // Market 관련 API들은 다른 파일(ProductController)에 따로 정리해두었습니다.
+        // 여기서 불러옵니다.
         // Market Routes
         productRoutes(productService)
 
-        // Type-Safe Routing for Auth
+        // 텔레그램 로그인 요청을 처리합니다.
+        // 프론트엔드에서 받은 로그인 정보(Telegram Widget 데이터)를 검증하고, 우리가 만든 '출입증(JWT 토큰)'을 발급해줍니다.
+        // Type-Safe Routing: URL 주소를 문자열("/api/auth/telegram") 대신 객체(Api.Auth.Telegram)로 안전하게 다룹니다.
         post<Api.Auth.Telegram> {
             val params = call.receiveParameters()
             try {

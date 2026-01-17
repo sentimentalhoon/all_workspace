@@ -10,11 +10,15 @@ export const useTelegramAuth = () => {
   const loginPending = useState("loginPending", () => false);
   const error = useState<string | null>("telegramError", () => null);
 
+  /**
+   * 텔레그램 로그인 처리 함수입니다.
+   * 위젯에서 받은 사용자 정보를 백엔드(/api/auth/telegram)로 보냅니다.
+   */
   const loginWithTelegram = async (user: any) => {
     loginPending.value = true;
     error.value = null;
     try {
-      // Convert Telegram user object to params as backend expects
+      // 텔레그램 데이터를 폼 데이터 형식(x-www-form-urlencoded)으로 변환합니다.
       const params = new URLSearchParams();
       Object.entries(user).forEach(([key, value]) => {
         if (value !== undefined && value !== null) {
@@ -22,6 +26,7 @@ export const useTelegramAuth = () => {
         }
       });
 
+      // 백엔드에 로그인 요청
       const data = await $fetch<{ token: { accessToken: string }; user: any }>(
         "/api/auth/telegram",
         {
@@ -31,9 +36,9 @@ export const useTelegramAuth = () => {
         }
       );
 
+      // 받아온 토큰 저장
       setAccessToken(data.token.accessToken);
 
-      // Redirect or callback
       return data.user;
     } catch (e: any) {
       error.value = e.message || "Login failed";

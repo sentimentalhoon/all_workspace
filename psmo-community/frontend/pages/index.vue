@@ -1,4 +1,8 @@
 <script setup lang="ts">
+/**
+ * 홈(대시보드) 페이지입니다.
+ * 내 포인트(Score)를 보여주고, 주요 메뉴로 이동하는 버튼들을 보여줍니다.
+ */
 const authStore = useAuthStore();
 </script>
 

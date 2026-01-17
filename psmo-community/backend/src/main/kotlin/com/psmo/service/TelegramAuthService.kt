@@ -12,8 +12,9 @@ import javax.crypto.Mac
 import javax.crypto.spec.SecretKeySpec
 
 /**
- * Telegram Login Widget 서명 검증과 사용자 토큰 발급을 담당.
- * TODO: 향후 Apple/Google OAuth 등 멀티 공급자 전략으로 확장하도록 추상화 레이어 필요
+ * 텔레그램 로그인 위젯이 보내준 데이터가 진짜인지 확인하고, 우리 사이트 전용 토큰을 발급해주는 역할을 합니다.
+ *
+ * TODO: 나중에 애플, 구글 로그인도 추가되면 이 구조를 좀 더 일반화해야 합니다.
  */
 class TelegramAuthService(
     private val config: ApplicationConfig,
@@ -29,8 +30,9 @@ class TelegramAuthService(
         config.tryGetString("telegram.authToleranceSeconds")?.toLongOrNull() ?: 86_400L
 
     /**
-     * Telegram 으로부터 전달된 파라미터를 검증하고 사용자 토큰(Access + Refresh)을 반환한다.
-     * Refresh Token 은 Controller 레벨에서 Cookie 로 설정해야 하므로 여기서는 문자열로 반환한다.
+     * 텔레그램에서 온 데이터를 검증하고, 로그인 성공 시 토큰 2개를 줍니다.
+     * 1. Access Token: 평소에 api 호출할 때 쓰는 짧은 출입증
+     * 2. Refresh Token: Access Token이 만료되면 재발급받을 때 쓰는 긴 출입증 (보안을 위해 쿠키에 담음)
      */
     fun authenticate(parameters: Parameters): Pair<TelegramAuthResponse, String> {
         val data = parameters.entries()
@@ -80,7 +82,9 @@ class TelegramAuthService(
     }
 
     /**
-     * Telegram 사양에 맞춰 데이터 체크 문자열을 HMAC-SHA256 으로 검증한다.
+     * 텔레그램이 정해준 규칙대로 암호(Hash)를 계산해봅니다.
+     * 우리가 가진 비밀키(Bot Token)로 계산한 값과, 텔레그램이 보내준 값이 일치하면 "진짜"이고,
+     * 다르면 "가짜(위조된 요청)"입니다.
      */
     private fun calculateHash(dataCheckString: String): String {
         val secretKey = MessageDigest.getInstance("SHA-256").digest(botToken.toByteArray())

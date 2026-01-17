@@ -1,6 +1,11 @@
 <script setup lang="ts">
 const { fetchClient } = useApiClient();
 
+/**
+ * 상품 등록 페이지입니다.
+ * TODO: 현재는 폼 디자인만 있고 실제 등록 기능(파일 업로드 등)은 아직 구현되지 않았습니다.
+ * 나중에 FormData와 Multipart 전송 방식을 사용해서 구현해야 합니다.
+ */
 const form = ref({
   title: "",
   price: 0,

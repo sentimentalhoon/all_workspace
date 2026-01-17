@@ -1,20 +1,21 @@
+/**
+ * 전역 인증 미들웨어.
+ * 모든 페이지 이동 시마다 실행됩니다.
+ * 로그인이 필요한 페이지에 들어가려고 하면 로그인 페이지로 쫓아냅니다.
+ */
 export default defineNuxtRouteMiddleware((to, from) => {
-  // Whitelist public routes
+  // 로그인 없이 볼 수 있는 페이지 목록
   const publicRoutes = ["/login", "/about", "/error"];
   if (publicRoutes.includes(to.path) || to.meta.auth === false) {
-    return;
+    return; // 그냥 통과
   }
 
   const authStore = useAuthStore();
 
-  // Client-side guard driven by store state
+  // 로그인 안 했으면 로그인 페이지로 이동 (/login)
   if (!authStore.isLoggedIn) {
-    // We could try to refresh profile here if cookie exists but state is empty
-    // (handled in app.vue or plugin usually, but simple check here)
-    // For strict SSR protection, checking cookie directly on server side is better.
-    // But store state should be hydration-ready if we use Nuxt correctly.
-
-    // Simplified: redirect to login
+    // 참고: SSR(서버 사이드 렌더링) 환경에서는 쿠키를 확인해야 안전하지만,
+    // Pinia 상태(isLoggedIn)가 잘 초기화되었다면 이걸로도 충분합니다.
     return navigateTo("/login");
   }
 });

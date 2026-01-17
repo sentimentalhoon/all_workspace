@@ -16,8 +16,9 @@ import org.jetbrains.exposed.sql.transactions.transaction
 import java.time.LocalDateTime
 
 /**
- * Telegram 기반 사용자 CRUD 를 담당한다.
- * Flyway 마이그레이션으로 테이블이 선행 생성된다는 가정 하에 동작한다.
+ * 사용자를 관리하는 역할을 합니다. (회원가입, 조회, 점수 수정 등)
+ *
+ * 이 서비스는 Flyway로 DB 테이블이 이미 만들어져 있다고 가정하고 일합니다.
  */
 class UserService(
     private val config: ApplicationConfig
@@ -25,8 +26,12 @@ class UserService(
     private val database by lazy { DatabaseConfig.connectToDatabase(config) }
 
     /**
-     * Telegram 로그인 정보로 사용자를 upsert 한다.
-     * TODO: Telegram 외 OAuth 공급자가 추가되면 provider column 으로 분기하도록 스키마 확장
+     * 텔레그램 로그인을 처리합니다.
+     * - 만약 처음 온 사람이면? -> 새로 등록합니다 (Insert)
+     * - 이미 가입한 사람이면? -> 정보(이름, 사진 등)를 업데이트합니다 (Update)
+     * 이를 합쳐서 UPSERT(Update + Insert)라고 합니다.
+     *
+     * TODO: 나중에 구글, 카카오 로그인이 추가되면 여기서 분기 처리를 해줘야 합니다.
      */
     fun upsertTelegramUser(
         telegramId: Long,
@@ -79,7 +84,8 @@ class UserService(
     }
 
     /**
-     * 점수를 증감시키고 활동 레벨을 재계산한다.
+     * 사용자의 점수를 올리거나 내립니다.
+     * 점수가 바뀌면 활동 레벨(Activity Level)도 같이 다시 계산해서 저장합니다.
      */
     fun adjustScore(userId: Long, delta: Int): User? = transaction(database) {
         val user = Users.selectAll().andWhere { Users.id eq userId }.singleOrNull() ?: return@transaction null

@@ -1,16 +1,26 @@
 <script setup lang="ts">
+/**
+ * 로그인 페이지입니다.
+ * 텔레그램 공식 위젯(Login Widget)을 불러와서 화면에 보여줍니다.
+ */
 const { loginWithTelegram, loginPending, error } = useTelegramAuth();
 
+/**
+ * 위젯에서 로그인이 완료되면 이 함수가 실행됩니다.
+ * 받아온 정보를 가지고 백엔드에 로그인 요청을 보냅니다.
+ */
 const handleTelegramAuth = async (user: any) => {
   try {
     await loginWithTelegram(user);
-    navigateTo("/");
+    navigateTo("/"); // 로그인 성공하면 홈으로 이동
   } catch (e) {
     console.error("Login error", e);
   }
 };
 
 // Load Telegram Widget Script
+// 페이지가 열릴 때(Mounted) 텔레그램 위젯 스크립트를 수동으로 추가합니다.
+// (Nuxt/Vue에서 외부 스크립트를 로딩하는 일반적인 방법입니다)
 onMounted(() => {
   const script = document.createElement("script");
   script.src = "https://telegram.org/js/telegram-widget.js?22";
@@ -19,12 +29,15 @@ onMounted(() => {
     import.meta.env.VITE_TELEGRAM_BOT_USERNAME || "Psmo_community_bot"
   );
   script.setAttribute("data-size", "large");
+
+  // 로그인 완료 시 실행할 함수 이름 (전역 함수여야 함)
   script.setAttribute("data-onauth", "onTelegramAuth(user)");
-  script.setAttribute("data-request-access", "write");
+  script.setAttribute("data-request-access", "write"); // 봇이 사용자에게 메시지를 보낼 수 있게 권한 요청
   script.async = true;
   document.getElementById("telegram-login-container")?.appendChild(script);
 
-  // global callback for widget
+  // 텔레그램 위젯은 HTML 안에서 'onTelegramAuth'라는 함수를 찾습니다.
+  // 그래서 window 객체(전역)에 함수를 등록해줍니다.
   window.onTelegramAuth = (user: any) => {
     handleTelegramAuth(user);
   };

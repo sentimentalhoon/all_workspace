@@ -10,7 +10,11 @@ import java.util.concurrent.ConcurrentHashMap
 import javax.sql.DataSource
 
 /**
- * PostgreSQL(HikariCP) 연결을 생성하고 Exposed Database 객체를 제공한다.
+ * 데이터베이스(DB)와의 연결을 담당하는 설정 파일입니다.
+ *
+ * HikariCP라는 기술을 사용해서 DB와 미리 여러 개의 연결(Connection Pool)을 만들어두고,
+ * 필요할 때마다 빠르게 빌려다 쓸 수 있게 해줍니다.
+ * 마치 도서관에서 책을 미리 꽂아두고 대여해주는 것과 비슷합니다.
  */
 object DatabaseConfig {
     private data class DbSettings(
@@ -27,8 +31,10 @@ object DatabaseConfig {
     private val migrationStates = ConcurrentHashMap<String, Boolean>()
 
     /**
-     * HikariCP 커넥션 풀을 구성한다.
-     * TODO: 운영 환경에서 반드시 비밀 정보는 Secret Manager 로부터 주입
+     * HikariCP 설정 객체를 만듭니다.
+     * 여기에는 DB 주소, 아이디, 비밀번호, 그리고 "동시에 최대 몇 명까지 접속할 수 있는지(maxPoolSize)" 같은 정보가 들어갑니다.
+     *
+     * 주의: 실제 서비스(운영 환경)에서는 비밀번호 같은 중요 정보를 코드에 직접 적으면 안 되고, 암호화해서 관리해야 합니다.
      */
     fun createDataSource(config: ApplicationConfig): DataSource =
         createDataSource(loadSettings(config))
@@ -75,7 +81,10 @@ object DatabaseConfig {
         )
 
     /**
-     * Exposed Database 객체를 생성한다.
+     * 실제로 데이터베이스에 접속을 시도하고, 'Exposed'라는 도구가 DB를 쓸 수 있도록 준비해줍니다.
+     *
+     * 또한, `runMigrations`를 호출해서 DB 테이블이 없으면 자동으로 만들어줍니다(Flyway).
+     * 이것은 마치 "이사 갈 집에 가구가 없으면, 자동으로 가구를 배치해주는 로봇"과 같습니다.
      */
     fun connectToDatabase(config: ApplicationConfig): Database {
         val settings = loadSettings(config)

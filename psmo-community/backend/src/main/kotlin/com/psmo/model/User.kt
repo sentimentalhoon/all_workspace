@@ -9,6 +9,14 @@ import java.time.LocalDateTime
 /**
  * 시스템 역할 정의. 필요에 따라 추가 가능.
  */
+/**
+ * 사용자 역할(권한)을 정의하는 곳입니다.
+ *
+ * SYSTEM: 시스템 관리용 (가장 높은 권한)
+ * ADMIN: 전체 관리자
+ * MANAGER: 중간 관리자
+ * MEMBER: 일반 회원
+ */
 enum class UserRole {
     SYSTEM,
     ADMIN,
@@ -19,6 +27,14 @@ enum class UserRole {
 
 /**
  * Telegram 사용자 테이블 정의.
+ */
+/**
+ * 데이터베이스의 'users' 테이블을 코드로 표현한 것입니다.
+ * (Exposed 프레임워크 사용)
+ *
+ * telegram_id: 텔레그램 고유 ID (로그인할 때 사용)
+ * score: 활동 점수
+ * activity_level: 활동 레벨
  */
 object Users : LongIdTable("users") {
     val telegramId = long("telegram_id").uniqueIndex()
@@ -36,6 +52,10 @@ object Users : LongIdTable("users") {
 /**
  * 사용자 도메인 모델.
  * TODO: 역할/권한 필드(role 등)를 추가하여 RBAC 구현
+ */
+/**
+ * 실제 프로그램 안에서 사용할 '사용자 객체(User)'입니다.
+ * DB 테이블(Users)에서 데이터를 꺼내와서 이 객체에 담아서 사용합니다.
  */
 data class User(
     val id: Long,
