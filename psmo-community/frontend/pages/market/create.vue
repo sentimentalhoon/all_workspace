@@ -1,7 +1,9 @@
 <script setup lang="ts">
+import { useImageOptimization } from "~/composables/useImageOptimization";
 import { useMarket, type ProductCreateRequest } from "~/composables/useMarket";
 
 const { createProduct } = useMarket();
+const { compressImage } = useImageOptimization();
 const router = useRouter();
 
 const form = ref<ProductCreateRequest>({
@@ -33,21 +35,43 @@ const isStoreTrading = computed(() => form.value.category === "PC_BUSINESS");
 const files = ref<File[]>([]);
 const previewUrls = ref<string[]>([]);
 const loading = ref(false);
+const processingImages = ref(false); // processing state
 
-const handleFileChange = (e: Event) => {
+const handleFileChange = async (e: Event) => {
   const target = e.target as HTMLInputElement;
   if (target.files) {
     const newFiles = Array.from(target.files);
-    files.value = [...files.value, ...newFiles];
 
-    // Create previews
-    newFiles.forEach((file) => {
-      const reader = new FileReader();
-      reader.onload = (e) => {
-        if (e.target?.result) previewUrls.value.push(e.target.result as string);
-      };
-      reader.readAsDataURL(file);
-    });
+    // Limit Check (Max 20 total)
+    if (files.value.length + newFiles.length > 20) {
+      alert("이미지는 최대 20장까지만 첨부할 수 있습니다.");
+      return;
+    }
+
+    processingImages.value = true;
+    try {
+      for (const file of newFiles) {
+        // Optimization
+        const compressed = await compressImage(file, 1920, 1, 0.8);
+
+        files.value.push(compressed);
+
+        // Create Preview
+        const reader = new FileReader();
+        reader.onload = (e) => {
+          if (e.target?.result)
+            previewUrls.value.push(e.target.result as string);
+        };
+        reader.readAsDataURL(compressed);
+      }
+    } catch (err) {
+      console.error("Image processing error", err);
+      alert("이미지 처리 중 오류가 발생했습니다.");
+    } finally {
+      processingImages.value = false;
+      // Reset input to allow re-selecting same files if needed
+      target.value = "";
+    }
   }
 };
 
@@ -286,8 +310,22 @@ const submit = async () => {
         </div>
       </div>
 
-      <button type="submit" class="submit-btn" :disabled="loading">
-        {{ loading ? "등록 중..." : "등록 완료" }}
+      <div v-if="processingImages" class="processing-msg">
+        📷 구운 이미지를 식히고 있습니다... (압축 중)
+      </div>
+
+      <button
+        type="submit"
+        class="submit-btn"
+        :disabled="loading || processingImages"
+      >
+        {{
+          loading
+            ? "등록 중..."
+            : processingImages
+              ? "이미지 처리 중..."
+              : "등록 완료"
+        }}
       </button>
     </form>
   </div>
@@ -439,6 +477,13 @@ input[type="file"] {
   .real-estate-grid {
     grid-template-columns: 1fr;
   }
+}
+
+.processing-msg {
+  text-align: center;
+  margin-bottom: 10px;
+  color: #e94560;
+  font-weight: bold;
 }
 
 .field.full-width {
