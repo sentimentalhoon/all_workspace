@@ -101,7 +101,7 @@ fun Application.configureRouting(config: ApplicationConfig) {
         }
 
         productRoutes(productService, imageService)
-        badUserRoutes(badUserService)
+        badUserRoutes(badUserService, imageService)
         boardRoutes(boardService)
 
         // Static files (Images) - For MVP (Legacy)

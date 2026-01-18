@@ -4,23 +4,22 @@ import kotlinx.serialization.Serializable
 
 @Serializable
 data class BadUserCreateRequest(
-    val name: String,
-    val phoneNumber: String, // 입력받은 전체 전화번호 (저장 시 해시/마스킹 처리)
-    val birthYear: Int? = null,
+    val region: String,
     val reason: String,
+    val physicalDescription: String? = null,
+    val incidentDate: String? = null // ISO 8601 format: "2026-01-19"
 )
 
 @Serializable
 data class BadUserResponse(
     val id: Long,
-    val name: String,
-    val phoneLast4: String, // 보안을 위해 뒷 4자리만 반환
-    val birthYear: Int?,
+    val region: String,
     val reason: String,
+    val physicalDescription: String?,
+    val incidentDate: String?,
     val imageUrls: List<String>,
     val reporterName: String,
-    val createdAt: String,
-    // 검증 로직은 별도 API로 분리하거나 클라이언트 해시 비교 (여기선 단순 조회용)
+    val createdAt: String
 )
 
 @Serializable

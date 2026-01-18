@@ -10,17 +10,22 @@ import com.psmo.model.dto.BadUserResponse
 import kotlinx.coroutines.Dispatchers
 import org.jetbrains.exposed.sql.or
 import org.jetbrains.exposed.sql.transactions.experimental.newSuspendedTransaction
+import java.time.LocalDate
 
 class BadUserRepository {
 
-    suspend fun create(reporter: User, request: BadUserCreateRequest, phoneHash: String, phoneLast4: String, imageUrls: List<String>): BadUserResponse = newSuspendedTransaction(Dispatchers.IO) {
+    suspend fun create(
+        reporter: User,
+        request: BadUserCreateRequest,
+        imageUrls: List<String>
+    ): BadUserResponse = newSuspendedTransaction(Dispatchers.IO) {
         val badUser = BadUser.new {
-            this.name = request.name
-            this.phoneHash = phoneHash
-            this.phoneLast4 = phoneLast4
-            this.birthYear = request.birthYear
+            this.region = request.region
             this.reason = request.reason
-            this.reporter = UserEntity.findById(reporter.id) ?: throw IllegalArgumentException("Reporter user not found")
+            this.physicalDescription = request.physicalDescription
+            this.incidentDate = request.incidentDate?.let { LocalDate.parse(it) }
+            this.reporter = UserEntity.findById(reporter.id)
+                ?: throw IllegalArgumentException("Reporter user not found")
         }
 
         imageUrls.forEach { url ->
@@ -40,10 +45,10 @@ class BadUserRepository {
                 .map { it.toResponse() }
         }
 
-        // 이름으로 검색하거나 전화번호 뒷 4자리로 검색
+        // 지역 또는 피해사유로 검색
         BadUser.find {
-            (BadUsers.name like "%$keyword%") or (BadUsers.phoneLast4 like "%$keyword%")
+            (BadUsers.region like "%$keyword%") or (BadUsers.reason like "%$keyword%")
         }.sortedByDescending { it.createdAt }
-         .map { it.toResponse() }
+            .map { it.toResponse() }
     }
 }

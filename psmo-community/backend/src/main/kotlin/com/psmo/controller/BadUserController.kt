@@ -1,25 +1,26 @@
 package com.psmo.controller
 
-// import com.psmo.config.AUTH_JWT
 import com.psmo.model.User
 import com.psmo.model.dto.BadUserCreateRequest
 import com.psmo.resources.BadUserCreateResource
 import com.psmo.resources.BadUserListResource
 import com.psmo.service.BadUserService
+import com.psmo.service.ImageService
 import io.ktor.http.*
 import io.ktor.http.content.*
 import io.ktor.server.auth.*
+import io.ktor.server.auth.jwt.*
 import io.ktor.server.request.*
 import io.ktor.server.resources.*
 import io.ktor.server.resources.post
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import kotlinx.serialization.json.Json
-import java.io.File
-import java.util.*
 import io.ktor.utils.io.jvm.javaio.toInputStream
 
-fun Route.badUserRoutes(badUserService: BadUserService) {
+fun Route.badUserRoutes(badUserService: BadUserService, imageService: ImageService) {
     // 조회 (공개 - 로그인 불필요)
     get<BadUserListResource> { resource ->
         val result = badUserService.searchBadUsers(resource.keyword)
@@ -29,8 +30,10 @@ fun Route.badUserRoutes(badUserService: BadUserService) {
     // 등록 (로그인 필요)
     authenticate("auth-jwt") {
         post<BadUserCreateResource> {
-            val user = call.principal<User>()!!
-            
+            val principal = call.principal<JWTPrincipal>()
+            val userId = principal?.subject?.toLongOrNull()
+                ?: return@post call.respond(HttpStatusCode.Unauthorized, mapOf("error" to "인증 필요"))
+
             // Multipart Request 처리
             val multipart = call.receiveMultipart()
             var createRequest: BadUserCreateRequest? = null
@@ -44,15 +47,16 @@ fun Route.badUserRoutes(badUserService: BadUserService) {
                         }
                     }
                     is PartData.FileItem -> {
-                        // 파일 저장 로직 (로컬 스토리지 for simple MVP)
-                        // 실제로는 S3 / MinIO 등을 사용해야 함.
-                        // 여기서는 'uploads' 폴더에 저장한다고 가정.
-                        val fileName = "${UUID.randomUUID()}.${File(part.originalFileName ?: "img.jpg").extension}"
-                        val file = File("uploads/$fileName")
-                        file.parentFile.mkdirs()
-                        file.writeBytes(part.provider().toInputStream().readBytes())
-                        // URL 생성 (Nginx 또는 Static serve 필요)
-                        uploadedImageUrls.add("/uploads/$fileName") 
+                        // MinIO에 업로드
+                        val fileName = part.originalFileName ?: "image.jpg"
+                        val contentType = part.contentType?.toString() ?: "image/jpeg"
+                        
+                        val url = withContext(Dispatchers.IO) {
+                            part.provider().toInputStream().use { inputStream ->
+                                imageService.uploadImage(inputStream, fileName, contentType)
+                            }
+                        }
+                        uploadedImageUrls.add(url)
                     }
                     else -> {}
                 }
@@ -60,12 +64,39 @@ fun Route.badUserRoutes(badUserService: BadUserService) {
             }
 
             if (createRequest == null) {
-                call.respond(HttpStatusCode.BadRequest, "Missing 'data' field")
+                call.respond(HttpStatusCode.BadRequest, mapOf("error" to "데이터가 누락되었습니다."))
                 return@post
             }
 
-            val response = badUserService.reportBadUser(user, createRequest!!, uploadedImageUrls)
-            call.respond(response)
+            // 사진 최대 20장 제한
+            if (uploadedImageUrls.size > 20) {
+                call.respond(HttpStatusCode.BadRequest, mapOf("error" to "사진은 최대 20장까지만 첨부할 수 있습니다."))
+                return@post
+            }
+
+            try {
+                // User 객체 생성 (Service에서 ID만 사용)
+                val now = java.time.LocalDateTime.now()
+                val user = User(
+                    id = userId, 
+                    telegramId = 0, 
+                    displayName = null,
+                    username = null,
+                    photoUrl = null,
+                    role = com.psmo.model.UserRole.MEMBER,
+                    score = 0,
+                    activityLevel = 0,
+                    createdAt = now,
+                    updatedAt = now
+                )
+                val response = badUserService.reportBadUser(user, createRequest!!, uploadedImageUrls)
+                call.respond(HttpStatusCode.Created, response)
+            } catch (e: IllegalArgumentException) {
+                call.respond(HttpStatusCode.BadRequest, mapOf("error" to (e.message ?: "잘못된 요청")))
+            } catch (e: Exception) {
+                e.printStackTrace()
+                call.respond(HttpStatusCode.InternalServerError, mapOf("error" to "서버 오류가 발생했습니다."))
+            }
         }
     }
 }

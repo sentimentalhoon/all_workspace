@@ -63,8 +63,7 @@
             <div class="card-header">
               <div class="user-main">
                 <span class="bad-badge">주의</span>
-                <span class="name">{{ item.name }}</span>
-                <span class="phone">{{ item.phoneLast4 }}</span>
+                <span class="region">📍 {{ item.region }}</span>
               </div>
               <span class="date">{{
                 new Date(item.createdAt).toLocaleDateString()
@@ -109,34 +108,31 @@
         </div>
 
         <form @submit.prevent="handleReport">
+          <div class="form-group">
+            <label>활동지역 <span class="required">*</span></label>
+            <input
+              v-model="reportForm.region"
+              required
+              placeholder="예: 서울시 강남구, 경기도 수원시"
+              class="dark-input"
+            />
+          </div>
+
           <div class="form-grid">
             <div class="form-group">
-              <label>이름 <span class="required">*</span></label>
+              <label>피해 발생일 (선택)</label>
               <input
-                v-model="reportForm.name"
-                required
-                placeholder="홍길동"
+                type="date"
+                v-model="reportForm.incidentDate"
                 class="dark-input"
               />
             </div>
 
             <div class="form-group">
-              <label>전화번호 (전체) <span class="required">*</span></label>
+              <label>신체적 특징 (선택)</label>
               <input
-                v-model="reportForm.phoneNumber"
-                required
-                placeholder="01012345678 (암호화 저장)"
-                class="dark-input"
-              />
-              <small>검색 시에는 뒷 4자리만 노출됩니다.</small>
-            </div>
-
-            <div class="form-group">
-              <label>출생년도 (선택)</label>
-              <input
-                type="number"
-                v-model="reportForm.birthYear"
-                placeholder="1990"
+                v-model="reportForm.physicalDescription"
+                placeholder="예: 키 약 175cm, 안경 착용"
                 class="dark-input"
               />
             </div>
@@ -147,10 +143,14 @@
             <textarea
               v-model="reportForm.reason"
               required
-              placeholder="구체적인 피해 내용 (예: 야간 미성년자 출입 시도, 요금 미납 도주 등)"
+              maxlength="2000"
+              placeholder="구체적인 피해 내용을 작성해주세요 (최대 2000자)"
               class="dark-input"
-              rows="4"
+              rows="6"
             ></textarea>
+            <small class="char-count"
+              >{{ reportForm.reason.length }} / 2000자</small
+            >
           </div>
 
           <div class="form-group">
@@ -165,7 +165,7 @@
                 class="file-input"
               />
               <label for="file-input" class="file-label">
-                <span>📸 사진 선택 (최대 3장)</span>
+                <span>📸 사진 선택 (최대 20장)</span>
                 <span v-if="reportFiles.length > 0" class="file-count"
                   >{{ reportFiles.length }}장 선택됨</span
                 >
@@ -223,10 +223,10 @@ const handleSearch = async () => {
 
 // --- Report Logic ---
 const reportForm = ref({
-  name: "",
-  phoneNumber: "",
-  birthYear: null as number | null,
+  region: "",
   reason: "",
+  physicalDescription: "",
+  incidentDate: "",
 });
 const reportFiles = ref<File[]>([]);
 const reportLoading = ref(false);
@@ -234,11 +234,24 @@ const reportLoading = ref(false);
 const handleFileChange = (e: Event) => {
   const target = e.target as HTMLInputElement;
   if (target.files) {
-    reportFiles.value = Array.from(target.files);
+    const files = Array.from(target.files);
+    if (files.length > 20) {
+      alert("사진은 최대 20장까지만 첨부할 수 있습니다.");
+      return;
+    }
+    reportFiles.value = files;
   }
 };
 
 const handleReport = async () => {
+  if (!reportForm.value.region.trim()) {
+    alert("활동지역을 입력해주세요.");
+    return;
+  }
+  if (!reportForm.value.reason.trim()) {
+    alert("피해사유를 입력해주세요.");
+    return;
+  }
   if (
     !confirm("허위 사실 유포 시 법적 책임을 질 수 있습니다. 등록하시겠습니까?")
   )
@@ -250,18 +263,17 @@ const handleReport = async () => {
     alert("성공적으로 등록되었습니다.");
     // Reset form
     reportForm.value = {
-      name: "",
-      phoneNumber: "",
-      birthYear: null,
+      region: "",
       reason: "",
+      physicalDescription: "",
+      incidentDate: "",
     };
     reportFiles.value = [];
     activeTab.value = "search";
-
-    // Auto Search to show result (Optimistic UX)
-    searchKeyword.value = reportForm.value.name || "";
-  } catch (e) {
-    alert("등록 실패: " + e);
+    // 목록 새로고침
+    searchResults.value = await searchBadUsers("");
+  } catch (e: any) {
+    alert("등록 실패: " + (e.message || e));
   } finally {
     reportLoading.value = false;
   }

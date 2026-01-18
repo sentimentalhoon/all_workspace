@@ -5,52 +5,50 @@ import org.jetbrains.exposed.dao.LongEntity
 import org.jetbrains.exposed.dao.LongEntityClass
 import org.jetbrains.exposed.dao.id.EntityID
 import org.jetbrains.exposed.dao.id.LongIdTable
+import org.jetbrains.exposed.sql.javatime.CurrentDateTime
+import org.jetbrains.exposed.sql.javatime.date
 import org.jetbrains.exposed.sql.javatime.datetime
-import java.time.LocalDateTime
 
 /**
  * 불량 사용자 (블랙리스트) 테이블
- * 개인정보 보호를 위해 전화번호는 전체 저장하지 않고,
- * 해시값(검증용)과 뒷 4자리(조회/표시용)만 저장합니다.
+ * 개인정보 보호를 위해 이름/전화번호 등은 저장하지 않습니다.
  */
 object BadUsers : LongIdTable("bad_users") {
-    val name = varchar("name", 50)
-    val phoneHash = varchar("phone_hash", 64) // SHA-256 Hash for exact match verification
-    val phoneLast4 = varchar("phone_last4", 4) // Last 4 digits for display/search
-    val birthYear = integer("birth_year").nullable()
-    val reason = varchar("reason", 500)
+    val region = varchar("region", 100)
+    val reason = varchar("reason", 2000)
+    val physicalDescription = varchar("physical_description", 500).nullable()
+    val incidentDate = date("incident_date").nullable()
     val reporter = reference("reporter_id", Users)
-    val createdAt = datetime("created_at").defaultExpression(org.jetbrains.exposed.sql.javatime.CurrentDateTime)
+    val createdAt = datetime("created_at").defaultExpression(CurrentDateTime)
 }
 
 class BadUser(id: EntityID<Long>) : LongEntity(id) {
     companion object : LongEntityClass<BadUser>(BadUsers)
 
-    var name by BadUsers.name
-    var phoneHash by BadUsers.phoneHash
-    var phoneLast4 by BadUsers.phoneLast4
-    var birthYear by BadUsers.birthYear
+    var region by BadUsers.region
     var reason by BadUsers.reason
+    var physicalDescription by BadUsers.physicalDescription
+    var incidentDate by BadUsers.incidentDate
     var reporter by UserEntity referencedOn BadUsers.reporter
     var createdAt by BadUsers.createdAt
     val images by BadUserImage referrersOn BadUserImages.badUser
 
     fun toResponse() = BadUserResponse(
         id = this.id.value,
-        name = this.name,
-        phoneLast4 = this.phoneLast4,
-        birthYear = this.birthYear,
+        region = this.region,
         reason = this.reason,
+        physicalDescription = this.physicalDescription,
+        incidentDate = this.incidentDate?.toString(),
         imageUrls = this.images.map { it.url },
-        reporterName = this.reporter.displayName ?: "Unknown",
+        reporterName = this.reporter.displayName ?: "익명",
         createdAt = this.createdAt.toString()
     )
 }
 
 object BadUserImages : LongIdTable("bad_user_images") {
     val badUser = reference("bad_user_id", BadUsers)
-    val url = varchar("url", 255)
-    val createdAt = datetime("created_at").defaultExpression(org.jetbrains.exposed.sql.javatime.CurrentDateTime)
+    val url = varchar("url", 500)
+    val createdAt = datetime("created_at").defaultExpression(CurrentDateTime)
 }
 
 class BadUserImage(id: EntityID<Long>) : LongEntity(id) {

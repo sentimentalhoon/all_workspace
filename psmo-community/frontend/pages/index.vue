@@ -110,13 +110,10 @@ onMounted(async () => {
         </div>
         <div class="list-container glass-panel">
           <div v-for="user in recentBadUsers" :key="user.id" class="list-item">
-            <div class="user-avatar placeholder">
-              {{ user.name.substring(0, 1) }}
-            </div>
+            <div class="user-avatar placeholder">📍</div>
             <div class="info-col">
               <div class="name-row">
-                <span class="name">{{ user.name }}</span>
-                <span class="phone">({{ user.phoneLast4 }})</span>
+                <span class="name">{{ user.region }}</span>
               </div>
               <div class="reason">{{ user.reason }}</div>
             </div>

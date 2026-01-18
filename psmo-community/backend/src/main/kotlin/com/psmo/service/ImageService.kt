@@ -59,6 +59,12 @@ class ImageService(private val config: ApplicationConfig) {
         return uploadFile(bucketName, inputStream, originalFileName, contentType)
     }
     
+    fun uploadImageBytes(bytes: ByteArray, originalFileName: String, contentType: String): String {
+        return bytes.inputStream().use { inputStream ->
+            uploadFile(bucketName, inputStream, originalFileName, contentType)
+        }
+    }
+    
     fun uploadVideo(inputStream: InputStream, originalFileName: String, contentType: String): String {
         return uploadFile(videoBucketName, inputStream, originalFileName, contentType)
     }
