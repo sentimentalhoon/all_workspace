@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { useRoute, useRouter } from "vue-router";
 import { useBoard, type Comment, type Post } from "~/composables/useBoard";
-import { useAuthStore } from "~/stores/auth"; // Assuming store exists
+import { useAuthStore } from "~/stores/auth";
 
 const { fetchPostById, fetchComments, createComment, toggleLike } = useBoard();
 const route = useRoute();
@@ -61,19 +61,25 @@ onMounted(() => {
 </script>
 
 <template>
-  <div class="page-container">
-    <div v-if="loading" class="loading">Loading...</div>
-    <div v-else-if="post" class="content-wrapper">
+  <div class="page-container fade-in">
+    <div v-if="loading" class="loading-state">
+      <div class="spinner"></div>
+      <p>게시글을 불러오는 중...</p>
+    </div>
+
+    <div v-else-if="post" class="content-wrapper glass-panel">
       <!-- Post Header -->
       <div class="post-header">
-        <span class="category">{{ post.category }}</span>
+        <span class="category-badge">{{ post.category }}</span>
         <h1 class="title">{{ post.title }}</h1>
         <div class="meta">
-          <span class="author">{{ post.author.displayName }}</span>
+          <span class="author">👤 {{ post.author.displayName }}</span>
+          <span class="divider">|</span>
           <span class="date">{{
             new Date(post.createdAt).toLocaleString()
           }}</span>
-          <span class="views">조회 {{ post.viewCount }}</span>
+          <span class="divider">|</span>
+          <span class="views">👀 {{ post.viewCount }}</span>
         </div>
       </div>
 
@@ -89,15 +95,16 @@ onMounted(() => {
           :class="{ liked: post.isLiked }"
           @click="handleLike"
         >
-          {{ post.isLiked ? "❤️" : "🤍" }} 좋아요 {{ post.likeCount }}
+          <span class="heart">{{ post.isLiked ? "❤️" : "🤍" }}</span>
+          <span>좋아요 {{ post.likeCount }}</span>
         </button>
       </div>
 
-      <hr class="divider" />
+      <div class="divider-line"></div>
 
       <!-- Comments -->
       <div class="comments-section">
-        <h3>댓글 {{ comments.length }}</h3>
+        <h3 class="comments-title">댓글 {{ comments.length }}</h3>
 
         <div class="comment-list">
           <div
@@ -120,128 +127,245 @@ onMounted(() => {
           <input
             v-model="newComment"
             placeholder="댓글을 남겨주세요."
+            class="dark-input"
             @keyup.enter="submitComment"
           />
-          <button @click="submitComment">등록</button>
+          <button @click="submitComment" class="send-btn">등록</button>
         </div>
       </div>
     </div>
   </div>
 </template>
 
-<style scoped>
+<style scoped lang="scss">
+/* --- Variables --- */
+$color-bg-dark: #121212;
+$color-primary: #1e88e5;
+$color-secondary: #16213e; /* Added Navy */
+$color-accent: #c5a059;
+$color-danger: #e94560;
+$glass-bg: rgba(255, 255, 255, 0.05);
+$glass-border: rgba(255, 255, 255, 0.1);
+$text-primary: #ffffff;
+$text-secondary: #b0b0b0;
+
 .page-container {
   max-width: 800px;
   margin: 0 auto;
-  padding: 20px;
-  background: white;
-  min-height: 100vh;
+  padding: 16px;
+  padding-bottom: 80px;
 }
 
+.glass-panel {
+  background: $glass-bg;
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1px solid $glass-border;
+  border-radius: 20px;
+  padding: 24px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+}
+
+/* Header */
 .post-header {
-  border-bottom: 1px solid #eee;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
   padding-bottom: 20px;
-  margin-bottom: 20px;
+  margin-bottom: 24px;
+
+  .category-badge {
+    display: inline-block;
+    padding: 4px 10px;
+    background: rgba(255, 255, 255, 0.1);
+    color: $color-accent;
+    border-radius: 6px;
+    font-size: 0.8rem;
+    font-weight: bold;
+    margin-bottom: 12px;
+  }
+
+  .title {
+    margin: 0 0 12px 0;
+    font-size: 1.5rem;
+    color: $text-primary;
+    line-height: 1.3;
+  }
+
+  .meta {
+    font-size: 0.85rem;
+    color: $text-secondary;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+
+    .divider {
+      color: rgba(255, 255, 255, 0.1);
+      font-size: 0.7rem;
+    }
+  }
 }
 
-.category {
-  font-size: 0.9rem;
-  color: #e94560;
-  font-weight: bold;
-}
-
-.title {
-  margin: 10px 0;
-  font-size: 1.4rem;
-  color: #333;
-}
-
-.meta {
-  font-size: 0.8rem;
-  color: #888;
-  display: flex;
-  gap: 15px;
-}
-
+/* Content */
 .post-content {
-  min-height: 200px;
+  min-height: 150px;
   line-height: 1.8;
-  color: #444;
+  color: #ddd;
   white-space: pre-wrap;
   margin-bottom: 40px;
+  font-size: 1.05rem;
 }
 
+/* Like Button */
 .like-section {
   text-align: center;
   margin-bottom: 30px;
+
+  .like-btn {
+    padding: 10px 24px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    background: rgba(255, 255, 255, 0.05);
+    color: $text-secondary;
+    border-radius: 30px;
+    cursor: pointer;
+    font-size: 1rem;
+    transition: all 0.3s;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+
+    &:hover {
+      background: rgba(233, 69, 96, 0.1);
+      border-color: $color-danger;
+      color: $color-danger;
+      transform: scale(1.05);
+    }
+
+    &.liked {
+      background: rgba(233, 69, 96, 0.2);
+      border-color: $color-danger;
+      color: $color-danger;
+      box-shadow: 0 0 15px rgba(233, 69, 96, 0.3);
+    }
+
+    .heart {
+      font-size: 1.2rem;
+    }
+  }
 }
 
-.like-btn {
-  padding: 10px 20px;
-  border: 1px solid #ddd;
-  background: white;
-  border-radius: 20px;
-  cursor: pointer;
-  font-size: 1rem;
-  transition: all 0.2s;
+.divider-line {
+  height: 1px;
+  background: rgba(255, 255, 255, 0.1);
+  margin-bottom: 30px;
 }
 
-.like-btn.liked {
-  border-color: #e94560;
-  color: #e94560;
-  background: #fff0f3;
+/* Comments */
+.comments-section {
+  .comments-title {
+    color: $text-primary;
+    margin-bottom: 20px;
+    font-size: 1.1rem;
+    border-left: 3px solid $color-accent;
+    padding-left: 10px;
+  }
+
+  .comment-item {
+    padding: 16px;
+    background: rgba(0, 0, 0, 0.2);
+    border-radius: 12px;
+    margin-bottom: 12px;
+    border: 1px solid rgba(255, 255, 255, 0.03);
+
+    .comment-header {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 8px;
+      font-size: 0.85rem;
+
+      .c-author {
+        font-weight: bold;
+        color: $color-accent;
+      }
+      .c-date {
+        color: #666;
+      }
+    }
+
+    .c-content {
+      margin: 0;
+      color: #ccc;
+      line-height: 1.5;
+    }
+  }
+
+  .comment-form {
+    display: flex;
+    gap: 10px;
+    margin-top: 24px;
+
+    .dark-input {
+      flex: 1;
+      padding: 12px;
+      background: rgba(0, 0, 0, 0.3);
+      border: 1px solid $glass-border;
+      border-radius: 10px;
+      color: white;
+
+      &:focus {
+        outline: none;
+        border-color: $color-accent;
+      }
+    }
+
+    .send-btn {
+      padding: 0 24px;
+      background: $color-secondary; /* Navy */
+      color: $color-accent; /* Gold */
+      border: 1px solid $color-accent;
+      border-radius: 10px;
+      font-weight: bold;
+      cursor: pointer;
+      transition: all 0.2s;
+
+      &:hover {
+        background: $color-accent;
+        color: #000;
+      }
+    }
+  }
 }
 
-.divider {
-  border: 0;
-  border-top: 1px solid #eee;
-  margin: 0 0 30px 0;
-}
+/* Loading */
+.loading-state {
+  text-align: center;
+  padding: 60px 0;
+  color: $text-secondary;
 
-.comment-item {
-  margin-bottom: 20px;
-  padding-bottom: 10px;
-  border-bottom: 1px solid #f9f9f9;
+  .spinner {
+    width: 30px;
+    height: 30px;
+    border: 3px solid rgba(255, 255, 255, 0.1);
+    border-top-color: $color-accent;
+    border-radius: 50%;
+    margin: 0 auto 16px;
+    animation: spin 1s linear infinite;
+  }
 }
-
-.comment-header {
-  margin-bottom: 5px;
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
 }
-
-.c-author {
-  font-weight: bold;
-  font-size: 0.9rem;
-  margin-right: 10px;
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
-.c-date {
-  font-size: 0.8rem;
-  color: #aaa;
-}
-
-.c-content {
-  margin: 0;
-  color: #555;
-}
-
-.comment-form {
-  display: flex;
-  gap: 10px;
-  margin-top: 20px;
-}
-
-.comment-form input {
-  flex: 1;
-  padding: 12px;
-  border: 1px solid #ddd;
-  border-radius: 8px;
-}
-
-.comment-form button {
-  padding: 0 20px;
-  background: #16213e;
-  color: white;
-  border: none;
-  border-radius: 8px;
-  cursor: pointer;
+.fade-in {
+  animation: fadeIn 0.5s ease-out forwards;
 }
 </style>

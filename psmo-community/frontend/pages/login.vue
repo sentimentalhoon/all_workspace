@@ -63,15 +63,21 @@ onUnmounted(() => {
 
 <template>
   <div class="login-page">
-    <div class="login-card">
-      <h2>Welcome to PSMO</h2>
-      <p>Please log in with Telegram to continue.</p>
+    <div class="login-card glass-panel bounce-in">
+      <div class="logo-area">
+        <h1>PSMO</h1>
+        <p class="subtitle">PC방 사장님 모임</p>
+      </div>
 
-      <div v-if="error" class="error-msg">{{ error }}</div>
+      <p class="desc">서비스 이용을 위해<br />텔레그램으로 로그인해주세요.</p>
+
+      <div v-if="error" class="error-msg">⚠️ {{ error }}</div>
 
       <div id="telegram-login-container" class="widget-container"></div>
 
-      <div v-if="loginPending" class="loading">Logging in...</div>
+      <div v-if="loginPending" class="loading">
+        <span class="spinner"></span> 로그인 처리 중...
+      </div>
     </div>
   </div>
 </template>
@@ -85,28 +91,111 @@ onUnmounted(() => {
 }
 
 .login-card {
-  background: white;
-  padding: 2rem;
-  border-radius: 12px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  background: rgba(22, 33, 62, 0.6);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  padding: 3rem 2rem;
+  border-radius: 24px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
   text-align: center;
   max-width: 400px;
   width: 100%;
+  color: white;
+}
+
+.logo-area {
+  margin-bottom: 2rem;
+}
+
+.logo-area h1 {
+  font-size: 2.5rem;
+  font-weight: 800;
+  margin: 0;
+  background: linear-gradient(135deg, #c5a059 0%, #e94560 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  letter-spacing: -1px;
+}
+
+.subtitle {
+  color: #b0b0b0;
+  margin: 0;
+  font-size: 0.9rem;
+}
+
+.desc {
+  margin-bottom: 2rem;
+  line-height: 1.6;
+  color: #e0e0e0;
 }
 
 .widget-container {
   margin: 20px 0;
   min-height: 50px;
+  display: flex;
+  justify-content: center;
 }
 
 .error-msg {
-  color: red;
-  margin-bottom: 10px;
+  background: rgba(233, 69, 96, 0.2);
+  color: #ff6b6b;
+  padding: 10px;
+  border-radius: 8px;
+  margin-bottom: 15px;
   font-size: 0.9rem;
 }
 
 .loading {
-  color: #666;
-  margin-top: 10px;
+  color: #c5a059;
+  margin-top: 15px;
+  font-size: 0.9rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.spinner {
+  width: 16px;
+  height: 16px;
+  border: 2px solid rgba(197, 160, 89, 0.3);
+  border-top-color: #c5a059;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.bounce-in {
+  animation: bounceIn 0.8s cubic-bezier(0.215, 0.61, 0.355, 1);
+}
+
+@keyframes bounceIn {
+  0% {
+    opacity: 0;
+    transform: scale(0.3);
+  }
+  20% {
+    transform: scale(1.1);
+  }
+  40% {
+    transform: scale(0.9);
+  }
+  60% {
+    opacity: 1;
+    transform: scale(1.03);
+  }
+  80% {
+    transform: scale(0.97);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
 }
 </style>

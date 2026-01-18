@@ -64,33 +64,28 @@ onMounted(async () => {
 </script>
 
 <template>
-  <div v-if="loading" class="loading">Loading...</div>
-  <div v-else-if="!product" class="error">존재하지 않는 상품입니다.</div>
+  <div v-if="loading" class="loading-state">
+    <div class="spinner"></div>
+    <p>정보를 불러오는 중...</p>
+  </div>
+  <div v-else-if="!product" class="error-state">
+    <p>🙅‍♂️ 존재하지 않거나 삭제된 상품입니다.</p>
+    <button @click="router.push('/market')">목록으로 돌아가기</button>
+  </div>
 
-  <div v-else class="page-container">
+  <div v-else class="page-container fade-in">
     <!-- Image Gallery -->
-    <div class="gallery-section">
+    <div class="gallery-section glass-panel">
       <div class="main-image">
         <img
           v-if="product.images[activeImageIndex]?.url"
           :src="product.images[activeImageIndex]?.url"
           alt="Main Product Image"
+          class="zoom-img"
         />
         <div v-else class="no-image-placeholder">
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            fill="none"
-            viewBox="0 0 24 24"
-            stroke-width="1.5"
-            stroke="currentColor"
-            class="icon"
-          >
-            <path
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              d="M2.25 15.75l5.159-5.159a2.25 2.25 0 013.182 0l5.159 5.159m-1.5-1.5l1.409-1.409a2.25 2.25 0 013.182 0l2.909 2.909m-18 3.75h16.5a1.5 1.5 0 001.5-1.5V6a1.5 1.5 0 00-1.5-1.5H3.75A1.5 1.5 0 002.25 6v12a1.5 1.5 0 001.5 1.5zm10.5-11.25h.008v.008h-.008V8.25zm.375 0a.375.375 0 11-.75 0 .375.375 0 01.75 0z"
-            />
-          </svg>
+          <span class="icon">📷</span>
+          <span>이미지가 없습니다</span>
         </div>
       </div>
       <div v-if="product.images.length > 1" class="thumbnails">
@@ -101,22 +96,28 @@ onMounted(async () => {
           :class="{ active: idx === activeImageIndex }"
           @click="activeImageIndex = idx"
         >
-          <img :src="img.url" />
+          <img :src="img.url" loading="lazy" />
         </div>
       </div>
     </div>
 
     <!-- Product Info -->
-    <div class="info-section">
+    <div class="info-section glass-panel">
       <div class="header">
-        <span class="category-badge">{{
-          product.category === "PC_BUSINESS" ? "매장 매매" : product.category
-        }}</span>
+        <div class="top-row">
+          <span class="category-badge">{{
+            product.category === "PC_BUSINESS" ? "매장 매매" : product.category
+          }}</span>
+          <span class="status-badge" :class="product.status">{{
+            product.status
+          }}</span>
+        </div>
+
         <h1 class="title">{{ product.title }}</h1>
         <div class="meta">
-          <span>작성자: {{ product.seller.displayName }}</span>
-          <span>{{ new Date(product.createdAt).toLocaleDateString() }}</span>
-          <span>조회 {{ product.viewCount }}</span>
+          <span>🧢 {{ product.seller.displayName }}</span>
+          <span>📅 {{ new Date(product.createdAt).toLocaleDateString() }}</span>
+          <span>👀 {{ product.viewCount }}</span>
         </div>
       </div>
 
@@ -124,7 +125,9 @@ onMounted(async () => {
         <span class="label">{{
           product.category === "PC_BUSINESS" ? "권리금" : "판매 가격"
         }}</span>
-        <span class="value">{{ product.price.toLocaleString() }}원</span>
+        <span class="value"
+          >{{ product.price.toLocaleString() }} <small>원</small></span
+        >
       </div>
 
       <!-- Real Estate Details -->
@@ -164,16 +167,17 @@ onMounted(async () => {
         </div>
         <div class="grid-item">
           <span class="label">층수 / 면적</span>
-          <span class="val"
-            >{{ product.realEstate?.floor }}층 /
-            {{ product.realEstate?.areaMeters }}㎡ ({{
-              product.realEstate?.areaPyeong
-            }}평)</span
-          >
+          <span class="val">
+            {{ product.realEstate?.floor }}층 /
+            {{ product.realEstate?.areaMeters }}㎡
+            <span class="sub-text"
+              >({{ product.realEstate?.areaPyeong }}평)</span
+            >
+          </span>
         </div>
         <div class="grid-item">
           <span class="label">권리금</span>
-          <span class="val"
+          <span class="val highlight"
             >{{ product.realEstate?.rightsMoney.toLocaleString() }}원</span
           >
         </div>
@@ -199,7 +203,7 @@ onMounted(async () => {
         </div>
         <div class="grid-item full-width">
           <span class="label">연락처</span>
-          <span class="val highlight">{{
+          <span class="val highlight-gold">{{
             product.realEstate?.contactNumber
           }}</span>
         </div>
@@ -217,21 +221,26 @@ onMounted(async () => {
         <p>{{ product.description }}</p>
       </div>
 
+      <div class="action-spacer"></div>
+
+      <!-- Bottom Floating Action Bar -->
       <div class="action-bar-wrapper">
         <div
           v-if="product.status === 'PENDING' && isAdmin"
-          class="admin-actions"
+          class="admin-actions glass-panel-sm"
         >
-          <p class="admin-notice">📢 관리자 승인 대기 중인 상품입니다.</p>
-          <button @click="handleStatusChange('SALE')" class="approve-btn">
-            승인 (공개)
-          </button>
-          <button @click="handleStatusChange('DELETED')" class="reject-btn">
-            반려 (삭제)
-          </button>
+          <p class="admin-notice">📢 관리자 승인 대기 중</p>
+          <div class="btn-group">
+            <button @click="handleStatusChange('SALE')" class="approve-btn">
+              승인 (공개)
+            </button>
+            <button @click="handleStatusChange('DELETED')" class="reject-btn">
+              반려 (삭제)
+            </button>
+          </div>
         </div>
 
-        <div class="action-bar">
+        <div class="action-bar glass-panel">
           <!-- Owner Actions -->
           <template v-if="isOwner">
             <button @click="handleDelete" class="delete-btn">삭제</button>
@@ -251,274 +260,421 @@ onMounted(async () => {
             </button>
           </template>
 
-          <!-- Contact Buttons -->
-          <a
-            :href="`tel:${product.realEstate?.contactNumber}`"
-            v-if="product.realEstate?.contactNumber"
-            class="call-btn"
-            >📞 전화하기</a
-          >
-          <button class="chat-btn">💬 채팅하기</button>
+          <template v-else>
+            <!-- Contact Buttons -->
+            <button class="chat-btn">💬 채팅하기</button>
+            <a
+              :href="`tel:${product.realEstate?.contactNumber}`"
+              v-if="
+                product.category === 'PC_BUSINESS' &&
+                product.realEstate?.contactNumber
+              "
+              class="call-btn"
+              >📞 전화하기</a
+            >
+            <a href="#" v-else class="call-btn disabled">📞 연락처 없음</a>
+          </template>
         </div>
       </div>
     </div>
   </div>
 </template>
 
-<style scoped>
+<style scoped lang="scss">
+/* --- Variables --- */
+$color-bg-dark: #121212;
+$color-primary: #1e88e5;
+$color-accent: #c5a059;
+$color-danger: #e94560;
+$glass-bg: rgba(255, 255, 255, 0.05);
+$glass-border: rgba(255, 255, 255, 0.1);
+$text-primary: #ffffff;
+$text-secondary: #b0b0b0;
+
 .page-container {
   max-width: 800px;
   margin: 0 auto;
-  padding: 20px;
-  background: white;
-  min-height: 100vh;
+  padding: 16px;
+  padding-bottom: 100px; /* Space for fixed bottom bar */
 }
 
-.gallery-section {
-  margin-bottom: 30px;
+/* Glass Panel */
+.glass-panel {
+  background: $glass-bg;
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1px solid $glass-border;
+  border-radius: 20px;
+  padding: 24px;
+  margin-bottom: 24px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
 }
 
-.main-image {
-  width: 100%;
-  height: 400px;
-  background: #000;
+.glass-panel-sm {
+  background: rgba(255, 243, 205, 0.9);
+  backdrop-filter: blur(5px);
+  border: 1px solid rgba(255, 193, 7, 0.3);
   border-radius: 12px;
-  overflow: hidden;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  padding: 12px;
+  margin-bottom: 12px;
 }
 
-.main-image img {
-  max-width: 100%;
-  max-height: 100%;
+/* Gallery */
+.gallery-section {
+  padding: 16px;
+
+  .main-image {
+    width: 100%;
+    height: 350px;
+    background: #000;
+    border-radius: 16px;
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+
+    .zoom-img {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+    }
+  }
+
+  .thumbnails {
+    display: flex;
+    gap: 12px;
+    margin-top: 16px;
+    overflow-x: auto;
+    padding-bottom: 4px;
+
+    .thumb {
+      flex: 0 0 70px;
+      height: 70px;
+      border-radius: 10px;
+      overflow: hidden;
+      cursor: pointer;
+      border: 2px solid transparent;
+      opacity: 0.6;
+      transition: all 0.2s;
+
+      &.active {
+        border-color: $color-accent;
+        opacity: 1;
+      }
+      img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+      }
+    }
+  }
 }
 
 .no-image-placeholder {
-  width: 100%;
-  height: 100%;
-  background: #333;
   display: flex;
+  flex-direction: column;
   align-items: center;
-  justify-content: center;
   color: #666;
+  gap: 8px;
+  .icon {
+    font-size: 2rem;
+  }
 }
 
-.no-image-placeholder .icon {
-  width: 64px;
-  height: 64px;
+/* Info Section */
+.info-section {
+  .header {
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    padding-bottom: 20px;
+    margin-bottom: 20px;
+
+    .top-row {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 12px;
+
+      .category-badge {
+        background: rgba(255, 255, 255, 0.1);
+        padding: 4px 10px;
+        border-radius: 6px;
+        font-size: 0.85rem;
+        color: $text-secondary;
+      }
+
+      .status-badge {
+        font-size: 0.85rem;
+        font-weight: bold;
+        padding: 4px 8px;
+        border-radius: 4px;
+
+        &.PENDING {
+          color: #ffc107;
+          background: rgba(255, 193, 7, 0.1);
+        }
+        &.SOLD {
+          color: #aaa;
+          background: rgba(255, 255, 255, 0.1);
+        }
+        &.SALE {
+          color: #28a745;
+          background: rgba(40, 167, 69, 0.1);
+        }
+      }
+    }
+
+    .title {
+      margin: 0 0 12px;
+      font-size: 1.6rem;
+      color: $text-primary;
+    }
+
+    .meta {
+      color: #666;
+      font-size: 0.9rem;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 15px;
+    }
+  }
+
+  .price-box {
+    margin-bottom: 30px;
+
+    .label {
+      display: block;
+      font-size: 0.9rem;
+      color: $color-accent;
+      margin-bottom: 4px;
+    }
+    .value {
+      font-size: 2rem;
+      font-weight: 800;
+      background: linear-gradient(90deg, #fff, #ddd);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      small {
+        font-size: 1.2rem;
+        margin-left: 4px;
+      }
+    }
+  }
 }
 
-.thumbnails {
-  display: flex;
-  gap: 10px;
-  margin-top: 10px;
-  overflow-x: auto;
-}
-
-.thumb {
-  width: 80px;
-  height: 80px;
-  border-radius: 8px;
-  overflow: hidden;
-  cursor: pointer;
-  border: 2px solid transparent;
-}
-
-.thumb.active {
-  border-color: #e94560;
-}
-
-.thumb img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-}
-
-.header {
-  border-bottom: 1px solid #eee;
-  padding-bottom: 20px;
-  margin-bottom: 20px;
-}
-
-.category-badge {
-  background: #f0f0f0;
-  padding: 4px 8px;
-  border-radius: 4px;
-  font-size: 0.8rem;
-  color: #555;
-}
-
-.title {
-  margin: 10px 0;
-  font-size: 1.5rem;
-  color: #333;
-}
-
-.meta {
-  color: #888;
-  font-size: 0.9rem;
-  display: flex;
-  gap: 15px;
-}
-
-.price-box {
-  margin-bottom: 30px;
-}
-
-.price-box .value {
-  font-size: 1.8rem;
-  font-weight: bold;
-  color: #e94560;
-  display: block;
-}
-
+/* Detail Grid */
 .detail-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 15px;
-  background: #f9f9f9;
-  padding: 20px;
-  border-radius: 12px;
+  gap: 16px;
+  background: rgba(0, 0, 0, 0.2); /* Darker inner background */
+  padding: 24px;
+  border-radius: 16px;
   margin-bottom: 30px;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+
+  .grid-item {
+    display: flex;
+    flex-direction: column;
+
+    &.full-width {
+      grid-column: span 2;
+    }
+
+    .label {
+      font-size: 0.85rem;
+      color: $text-secondary;
+      margin-bottom: 4px;
+    }
+
+    .val {
+      font-size: 1rem;
+      font-weight: 600;
+      color: $text-primary;
+
+      &.highlight {
+        color: $color-danger;
+      }
+      &.highlight-gold {
+        color: $color-accent;
+        font-size: 1.1rem;
+      }
+      .sub-text {
+        font-size: 0.85rem;
+        color: #666;
+        font-weight: normal;
+      }
+    }
+
+    .pre-wrap {
+      white-space: pre-wrap;
+      line-height: 1.5;
+      color: #ddd;
+    }
+  }
 }
 
-.grid-item {
-  display: flex;
-  flex-direction: column;
+.description {
+  h3 {
+    color: $text-primary;
+    margin-bottom: 15px;
+    border-left: 3px solid $color-accent;
+    padding-left: 10px;
+  }
+  p {
+    line-height: 1.8;
+    color: #ddd;
+    white-space: pre-line;
+    font-size: 1.05rem;
+  }
 }
 
-.grid-item.full-width {
-  grid-column: span 2;
-}
-
-.grid-item .label {
-  font-size: 0.8rem;
-  color: #888;
-}
-
-.grid-item .val {
-  font-weight: bold;
-  color: #333;
-}
-
-.description h3 {
-  margin-bottom: 15px;
-}
-
-.description p {
-  line-height: 1.6;
-  color: #444;
-  white-space: pre-line;
-}
-
-.action-bar {
-  position: fixed;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  padding: 15px;
-  background: white;
-  border-top: 1px solid #eee;
-  display: flex;
-  gap: 10px;
-  justify-content: center;
-  box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.05);
-}
-
-.action-bar button {
-  flex: 1;
-  max-width: 300px;
-  padding: 15px;
-  border: none;
-  border-radius: 8px;
-  font-weight: bold;
-  font-size: 1rem;
-  cursor: pointer;
-}
-
-.chat-btn {
-  background: #eee;
-  color: #333;
-}
-
-.call-btn {
-  background: #16213e;
-  color: #c5a059;
-  text-decoration: none;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
+/* Action Bar */
 .action-bar-wrapper {
   position: fixed;
-  bottom: 0;
-  left: 0;
-  right: 0;
+  bottom: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 95%;
+  max-width: 760px;
   z-index: 100;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
 }
 
 .admin-actions {
-  background: #fff3cd;
-  padding: 10px;
-  text-align: center;
-  border-top: 1px solid #ffeeba;
   display: flex;
-  gap: 10px;
-  justify-content: center;
+  flex-direction: column;
   align-items: center;
+  gap: 8px;
+
+  .admin-notice {
+    margin: 0;
+    font-weight: bold;
+    color: #856404;
+    font-size: 0.9rem;
+  }
+  .btn-group {
+    display: flex;
+    gap: 10px;
+    width: 100%;
+  }
+
+  button {
+    flex: 1;
+    padding: 8px;
+    border-radius: 8px;
+    border: none;
+    font-weight: bold;
+    cursor: pointer;
+  }
+  .approve-btn {
+    background: #28a745;
+    color: white;
+  }
+  .reject-btn {
+    background: #dc3545;
+    color: white;
+  }
 }
 
-.admin-notice {
-  margin: 0;
-  font-weight: bold;
-  color: #856404;
+.action-bar {
+  display: flex;
+  justify-content: space-between;
+  padding: 12px;
+  margin: 0; /* Override glass-panel margin */
+  background: rgba(22, 33, 62, 0.9); /* Darker glass for better contrast */
+  align-items: center;
+  gap: 12px;
+
+  button,
+  a {
+    flex: 1;
+    height: 50px;
+    border: none;
+    border-radius: 12px;
+    font-weight: bold;
+    font-size: 1rem;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-decoration: none;
+    transition: transform 0.2s;
+
+    &:active {
+      transform: scale(0.97);
+    }
+  }
+
+  .chat-btn {
+    background: rgba(255, 255, 255, 0.1);
+    color: white;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+  }
+  .call-btn {
+    background: $color-accent;
+    color: #000;
+    &.disabled {
+      background: #555;
+      color: #888;
+      cursor: not-allowed;
+    }
+  }
+  .delete-btn {
+    background: rgba(233, 69, 96, 0.2);
+    color: $color-danger;
+    border: 1px solid $color-danger;
+  }
+  .sold-btn {
+    background: $text-secondary;
+    color: white;
+  }
 }
 
-.approve-btn {
-  background: #28a745;
-  color: white;
-  padding: 5px 15px;
-  border-radius: 4px;
-}
+/* Loading/Error */
+.loading-state,
+.error-state {
+  text-align: center;
+  padding: 100px 0;
+  color: $text-secondary;
 
-.reject-btn {
-  background: #dc3545;
-  color: white;
-  padding: 5px 15px;
-  border-radius: 4px;
+  button {
+    margin-top: 20px;
+    padding: 10px 20px;
+    background: $color-primary;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+  }
 }
-
-.delete-btn {
-  background: #dc3545;
-  color: white;
+.spinner {
+  width: 40px;
+  height: 40px;
+  border: 4px solid rgba(255, 255, 255, 0.1);
+  border-top-color: $color-accent;
+  border-radius: 50%;
+  margin: 0 auto 20px;
+  animation: spin 1s linear infinite;
 }
-
-.sold-btn {
-  background: #6c757d;
-  color: white;
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
 }
-
-.sold-btn.disabled {
-  cursor: not-allowed;
-  opacity: 0.7;
-}
-
-.pre-wrap {
-  white-space: pre-wrap;
-}
-
-.val.highlight {
-  color: #e94560;
-  font-size: 1.1rem;
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
 }
 
 @media (min-width: 800px) {
   .page-container {
-    margin-top: 20px;
-    border-radius: 12px;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    padding-top: 40px;
   }
 }
 </style>

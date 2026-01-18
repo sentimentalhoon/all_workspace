@@ -226,6 +226,7 @@ class TelegramBotService(
         return jedisPool.resource.use { jedis ->
             val redisKey = "qr_auth:$uuid"
             val json = jedis.get(redisKey) ?: return@use null
+            @Suppress("UNCHECKED_CAST")
             val data = mapper.readValue(json, Map::class.java) as Map<String, Any>
             
             if (data["status"] == "verified") {
