@@ -195,6 +195,19 @@ const searchResults = ref<any[]>([]);
 const searchLoading = ref(false);
 const searched = ref(false);
 
+// 페이지 로드 시 자동으로 전체 목록 조회
+onMounted(async () => {
+  searchLoading.value = true;
+  try {
+    searchResults.value = await searchBadUsers("");
+    searched.value = true;
+  } catch (e) {
+    console.error("블랙리스트 로드 실패:", e);
+  } finally {
+    searchLoading.value = false;
+  }
+});
+
 const handleSearch = async () => {
   if (!searchKeyword.value.trim()) return;
   searchLoading.value = true;
