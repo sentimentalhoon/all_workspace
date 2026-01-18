@@ -97,56 +97,7 @@ onMounted(async () => {
   }
 });
 
-const handleFileChange = async (e: Event) => {
-  const target = e.target as HTMLInputElement;
-  if (target.files) {
-    const newFiles = Array.from(target.files);
-
-    // Limit Check (Max 20 total)
-    const totalCount =
-      existingImages.value.length + files.value.length + newFiles.length;
-    if (totalCount > 20) {
-      alert("이미지는 최대 20장까지만 첨부할 수 있습니다.");
-      return;
-    }
-
-    processingImages.value = true;
-    try {
-      for (const file of newFiles) {
-        // Optimization
-        const compressed = await compressImage(file, 1920, 1, 0.8);
-
-        files.value.push(compressed);
-
-        // Create Preview
-        const reader = new FileReader();
-        reader.onload = (e) => {
-          if (e.target?.result)
-            previewUrls.value.push(e.target.result as string);
-        };
-        reader.readAsDataURL(compressed);
-      }
-    } catch (err) {
-      console.error("Image processing error", err);
-      alert("이미지 처리 중 오류가 발생했습니다.");
-    } finally {
-      processingImages.value = false;
-      // Reset input to allow re-selecting same files if needed
-      target.value = "";
-    }
-  }
-};
-
-const removeNewFile = (index: number) => {
-  files.value.splice(index, 1);
-  previewUrls.value.splice(index, 1);
-};
-
-const removeExistingImage = (index: number) => {
-  const img = existingImages.value[index];
-  deleteImageIds.value.push(img.id);
-  existingImages.value.splice(index, 1);
-};
+// Image handling logic moved to CommonImageUploader component
 
 const submit = async () => {
   if (!form.value.title || !form.value.price) {
@@ -431,61 +382,13 @@ const submit = async () => {
       <div class="form-section">
         <label class="section-label">사진 첨부 (최대 20장)</label>
 
-        <div class="file-upload-area">
-          <input
-            type="file"
-            multiple
-            @change="handleFileChange"
-            accept="image/*"
-            id="file-input"
-            class="hidden-input"
-          />
-          <label for="file-input" class="upload-box hover-glow">
-            <span class="icon">📸</span>
-            <span>사진 추가하기</span>
-            <span
-              class="count-badge"
-              v-if="existingImages.length + files.length > 0"
-              >{{ existingImages.length + files.length }} / 20</span
-            >
-          </label>
-
-          <div class="preview-grid">
-            <!-- Existing Images -->
-            <div
-              v-for="(img, idx) in existingImages"
-              :key="'exist-' + img.id"
-              class="preview-item existing"
-            >
-              <img :src="img.url" />
-              <button
-                type="button"
-                class="remove-btn"
-                @click="removeExistingImage(idx)"
-              >
-                ✕
-              </button>
-              <span class="badge">기존</span>
-            </div>
-
-            <!-- New Images -->
-            <div
-              v-for="(url, idx) in previewUrls"
-              :key="'new-' + idx"
-              class="preview-item new"
-            >
-              <img :src="url" />
-              <button
-                type="button"
-                class="remove-btn"
-                @click="removeNewFile(idx)"
-              >
-                ✕
-              </button>
-              <span class="badge new-badge">신규</span>
-            </div>
-          </div>
-        </div>
+        <common-image-uploader
+          :existing-images="existingImages"
+          :max-count="20"
+          @update:files="(f: File[]) => (files = f)"
+          @update:delete-ids="(ids: number[]) => (deleteImageIds = ids)"
+          @update:processing="(state: boolean) => (processingImages = state)"
+        />
       </div>
 
       <div v-if="processingImages" class="processing-msg glass-panel-sm">

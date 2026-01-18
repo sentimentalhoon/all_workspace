@@ -155,26 +155,22 @@
 
           <div class="form-group">
             <label>증거 사진 (선택)</label>
-            <div class="file-upload-wrapper">
-              <input
-                type="file"
-                multiple
-                @change="handleFileChange"
-                accept="image/*"
-                id="file-input"
-                class="file-input"
-              />
-              <label for="file-input" class="file-label">
-                <span>📸 사진 선택 (최대 20장)</span>
-                <span v-if="reportFiles.length > 0" class="file-count"
-                  >{{ reportFiles.length }}장 선택됨</span
-                >
-              </label>
-            </div>
+            <common-image-uploader
+              :max-count="20"
+              @update:files="(files: File[]) => (reportFiles = files)"
+              @update:processing="(state: boolean) => (imageProcessing = state)"
+            />
           </div>
 
-          <button type="submit" class="submit-btn" :disabled="reportLoading">
-            <span v-if="reportLoading" class="spinner-sm white"></span>
+          <button
+            type="submit"
+            class="submit-btn"
+            :disabled="reportLoading || imageProcessing"
+          >
+            <span
+              v-if="reportLoading || imageProcessing"
+              class="spinner-sm white"
+            ></span>
             <span v-else>불량 사용자 등록</span>
           </button>
         </form>
@@ -230,18 +226,9 @@ const reportForm = ref({
 });
 const reportFiles = ref<File[]>([]);
 const reportLoading = ref(false);
+const imageProcessing = ref(false);
 
-const handleFileChange = (e: Event) => {
-  const target = e.target as HTMLInputElement;
-  if (target.files) {
-    const files = Array.from(target.files);
-    if (files.length > 20) {
-      alert("사진은 최대 20장까지만 첨부할 수 있습니다.");
-      return;
-    }
-    reportFiles.value = files;
-  }
-};
+// handleFileChange removed - handled by CommonImageUploader component
 
 const handleReport = async () => {
   if (!reportForm.value.region.trim()) {
