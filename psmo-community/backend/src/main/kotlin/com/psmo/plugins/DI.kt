@@ -38,7 +38,9 @@ fun appModule(config: ApplicationConfig) = module {
     single { config }
     
     // Repositories
+    // Repositories
     single { com.psmo.repository.ProductRepository(get()) }
+    single { com.psmo.repository.BadUserRepository() }
 
     // Services
     single { TestService(get()) }
@@ -50,7 +52,9 @@ fun appModule(config: ApplicationConfig) = module {
     single { ProductService(get()) }
 
     single { ImageService(get()) }
+    single { ImageService(get()) }
     single { CloudflareStreamService(get()) } // Placeholder for Video Upload
+    single { BadUserService(get()) }
     
 
 }
