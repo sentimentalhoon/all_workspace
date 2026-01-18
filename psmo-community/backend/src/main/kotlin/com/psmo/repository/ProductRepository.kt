@@ -33,6 +33,7 @@ class ProductRepository(private val config: ApplicationConfig) {
             it[Products.description] = request.description
             it[Products.price] = request.price
             it[Products.category] = request.category
+            it[Products.status] = com.psmo.model.ProductStatus.PENDING // 기본값: 승인 대기
             it[Products.sellerId] = sellerId
         }
 
@@ -77,6 +78,9 @@ class ProductRepository(private val config: ApplicationConfig) {
         category?.let {
             query.andWhere { Products.category eq it }
         }
+
+        // 기본적으로 삭제된/숨김/대기중 상품은 조회되지 않음 (SALE, RESERVED, SOLD만 노출)
+        query.andWhere { Products.status inList listOf(com.psmo.model.ProductStatus.SALE, com.psmo.model.ProductStatus.RESERVED, com.psmo.model.ProductStatus.SOLD) }
 
         // 최신순(내림차순)으로 정렬하고 필요한 개수만 잘라서 가져옵니다.
         query.orderBy(Products.createdAt to SortOrder.DESC)
@@ -170,5 +174,17 @@ class ProductRepository(private val config: ApplicationConfig) {
         }
         
         updated
+    }
+    suspend fun updateStatus(id: Long, status: com.psmo.model.ProductStatus): Boolean = newSuspendedTransaction(Dispatchers.IO) {
+        Products.update({ Products.id eq id }) {
+            it[Products.status] = status
+        } > 0
+    }
+
+    suspend fun delete(id: Long): Boolean = newSuspendedTransaction(Dispatchers.IO) {
+        // Soft Delete
+        Products.update({ Products.id eq id }) {
+            it[Products.status] = com.psmo.model.ProductStatus.DELETED
+        } > 0
     }
 }

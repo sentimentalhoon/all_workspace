@@ -97,4 +97,15 @@ class ProductService(private val repository: ProductRepository) {
         repository.update(id, request)
         return getProductById(id)
     }
+    suspend fun deleteProduct(id: Long, userId: Long): Boolean {
+        val existing = getProductById(id) ?: return false
+        if (existing.seller.id != userId) {
+            throw IllegalArgumentException("Not the owner of this product")
+        }
+        return repository.delete(id)
+    }
+
+    suspend fun changeStatus(id: Long, status: com.psmo.model.ProductStatus): Boolean {
+        return repository.updateStatus(id, status)
+    }
 }

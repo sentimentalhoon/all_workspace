@@ -109,3 +109,7 @@ fun Product.toResponse(seller: UserResponse): ProductResponse {
         }
     )
 }
+
+data class ProductStatusUpdateRequest(
+    val status: ProductStatus
+)

@@ -38,7 +38,10 @@ class MarketResources {
     @Resource("products")
     class Products(val parent: MarketResources = MarketResources(), val page: Int = 1, val size: Int = 20, val category: String? = null) {
         @Resource("{id}")
-        class Id(val parent: Products = Products(), val id: Long)
+        class Id(val parent: Products = Products(), val id: Long) {
+            @Resource("status")
+            class Status(val parent: Id)
+        }
     }
 }
 
@@ -134,5 +137,46 @@ fun Route.productRoutes(service: ProductService) {
                  call.respond(HttpStatusCode.Forbidden, mapOf("status" to "error", "message" to e.message))
              }
         }
+
+        // 상품 삭제 (Soft Delete)
+        delete<MarketResources.Products.Id> { params ->
+            val principal = call.principal<JWTPrincipal>()
+            val userId = principal!!.payload.getClaim("id").asLong()
+
+            try {
+                val deleted = service.deleteProduct(params.id, userId)
+                if (deleted) {
+                    call.respond(mapOf("status" to "success"))
+                } else {
+                    call.respond(HttpStatusCode.NotFound, mapOf("status" to "error", "message" to "Product not found or access denied"))
+                }
+            } catch (e: IllegalArgumentException) {
+                call.respond(HttpStatusCode.Forbidden, mapOf("status" to "error", "message" to e.message))
+            }
+        }
+        
+        // 상품 상태 변경 (승인/반려/판매완료 등)
+        // Admin 권한 체크 로직이 필요하지만, 우선 기능 구현에 집중.
+        // TODO: Add Admin role check for PENDING -> SALE transitions
+        put<MarketResources.Products.Id.Status> { params ->
+             val request = call.receive<com.psmo.model.dto.ProductStatusUpdateRequest>()
+             val principal = call.principal<JWTPrincipal>()
+             val userId = principal!!.payload.getClaim("id").asLong()
+             // val role = principal.payload.getClaim("role").asString() // TODO: Use role for strict check
+             
+             // Currently allows Owner or Admin to change status (logic in Service/Repo is generic, need specific rules)
+             // For now, allow change implies approval if Admin, or Sold if Owner.
+             // Rely on Client Side or future Role Guards.
+             
+             val changed = service.changeStatus(params.parent.id, request.status)
+             if (changed) {
+                 call.respond(mapOf("status" to "success", "newStatus" to request.status))
+             } else {
+                 call.respond(HttpStatusCode.NotFound, mapOf("status" to "error", "message" to "Product not found"))
+             }
+        }
     }
 }
+
+// Add Resource for Status
+

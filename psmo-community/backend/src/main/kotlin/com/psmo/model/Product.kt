@@ -13,7 +13,10 @@ import java.time.LocalDateTime
  * SOLD: 판매 완료
  */
 enum class ProductStatus {
-    SALE, RESERVED, SOLD
+    SALE, RESERVED, SOLD,
+    PENDING, // 승인 대기
+    HIDDEN,  // 숨김 (작성자/관리자 직권)
+    DELETED  // 삭제됨 (Soft Delete)
 }
 
 /**
