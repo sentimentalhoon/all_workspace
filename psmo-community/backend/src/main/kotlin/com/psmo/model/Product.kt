@@ -71,6 +71,7 @@ enum class ProductMediaType { IMAGE, VIDEO }
 object ProductImages : LongIdTable("product_images") {
     val productId = reference("product_id", Products)
     val url = varchar("url", 512)
+    val thumbnailUrl = varchar("thumbnail_url", 512)
     val type = enumerationByName("type", 20, ProductMediaType::class)
     val orderIndex = integer("order_index").default(0)
     val createdAt = datetime("created_at").defaultExpression(CurrentDateTime)
@@ -120,6 +121,7 @@ data class ProductRealEstateInfo(
 data class ProductImage(
     val id: Long,
     val url: String,
+    val thumbnailUrl: String,
     val type: ProductMediaType,
     val orderIndex: Int
 )

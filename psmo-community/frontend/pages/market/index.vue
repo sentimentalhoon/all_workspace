@@ -110,8 +110,8 @@ onMounted(() => {
       >
         <div class="img-wrapper">
           <img
-            v-if="item.images[0]?.url"
-            :src="item.images[0].url"
+            v-if="item.images[0]?.thumbnailUrl"
+            :src="item.images[0].thumbnailUrl"
             class="thumbnail"
             loading="lazy"
           />

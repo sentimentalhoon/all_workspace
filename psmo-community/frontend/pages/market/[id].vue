@@ -96,7 +96,7 @@ onMounted(async () => {
           :class="{ active: idx === activeImageIndex }"
           @click="activeImageIndex = idx"
         >
-          <img :src="img.url" loading="lazy" />
+          <img :src="img.thumbnailUrl" loading="lazy" />
         </div>
       </div>
     </div>

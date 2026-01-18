@@ -44,6 +44,7 @@ data class ProductRealEstateDto(
 data class ProductImageDto(
     val id: Long,
     val url: String,
+    val thumbnailUrl: String,
     val type: ProductMediaType,
     val orderIndex: Int
 )
@@ -105,7 +106,7 @@ fun Product.toResponse(seller: UserResponse): ProductResponse {
              )
         },
         images = this.images.map {
-            ProductImageDto(it.id, it.url, it.type, it.orderIndex)
+            ProductImageDto(it.id, it.url, it.thumbnailUrl, it.type, it.orderIndex)
         }
     )
 }

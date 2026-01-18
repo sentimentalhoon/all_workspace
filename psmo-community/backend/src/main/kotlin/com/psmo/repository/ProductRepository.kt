@@ -110,7 +110,7 @@ class ProductRepository(private val config: ApplicationConfig) {
             .toList()
     }
     
-    suspend fun saveImages(productId: Long, images: List<Pair<String, com.psmo.model.ProductMediaType>>) = newSuspendedTransaction(Dispatchers.IO) {
+    suspend fun saveImages(productId: Long, images: List<Pair<com.psmo.service.ImageService.ImageUploadResult, com.psmo.model.ProductMediaType>>) = newSuspendedTransaction(Dispatchers.IO) {
         // Find max order index to append
         val maxExpr = ProductImages.orderIndex.max()
         val maxOrder = ProductImages.select(maxExpr)
@@ -118,10 +118,11 @@ class ProductRepository(private val config: ApplicationConfig) {
             .singleOrNull()
             ?.get(maxExpr) ?: -1
 
-        images.forEachIndexed { index, (url, type) -> 
+        images.forEachIndexed { index, (result, type) -> 
              ProductImages.insert {
                  it[ProductImages.productId] = productId
-                 it[ProductImages.url] = url
+                 it[ProductImages.url] = result.originalUrl
+                 it[ProductImages.thumbnailUrl] = result.thumbnailUrl
                  it[ProductImages.type] = type
                  it[ProductImages.orderIndex] = maxOrder + 1 + index
              }

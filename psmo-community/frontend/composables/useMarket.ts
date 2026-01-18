@@ -48,6 +48,7 @@ export interface ProductRealEstate {
 export interface ProductImage {
   id: number;
   url: string;
+  thumbnailUrl: string;
   type: "IMAGE" | "VIDEO";
   orderIndex: number;
 }

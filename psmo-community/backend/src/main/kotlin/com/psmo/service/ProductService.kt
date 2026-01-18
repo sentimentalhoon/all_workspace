@@ -20,23 +20,13 @@ import java.time.format.DateTimeFormatter
  */
 class ProductService(private val repository: ProductRepository) {
 
-    suspend fun createProduct(request: ProductCreateRequest, sellerId: Long, images: List<Pair<String, com.psmo.model.ProductMediaType>> = emptyList()): ProductResponse {
+    suspend fun createProduct(request: ProductCreateRequest, sellerId: Long, images: List<Pair<com.psmo.service.ImageService.ImageUploadResult, com.psmo.model.ProductMediaType>> = emptyList()): ProductResponse {
         val product = repository.create(request, sellerId)
         
         // Save Images
         if (images.isNotEmpty()) {
             repository.saveImages(product.id, images)
         }
-        // Note: product.sellerId is Long. 
-        // We need ResultRow to get full user info easily, or fetch User separately.
-        // In Repository.create, we fetched (Products innerJoin Users), so the result Product 
-        // DOES NOT contain the User object deeply. 
-        // However, I made repository.create return Product.
-        // Let's refactor Repository to return ResultRow or simpler:
-        // Just fetch the result row by ID again.
-        
-        // Actually, to keep it efficient, create return the Product ID, and then we fetch.
-        // But for now, let's just fetch by ID.
         return getProductById(product.id) ?: throw IllegalStateException("Created product not found")
     }
 
@@ -56,6 +46,7 @@ class ProductService(private val repository: ProductRepository) {
                 com.psmo.model.dto.ProductImageDto(
                     it[com.psmo.model.ProductImages.id].value,
                     it[com.psmo.model.ProductImages.url],
+                    it[com.psmo.model.ProductImages.thumbnailUrl],
                     it[com.psmo.model.ProductImages.type],
                     it[com.psmo.model.ProductImages.orderIndex]
                 )
@@ -63,7 +54,7 @@ class ProductService(private val repository: ProductRepository) {
             
             // 모든 정보를 합쳐서 응답 객체(ProductResponse)로 만듭니다.
             product.copy(
-                images = images.map { com.psmo.model.ProductImage(it.id, it.url, it.type, it.orderIndex) }
+                images = images.map { com.psmo.model.ProductImage(it.id, it.url, it.thumbnailUrl, it.type, it.orderIndex) }
                 // RealEstate populated by join in repo if present in Product object
             ).toResponse(user.toResponse())
         }
@@ -78,13 +69,14 @@ class ProductService(private val repository: ProductRepository) {
              com.psmo.model.dto.ProductImageDto(
                 it[com.psmo.model.ProductImages.id].value,
                 it[com.psmo.model.ProductImages.url],
+                it[com.psmo.model.ProductImages.thumbnailUrl],
                 it[com.psmo.model.ProductImages.type],
                 it[com.psmo.model.ProductImages.orderIndex]
             )
         }
 
         return product.copy(
-            images = imagesDto.map { com.psmo.model.ProductImage(it.id, it.url, it.type, it.orderIndex) }
+            images = imagesDto.map { com.psmo.model.ProductImage(it.id, it.url, it.thumbnailUrl, it.type, it.orderIndex) }
         ).toResponse(user.toResponse())
     }
     
@@ -93,7 +85,7 @@ class ProductService(private val repository: ProductRepository) {
         request: ProductUpdateRequest, 
         userId: Long, 
         isAdmin: Boolean = false,
-        newImages: List<Pair<String, com.psmo.model.ProductMediaType>> = emptyList(),
+        newImages: List<Pair<com.psmo.service.ImageService.ImageUploadResult, com.psmo.model.ProductMediaType>> = emptyList(),
         deleteImageIds: List<Long> = emptyList()
     ): ProductResponse? {
         val existing = getProductById(id) ?: return null

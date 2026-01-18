@@ -78,7 +78,7 @@ fun Route.productRoutes(service: ProductService, imageService: ImageService) {
             // Handle Multipart (파일 업로드 처리)
             // 상품 정보(JSON)와 사진 파일(File)이 섞여서 들어오기 때문에 복잡한 처리가 필요합니다.
             var productRequest: ProductCreateRequest? = null
-            val uploadedImages = mutableListOf<Pair<String, com.psmo.model.ProductMediaType>>()
+            val uploadedImages = mutableListOf<Pair<com.psmo.service.ImageService.ImageUploadResult, com.psmo.model.ProductMediaType>>()
             
             // Inject services and mapper once
             // val imageService by inject<com.psmo.service.ImageService>() // Removed: Passed via param
@@ -100,18 +100,23 @@ fun Route.productRoutes(service: ProductService, imageService: ImageService) {
                         
                         // Use provider directly for efficiency (Streaming)
                         // MinIO SDK is blocking, so offload to IO dispatcher
-                        val url = withContext(Dispatchers.IO) {
+                        // MinIO SDK is blocking, so offload to IO dispatcher
+                        val resultIdx = withContext(Dispatchers.IO) {
                             part.provider().toInputStream().use { inputStream ->
                                 val type = if (contentType.startsWith("video")) com.psmo.model.ProductMediaType.VIDEO else com.psmo.model.ProductMediaType.IMAGE
-                                val uploadedUrl = if (type == com.psmo.model.ProductMediaType.VIDEO) {
-                                    imageService.uploadVideo(inputStream, fileName, contentType)
+                                
+                                val uploadResult = if (type == com.psmo.model.ProductMediaType.VIDEO) {
+                                    val videoUrl = imageService.uploadVideo(inputStream, fileName, contentType)
+                                    com.psmo.service.ImageService.ImageUploadResult(videoUrl, videoUrl) // Video uses same URL for thumb for now
                                 } else {
-                                    imageService.uploadImage(inputStream, fileName, contentType)
+                                    // Need bytes for thumbnail generation
+                                    val bytes = inputStream.readBytes()
+                                    imageService.uploadImageWithThumbnail(bytes, fileName, contentType)
                                 }
-                                uploadedUrl to type
+                                uploadResult to type
                             }
                         }
-                        uploadedImages.add(url)
+                        uploadedImages.add(resultIdx)
                     }
                     else -> {}
                 }
@@ -141,7 +146,7 @@ fun Route.productRoutes(service: ProductService, imageService: ImageService) {
 
              // Multipart Processing
              var updateRequest: ProductUpdateRequest? = null
-             val newImages = mutableListOf<Pair<String, com.psmo.model.ProductMediaType>>()
+             val newImages = mutableListOf<Pair<com.psmo.service.ImageService.ImageUploadResult, com.psmo.model.ProductMediaType>>()
              var deleteImageIds: List<Long> = emptyList()
              
              val jackson = jacksonObjectMapper()
@@ -171,12 +176,14 @@ fun Route.productRoutes(service: ProductService, imageService: ImageService) {
                                 val url = withContext(Dispatchers.IO) {
                                     part.provider().toInputStream().use { inputStream ->
                                         val type = if (contentType.startsWith("video")) com.psmo.model.ProductMediaType.VIDEO else com.psmo.model.ProductMediaType.IMAGE
-                                         val uploadedUrl = if (type == com.psmo.model.ProductMediaType.VIDEO) {
-                                            imageService.uploadVideo(inputStream, fileName, contentType)
+                                         val uploadResult = if (type == com.psmo.model.ProductMediaType.VIDEO) {
+                                            val videoUrl = imageService.uploadVideo(inputStream, fileName, contentType)
+                                            com.psmo.service.ImageService.ImageUploadResult(videoUrl, videoUrl)
                                         } else {
-                                            imageService.uploadImage(inputStream, fileName, contentType)
+                                            val bytes = inputStream.readBytes()
+                                            imageService.uploadImageWithThumbnail(bytes, fileName, contentType)
                                         }
-                                        uploadedUrl to type
+                                        uploadResult to type
                                     }
                                 }
                                 newImages.add(url)
