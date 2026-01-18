@@ -1,9 +1,37 @@
 <script setup lang="ts">
+import type { BadUser } from "~/composables/useBlacklist";
+import { useBlacklist } from "~/composables/useBlacklist";
+import type { Product } from "~/composables/useMarket";
+import { useMarket } from "~/composables/useMarket";
+
 /**
  * 홈(대시보드) 페이지입니다.
  * 내 포인트(Score)를 보여주고, 주요 메뉴로 이동하는 버튼들을 보여줍니다.
+ * 최신 불량 사용자 및 매물 정보를 요약해서 보여줍니다.
  */
 const authStore = useAuthStore();
+const { searchBadUsers } = useBlacklist();
+const { fetchProducts } = useMarket();
+
+const recentBadUsers = ref<BadUser[]>([]);
+const recentProducts = ref<Product[]>([]);
+
+// 데이터 로딩
+onMounted(async () => {
+  try {
+    // 1. 최근 불량 사용자 5명
+    const badUsers = await searchBadUsers();
+    recentBadUsers.value = badUsers.slice(0, 5);
+
+    // 2. 최근 매물 5개
+    const productsResponse = await fetchProducts(1, 4); // 4개만 가져옴 (그리드 맞춤)
+    if (productsResponse && productsResponse.data) {
+      recentProducts.value = productsResponse.data;
+    }
+  } catch (e) {
+    console.error("Failed to load dashboard data", e);
+  }
+});
 </script>
 
 <template>
@@ -43,7 +71,7 @@ const authStore = useAuthStore();
       </NuxtLink>
     </div>
 
-    <!-- Dashboard/Status -->
+    <!-- Dashboard Status -->
     <div class="dashboard-card">
       <div class="user-info">
         <span class="greeting">사장님, 안녕하세요!</span>
@@ -56,6 +84,58 @@ const authStore = useAuthStore();
         <strong>{{ authStore.user?.score?.toLocaleString() || 0 }} P</strong>
       </div>
     </div>
+
+    <!-- Recent Bad Users Section -->
+    <section class="dashboard-section" v-if="recentBadUsers.length > 0">
+      <div class="section-header">
+        <h3>최근 등록된 불량 사용자</h3>
+        <NuxtLink to="/blacklist" class="more-link">더보기 ></NuxtLink>
+      </div>
+      <div class="bad-user-list">
+        <div
+          v-for="user in recentBadUsers"
+          :key="user.id"
+          class="bad-user-card"
+        >
+          <div class="bad-user-name">
+            {{ user.name }} <span class="phone">({{ user.phoneLast4 }})</span>
+          </div>
+          <div class="bad-user-reason">{{ user.reason }}</div>
+          <div class="bad-user-date">
+            {{ new Date(user.createdAt).toLocaleDateString() }}
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Recent Products Section -->
+    <section class="dashboard-section" v-if="recentProducts.length > 0">
+      <div class="section-header">
+        <h3>최근 올라온 매물</h3>
+        <NuxtLink to="/market" class="more-link">더보기 ></NuxtLink>
+      </div>
+      <div class="product-grid">
+        <div
+          v-for="product in recentProducts"
+          :key="product.id"
+          class="product-card"
+          @click="navigateTo(`/market/${product.id}`)"
+        >
+          <div class="product-info">
+            <span class="badge" :class="product.status.toLowerCase()">{{
+              product.status
+            }}</span>
+            <div class="product-title">{{ product.title }}</div>
+            <div class="product-price">
+              {{ product.price.toLocaleString() }}원
+            </div>
+            <div class="product-meta">
+              {{ product.realEstate?.locationCity || product.category }}
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
   </div>
 </template>
 
@@ -196,5 +276,132 @@ const authStore = useAuthStore();
 .points strong {
   font-size: 1.1rem;
   color: #c5a059;
+}
+
+/* Dashboard Section Styles */
+.dashboard-section {
+  margin-top: 10px;
+}
+
+.section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 15px;
+}
+
+.section-header h3 {
+  margin: 0;
+  font-size: 1.1rem;
+  color: #16213e;
+}
+
+.more-link {
+  font-size: 0.8rem;
+  color: #888;
+  text-decoration: none;
+}
+
+.bad-user-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.bad-user-card {
+  background: white;
+  padding: 15px;
+  border-radius: 8px;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+  border-left: 3px solid #e94560;
+}
+
+.bad-user-name {
+  font-weight: bold;
+  font-size: 0.95rem;
+}
+
+.bad-user-name .phone {
+  font-size: 0.8rem;
+  color: #666;
+  font-weight: normal;
+}
+
+.bad-user-reason {
+  margin-top: 5px;
+  font-size: 0.9rem;
+  color: #555;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.bad-user-date {
+  margin-top: 5px;
+  font-size: 0.75rem;
+  color: #999;
+  text-align: right;
+}
+
+.product-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 12px;
+}
+
+.product-card {
+  background: white;
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+  cursor: pointer;
+}
+
+.product-info {
+  padding: 12px;
+}
+
+.product-title {
+  font-size: 0.9rem;
+  font-weight: bold;
+  margin: 5px 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.product-price {
+  font-size: 0.95rem;
+  color: #16213e;
+  font-weight: bold;
+}
+
+.product-meta {
+  font-size: 0.75rem;
+  color: #888;
+  margin-top: 4px;
+}
+
+.badge {
+  font-size: 0.7rem;
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-weight: bold;
+  text-transform: uppercase;
+}
+
+.badge.sale {
+  background: #e3f2fd;
+  color: #1976d2;
+}
+
+.badge.reserved {
+  background: #fff3e0;
+  color: #f57c00;
+}
+
+.badge.sold {
+  background: #eeeeee;
+  color: #9e9e9e;
 }
 </style>
