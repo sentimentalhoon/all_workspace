@@ -17,6 +17,7 @@ import io.ktor.server.routing.*
 import kotlinx.serialization.json.Json
 import java.io.File
 import java.util.*
+import io.ktor.utils.io.jvm.javaio.toInputStream
 
 fun Route.badUserRoutes(badUserService: BadUserService) {
     // 조회 (공개? 혹은 로그인 필요? 일단 로그인 필요로 설정)
@@ -48,7 +49,7 @@ fun Route.badUserRoutes(badUserService: BadUserService) {
                         val fileName = "${UUID.randomUUID()}.${File(part.originalFileName ?: "img.jpg").extension}"
                         val file = File("uploads/$fileName")
                         file.parentFile.mkdirs()
-                        file.writeBytes(part.provider().readBytes())
+                        file.writeBytes(part.provider().toInputStream().readBytes())
                         // URL 생성 (Nginx 또는 Static serve 필요)
                         uploadedImageUrls.add("/uploads/$fileName") 
                     }

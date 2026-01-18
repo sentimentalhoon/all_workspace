@@ -24,7 +24,7 @@ class Post(id: EntityID<Long>) : LongEntity(id) {
 
     var title by Posts.title
     var content by Posts.content
-    var author by User referencedOn Posts.authorId
+    var author by UserEntity referencedOn Posts.authorId
     var category by Posts.category
     var viewCount by Posts.viewCount
     var likeCount by Posts.likeCount
@@ -57,7 +57,7 @@ class Comment(id: EntityID<Long>) : LongEntity(id) {
     companion object : LongEntityClass<Comment>(Comments)
 
     var post by Post referencedOn Comments.postId
-    var author by User referencedOn Comments.authorId
+    var author by UserEntity referencedOn Comments.authorId
     var content by Comments.content
     var createdAt by Comments.createdAt
 }

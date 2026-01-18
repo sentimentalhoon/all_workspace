@@ -21,6 +21,7 @@ import com.fasterxml.jackson.module.kotlin.readValue
 import org.koin.ktor.ext.inject
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import io.ktor.utils.io.jvm.javaio.toInputStream
 
 /**
  * 장터(Market) API 주소를 정의하는 곳입니다.
@@ -91,7 +92,7 @@ fun Route.productRoutes(service: ProductService) {
                         // Use provider directly for efficiency (Streaming)
                         // MinIO SDK is blocking, so offload to IO dispatcher
                         val url = withContext(Dispatchers.IO) {
-                            part.provider().use { inputStream ->
+                            part.provider().toInputStream().use { inputStream ->
                                 val type = if (contentType.startsWith("video")) com.psmo.model.ProductMediaType.VIDEO else com.psmo.model.ProductMediaType.IMAGE
                                 val uploadedUrl = if (type == com.psmo.model.ProductMediaType.VIDEO) {
                                     imageService.uploadVideo(inputStream, fileName, contentType)

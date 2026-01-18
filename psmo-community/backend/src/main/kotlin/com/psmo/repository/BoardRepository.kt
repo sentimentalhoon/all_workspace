@@ -6,13 +6,14 @@ import com.psmo.model.dto.BoardCategory
 import com.psmo.model.dto.PostCreateRequest
 import io.ktor.server.config.ApplicationConfig
 import org.jetbrains.exposed.sql.*
+import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
 import org.jetbrains.exposed.sql.transactions.transaction
 
 class BoardRepository(private val config: ApplicationConfig) {
     private val database by lazy { DatabaseConfig.connectToDatabase(config) }
 
     fun createPost(userId: Long, request: PostCreateRequest): Post = transaction(database) {
-        val user = User.findById(userId) ?: throw IllegalArgumentException("User not found")
+        val user = UserEntity.findById(userId) ?: throw IllegalArgumentException("User not found")
         val post = Post.new {
             this.title = request.title
             this.content = request.content
@@ -48,7 +49,7 @@ class BoardRepository(private val config: ApplicationConfig) {
 
     fun createComment(postId: Long, userId: Long, content: String): Comment = transaction(database) {
         val post = Post.findById(postId) ?: throw IllegalArgumentException("Post not found")
-        val user = User.findById(userId) ?: throw IllegalArgumentException("User not found")
+        val user = UserEntity.findById(userId) ?: throw IllegalArgumentException("User not found")
         
         Comment.new {
             this.post = post
@@ -65,7 +66,7 @@ class BoardRepository(private val config: ApplicationConfig) {
 
     fun toggleLike(postId: Long, userId: Long): Boolean = transaction(database) {
         // Returns true if liked, false if unliked
-        val existing = PostLikes.select { (PostLikes.postId eq postId) and (PostLikes.userId eq userId) }.count() > 0
+        val existing = PostLikes.selectAll().where { (PostLikes.postId eq postId) and (PostLikes.userId eq userId) }.count() > 0
         if (existing) {
             PostLikes.deleteWhere { (PostLikes.postId eq postId) and (PostLikes.userId eq userId) }
             Posts.update({ Posts.id eq postId }) {
@@ -90,7 +91,7 @@ class BoardRepository(private val config: ApplicationConfig) {
     
     fun isLiked(postId: Long, userId: Long?): Boolean = transaction(database) {
         if (userId == null) return@transaction false
-        PostLikes.select { (PostLikes.postId eq postId) and (PostLikes.userId eq userId) }.count() > 0
+        PostLikes.selectAll().where { (PostLikes.postId eq postId) and (PostLikes.userId eq userId) }.count() > 0
     }
 
     fun incrementViewCount(postId: Long) = transaction(database) {

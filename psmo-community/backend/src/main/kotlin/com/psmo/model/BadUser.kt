@@ -31,7 +31,7 @@ class BadUser(id: EntityID<Long>) : LongEntity(id) {
     var phoneLast4 by BadUsers.phoneLast4
     var birthYear by BadUsers.birthYear
     var reason by BadUsers.reason
-    var reporter by User referencedOn BadUsers.reporter
+    var reporter by UserEntity referencedOn BadUsers.reporter
     var createdAt by BadUsers.createdAt
     val images by BadUserImage referrersOn BadUserImages.badUser
 
@@ -42,7 +42,7 @@ class BadUser(id: EntityID<Long>) : LongEntity(id) {
         birthYear = this.birthYear,
         reason = this.reason,
         imageUrls = this.images.map { it.url },
-        reporterName = this.reporter.displayName,
+        reporterName = this.reporter.displayName ?: "Unknown",
         createdAt = this.createdAt.toString()
     )
 }

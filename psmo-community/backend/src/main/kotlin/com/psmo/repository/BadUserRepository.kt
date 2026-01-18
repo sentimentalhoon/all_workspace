@@ -4,6 +4,7 @@ import com.psmo.model.BadUser
 import com.psmo.model.BadUserImage
 import com.psmo.model.BadUsers
 import com.psmo.model.User
+import com.psmo.model.UserEntity
 import com.psmo.model.dto.BadUserCreateRequest
 import kotlinx.coroutines.Dispatchers
 import org.jetbrains.exposed.sql.or
@@ -18,7 +19,7 @@ class BadUserRepository {
             this.phoneLast4 = phoneLast4
             this.birthYear = request.birthYear
             this.reason = request.reason
-            this.reporter = reporter
+            this.reporter = UserEntity.findById(reporter.id) ?: throw IllegalArgumentException("Reporter user not found")
         }
 
         imageUrls.forEach { url ->

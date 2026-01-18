@@ -1,0 +1,27 @@
+> Task :clean
+> Task :checkKotlinGradlePluginConfigurationErrors SKIPPED
+> Task :processResources
+> Task :check
+
+> Task :compileKotlin
+w: file:///C:/Users/say4u/workspace/psmo-community/backend/src/main/kotlin/com/psmo/model/Product.kt:128:18 Condition is always 'true'.
+w: file:///C:/Users/say4u/workspace/psmo-community/backend/src/main/kotlin/com/psmo/repository/BoardRepository.kt:41:14 'fun limit(n: Int, offset: Long): Query' is deprecated. This function will be removed in future releases.
+w: file:///C:/Users/say4u/workspace/psmo-community/backend/src/main/kotlin/com/psmo/repository/ProductRepository.kt:75:14 'fun limit(n: Int, offset: Long): Query' is deprecated. This function will be removed in future releases.
+w: file:///C:/Users/say4u/workspace/psmo-community/backend/src/main/kotlin/com/psmo/service/TelegramBotService.kt:215:57 Unchecked cast of 'kotlin.collections.Map<*, *>!' to 'kotlin.collections.Map<kotlin.String, kotlin.Any>'.
+w: file:///C:/Users/say4u/workspace/psmo-community/backend/src/main/kotlin/com/psmo/service/TelegramBotService.kt:229:64 Unchecked cast of 'kotlin.collections.Map<*, *>!' to 'kotlin.collections.Map<kotlin.String, kotlin.Any>'.
+
+> Task :compileJava NO-SOURCE
+> Task :classes
+> Task :jar
+> Task :startScripts
+> Task :distTar
+> Task :distZip
+> Task :shadowJar
+> Task :startShadowScripts
+> Task :shadowDistTar
+> Task :shadowDistZip
+> Task :assemble
+> Task :build
+
+BUILD SUCCESSFUL in 23s
+11 actionable tasks: 11 executed

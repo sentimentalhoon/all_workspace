@@ -2,11 +2,12 @@ package com.psmo
 
 import com.psmo.model.dto.ProfileResponse
 import com.psmo.model.dto.toResponse
-import com.psmo.controller.authRoutes
-import com.psmo.controller.qrAuthRoutes
+// import com.psmo.controller.authRoutes -- Removed
+// import com.psmo.controller.qrAuthRoutes -- Removed
 import com.psmo.controller.productRoutes
 import com.psmo.controller.badUserRoutes
 import com.psmo.controller.boardRoutes
+import io.ktor.server.http.content.staticFiles
 import com.psmo.service.*
 import com.psmo.service.*
 import io.ktor.server.application.*
@@ -46,9 +47,10 @@ fun Application.configureRouting(config: ApplicationConfig) {
     val refreshTokenService by inject<RefreshTokenService>()
     val telegramAuthService by inject<TelegramAuthService>()
     val telegramBotService by inject<TelegramBotService>()
-    val telegramBotService by inject<TelegramBotService>()
+
     val productService by inject<ProductService>()
     val badUserService by inject<BadUserService>()
+    val boardService by inject<BoardService>()
 
     // 서버가 켜질 때(ApplicationStarted) 텔레그램 봇도 같이 일을 시작하라고 시킵니다.
     monitor.subscribe(ApplicationStarted) {
@@ -94,8 +96,6 @@ fun Application.configureRouting(config: ApplicationConfig) {
             }
         }
 
-        authRoutes(telegramAuthService, userService)
-        qrAuthRoutes(telegramAuthService)
         productRoutes(productService)
         badUserRoutes(badUserService)
         boardRoutes(boardService)

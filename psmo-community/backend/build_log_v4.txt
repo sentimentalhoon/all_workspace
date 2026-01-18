@@ -1,0 +1,25 @@
+> Task :clean
+> Task :checkKotlinGradlePluginConfigurationErrors SKIPPED
+> Task :processResources
+> Task :check
+
+> Task :compileKotlin FAILED
+e: file:///C:/Users/say4u/workspace/psmo-community/backend/src/main/kotlin/com/psmo/repository/BadUserRepository.kt:21:29 Unresolved reference 'UserEntity'.
+e: file:///C:/Users/say4u/workspace/psmo-community/backend/src/main/kotlin/com/psmo/repository/BoardRepository.kt:69:34 'fun FieldSet.select(where: SqlExpressionBuilder.() -> Op<Boolean>): Query' is deprecated. As part of SELECT DSL design changes, this will be removed in future releases.
+e: file:///C:/Users/say4u/workspace/psmo-community/backend/src/main/kotlin/com/psmo/repository/BoardRepository.kt:94:19 'fun FieldSet.select(where: SqlExpressionBuilder.() -> Op<Boolean>): Query' is deprecated. As part of SELECT DSL design changes, this will be removed in future releases.
+
+FAILURE: Build failed with an exception.
+
+* What went wrong:
+Execution failed for task ':compileKotlin'.
+> A failure occurred while executing org.jetbrains.kotlin.compilerRunner.GradleCompilerRunnerWithWorkers$GradleKotlinCompilerWorkAction
+   > Compilation error. See log for more details
+
+* Try:
+> Run with --stacktrace option to get the stack trace.
+> Run with --info or --debug option to get more log output.
+> Run with --scan to get full insights.
+> Get more help at https://help.gradle.org.
+
+BUILD FAILED in 3s
+3 actionable tasks: 3 executed

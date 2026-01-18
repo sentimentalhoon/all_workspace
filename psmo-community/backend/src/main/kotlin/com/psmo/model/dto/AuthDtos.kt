@@ -1,14 +1,10 @@
 package com.psmo.model.dto
 
+import kotlinx.serialization.Serializable
 import com.psmo.model.User
 
 /**
  * JWT 발급 결과.
- */
-/**
- * 로그인 성공 시 발급되는 토큰(출입증) 정보입니다.
- * accessToken: 실제 출입증
- * expiresAt: 언제 만료되는지 (시간)
  */
 data class TokenResponse(
     val accessToken: String,
@@ -22,6 +18,7 @@ data class TokenResponse(
  * 화면(프론트엔드)에 보여주기 위한 사용자 정보입니다.
  * 비밀번호 같은 민감한 정보는 빼고, 이름이나 사진 주소 같은 것만 담습니다.
  */
+@Serializable
 data class UserResponse(
     val id: Long,
     val telegramId: Long,
