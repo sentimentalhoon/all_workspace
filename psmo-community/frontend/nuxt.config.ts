@@ -14,16 +14,16 @@ export default defineNuxtConfig({
     port: 3000,
   },
 
-  // 니트로(Nitro) 서버 설정 (Nuxt의 엔진)
-  nitro: {
-    // 개발 중일 때 API 요청을 백엔드로 넘겨주는 설정(Proxy)입니다.
-    // 프론트(3000) -> /api -> 백엔드(8080)
-    devProxy: {
-      "/api": {
-        target: "http://localhost:8080",
-        changeOrigin: true,
-      },
+  // API Proxy 설정 (CORS 및 개발 편의성)
+  routeRules: {
+    "/api/**": {
+      proxy: "http://localhost:8080/api/**",
     },
+  },
+
+  // 니트로(Nitro) 서버 설정
+  nitro: {
+    // devProxy는 routeRules로 대체됨
   },
 
   css: [
