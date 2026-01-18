@@ -28,12 +28,11 @@ class BadUserService(
         val phoneHash = hashPhoneNumber(request.phoneNumber)
         val phoneLast4 = extractLast4(request.phoneNumber)
 
-        val badUser = badUserRepository.create(reporter, request, phoneHash, phoneLast4, imageUrls)
-        return badUser.toResponse()
+        return badUserRepository.create(reporter, request, phoneHash, phoneLast4, imageUrls)
     }
 
     suspend fun searchBadUsers(keyword: String?): List<BadUserResponse> {
         // 검색 키워드 전처리 (혹시 전화번호 검색이면 숫자만 남기기 등...은 일단 보류, 이름 검색도 있으니까)
-        return badUserRepository.search(keyword).map { it.toResponse() }
+        return badUserRepository.search(keyword)
     }
 }
