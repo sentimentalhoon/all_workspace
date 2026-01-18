@@ -1,56 +1,137 @@
 <script setup lang="ts">
-const { fetchClient } = useApiClient();
+import { useMarket, type Product } from "~/composables/useMarket";
 
-/**
- * 장터 목록 페이지입니다.
- * useAsyncData: 서버 사이드 렌더링(SSR)을 위해 데이터를 미리 가져오는 Nuxt 전용 함수입니다.
- * 페이지가 열릴 때 '/market/products' API를 호출해서 상품 목록을 가져옵니다.
- */
-const {
-  data: products,
-  pending, // 로딩 중인지 여부
-  error, // 에러 발생 여부
-} = await useAsyncData("products", () => fetchClient("/market/products"));
+const { fetchProducts } = useMarket();
+const router = useRouter();
 
-const goToCreate = () => {
-  navigateTo("/market/create");
+// State
+const products = ref<Product[]>([]);
+const loading = ref(true);
+const page = ref(1);
+const categoryFilter = ref<string | undefined>("PC_BUSINESS"); // Default to Store Trading
+
+const loadData = async () => {
+  loading.value = true;
+  try {
+    const res = await fetchProducts(page.value, 20, categoryFilter.value);
+    products.value = res.data;
+  } catch (e) {
+    console.error(e);
+  } finally {
+    loading.value = false;
+  }
 };
+
+const setCategory = (cat?: string) => {
+  categoryFilter.value = cat;
+  page.value = 1;
+  loadData();
+};
+
+const goToCreate = () => router.push("/market/create");
+const goToDetail = (id: number) => router.push(`/market/${id}`);
+
+onMounted(() => {
+  loadData();
+});
 </script>
 
 <template>
-  <div class="market-page">
+  <div class="page-container">
     <div class="header">
-      <h2>매장 거래 (양도/양수)</h2>
-      <button @click="goToCreate" class="create-btn">+ 매장 등록</button>
+      <div class="title-section">
+        <h2>매장 거래 / 중고 장터</h2>
+        <p>검증된 매물만 거래하세요</p>
+      </div>
+      <button @click="goToCreate" class="create-btn">+ 글쓰기</button>
     </div>
 
-    <div v-if="pending" class="loading">Loading items...</div>
-    <div v-else-if="error" class="error">Failed to load items</div>
+    <div class="filters">
+      <button
+        :class="{ active: categoryFilter === 'PC_BUSINESS' }"
+        @click="setCategory('PC_BUSINESS')"
+      >
+        🤝 매장 매매
+      </button>
+      <button
+        :class="{ active: categoryFilter === undefined }"
+        @click="setCategory(undefined)"
+      >
+        ♾️ 전체 보기
+      </button>
+      <button
+        :class="{
+          active: categoryFilter === 'PC_FULL' || categoryFilter === 'ETC',
+        }"
+        @click="setCategory('PC_FULL')"
+      >
+        📦 부품/기타
+      </button>
+    </div>
+
+    <div v-if="loading" class="loading">Loading...</div>
 
     <div v-else class="product-grid">
-      <div v-if="!products?.data || products.data.length === 0" class="empty">
-        No items found.
-      </div>
       <div
-        v-else
-        v-for="item in products.data"
+        v-for="item in products"
         :key="item.id"
         class="product-card"
-        @click="navigateTo(`/market/${item.id}`)"
+        @click="goToDetail(item.id)"
       >
-        <div class="image-area">
+        <div class="img-wrapper">
           <img
-            v-if="item.images && item.images.length > 0"
-            :src="item.images[0].url"
+            :src="
+              item.images[0]?.url ||
+              'https://via.placeholder.com/300x200?text=No+Image'
+            "
+            class="thumbnail"
           />
-          <div v-else class="placeholder">No Image</div>
+          <div
+            v-if="item.status !== 'SALE'"
+            class="status-badge"
+            :class="item.status"
+          >
+            {{ item.status }}
+          </div>
         </div>
-        <div class="info">
-          <h3>{{ item.title }}</h3>
-          <div class="price">{{ item.price.toLocaleString() }} Won</div>
+
+        <div class="content">
+          <h3 class="title">{{ item.title }}</h3>
+
+          <div
+            v-if="item.category === 'PC_BUSINESS' && item.realEstate"
+            class="store-info"
+          >
+            <div class="info-row">
+              <span class="label">보증금</span>
+              <span class="value">{{
+                item.realEstate.deposit.toLocaleString()
+              }}</span>
+            </div>
+            <div class="info-row">
+              <span class="label">월세</span>
+              <span class="value">{{
+                item.realEstate.monthlyRent.toLocaleString()
+              }}</span>
+            </div>
+            <div class="info-row highlight">
+              <span class="label">권리금</span>
+              <span class="value">{{ item.price.toLocaleString() }}</span>
+            </div>
+            <div class="location">
+              {{ item.realEstate.locationCity }}
+              {{ item.realEstate.locationDistrict }}
+            </div>
+          </div>
+
+          <div v-else class="parts-info">
+            <p class="price">{{ item.price.toLocaleString() }}원</p>
+            <p class="cat">{{ item.category }}</p>
+          </div>
+
           <div class="meta">
-            <span>{{ item.category }}</span>
-            <span>Views: {{ item.viewCount }}</span>
+            <span>👀 {{ item.viewCount }}</span>
+            <span>{{ new Date(item.createdAt).toLocaleDateString() }}</span>
           </div>
         </div>
       </div>
@@ -59,8 +140,10 @@ const goToCreate = () => {
 </template>
 
 <style scoped>
-.market-page {
-  padding-bottom: 60px;
+.page-container {
+  padding: 10px;
+  max-width: 1000px;
+  margin: 0 auto;
 }
 
 .header {
@@ -70,63 +153,153 @@ const goToCreate = () => {
   margin-bottom: 20px;
 }
 
+.title-section h2 {
+  margin: 0;
+  color: #16213e;
+}
+.title-section p {
+  margin: 5px 0 0;
+  color: #888;
+  font-size: 0.9rem;
+}
+
 .create-btn {
-  background: #2196f3;
+  background: #e94560;
   color: white;
   border: none;
-  padding: 8px 16px;
-  border-radius: 20px;
+  padding: 10px 20px;
+  border-radius: 8px;
   font-weight: bold;
   cursor: pointer;
 }
 
+.filters {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 20px;
+  overflow-x: auto;
+  padding-bottom: 5px;
+}
+
+.filters button {
+  padding: 8px 16px;
+  border: 1px solid #ddd;
+  background: white;
+  border-radius: 20px;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.filters button.active {
+  background: #16213e;
+  color: #c5a059;
+  border-color: #16213e;
+  font-weight: bold;
+}
+
 .product-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
-  gap: 15px;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 20px;
 }
 
 .product-card {
   background: white;
-  border-radius: 10px;
+  border-radius: 12px;
   overflow: hidden;
-  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
   cursor: pointer;
+  transition: transform 0.2s;
 }
 
-.image-area {
-  height: 120px;
-  background: #eee;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  color: #999;
+.product-card:hover {
+  transform: translateY(-5px);
 }
-.image-area img {
+
+.img-wrapper {
+  position: relative;
+  height: 180px;
+  background: #eee;
+}
+
+.thumbnail {
   width: 100%;
   height: 100%;
   object-fit: cover;
 }
 
-.info {
-  padding: 10px;
+.status-badge {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  padding: 5px 10px;
+  border-radius: 5px;
+  font-size: 0.8rem;
+  font-weight: bold;
+  color: white;
+  background: rgba(0, 0, 0, 0.6);
 }
-.info h3 {
-  margin: 0 0 5px 0;
-  font-size: 0.9rem;
+
+.content {
+  padding: 15px;
+}
+
+.title {
+  margin: 0 0 10px;
+  font-size: 1.1rem;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
 }
-.price {
-  font-weight: bold;
-  color: #333;
+
+.store-info {
+  font-size: 0.9rem;
 }
-.meta {
-  font-size: 0.7rem;
-  color: #888;
-  margin-top: 5px;
+
+.info-row {
   display: flex;
   justify-content: space-between;
+  margin-bottom: 4px;
+}
+
+.info-row.highlight {
+  color: #e94560;
+  font-weight: bold;
+  margin-top: 5px;
+  font-size: 1rem;
+}
+
+.location {
+  margin-top: 8px;
+  font-size: 0.8rem;
+  color: #888;
+}
+
+.parts-info .price {
+  font-size: 1.2rem;
+  font-weight: bold;
+  color: #16213e;
+  margin: 0;
+}
+
+.parts-info .cat {
+  font-size: 0.8rem;
+  color: #888;
+}
+
+.meta {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 15px;
+  font-size: 0.8rem;
+  color: #aaa;
+  border-top: 1px solid #f0f0f0;
+  padding-top: 10px;
+}
+
+@media (max-width: 600px) {
+  .product-grid {
+    grid-template-columns: 1fr;
+  }
 }
 </style>

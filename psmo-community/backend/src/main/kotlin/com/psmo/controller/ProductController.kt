@@ -88,10 +88,10 @@ fun Route.productRoutes(service: ProductService) {
                         val fileName = part.originalFileName as String
                         val contentType = part.contentType?.toString() ?: "application/octet-stream"
                         
-                        // Use streamProvider directly for efficiency (Streaming)
+                        // Use provider directly for efficiency (Streaming)
                         // MinIO SDK is blocking, so offload to IO dispatcher
                         val url = withContext(Dispatchers.IO) {
-                            part.streamProvider().use { inputStream ->
+                            part.provider().use { inputStream ->
                                 val type = if (contentType.startsWith("video")) com.psmo.model.ProductMediaType.VIDEO else com.psmo.model.ProductMediaType.IMAGE
                                 val uploadedUrl = if (type == com.psmo.model.ProductMediaType.VIDEO) {
                                     imageService.uploadVideo(inputStream, fileName, contentType)
