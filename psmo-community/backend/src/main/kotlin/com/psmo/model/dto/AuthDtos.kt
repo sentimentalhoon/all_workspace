@@ -47,7 +47,7 @@ fun User.toResponse(): UserResponse = UserResponse(
     displayName = displayName,
     username = username,
     photoUrl = photoUrl,
-    role = role.name.lowercase(),
+    role = role.name,
     score = score,
     activityLevel = activityLevel
 )
