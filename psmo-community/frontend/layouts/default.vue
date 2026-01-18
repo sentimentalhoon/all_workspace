@@ -27,14 +27,14 @@ const showBottomNav = computed(() => {
 
 const pageTitle = computed(() => {
   const path = route.path;
-  if (path === "/") return "PSMO Manager";
+  if (path === "/") return "성피천국";
   if (path.startsWith("/market/create")) return "매물 등록";
   if (path.startsWith("/market")) return "매장 거래";
   if (path.startsWith("/community/write")) return "글쓰기";
   if (path.startsWith("/community")) return "점주 소통방";
   if (path.startsWith("/blacklist")) return "블랙리스트";
   if (path.startsWith("/my")) return "워라벨 페이지";
-  return "PSMO Manager";
+  return "성피천국";
 });
 
 const isHome = computed(() => route.path === "/");
@@ -57,9 +57,37 @@ const goBack = () => {
           class="icon-btn back-btn"
           aria-label="뒤로가기"
         >
-          <span class="icon">❮</span>
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width="24"
+            height="24"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          >
+            <path d="M15 18l-6-6 6-6" />
+          </svg>
         </button>
-        <span v-else class="brand-logo">💎</span>
+        <span v-else class="brand-logo">
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width="24"
+            height="24"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="#e94560"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          >
+            <path
+              d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"
+            />
+          </svg>
+        </span>
       </div>
 
       <!-- Center: Title -->
@@ -69,7 +97,7 @@ const goBack = () => {
         </transition>
       </div>
 
-      <!-- Right: Actions (Placeholder for now) -->
+      <!-- Right: Actions -->
       <div class="header-right">
         <NuxtLink
           v-if="isHome"
@@ -77,9 +105,21 @@ const goBack = () => {
           class="icon-btn profile-btn"
           aria-label="내 정보"
         >
-          <span class="icon">🔔</span>
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width="20"
+            height="20"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          >
+            <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" />
+            <path d="M13.73 21a2 2 0 0 1-3.46 0" />
+          </svg>
         </NuxtLink>
-        <!-- Add more contextual actions here if needed -->
       </div>
     </header>
 
@@ -91,19 +131,76 @@ const goBack = () => {
     <!-- Bottom Navigation -->
     <nav v-if="showBottomNav" class="bottom-nav">
       <NuxtLink to="/" class="nav-item" exact-active-class="active">
-        <span>🏠</span>
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          width="22"
+          height="22"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+        >
+          <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />
+          <polyline points="9 22 9 12 15 12 15 22" />
+        </svg>
         <span class="label">홈</span>
       </NuxtLink>
       <NuxtLink to="/blacklist" class="nav-item" active-class="active">
-        <span>🚨</span>
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          width="22"
+          height="22"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+        >
+          <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+          <line x1="12" y1="8" x2="12" y2="12" />
+          <line x1="12" y1="16" x2="12.01" y2="16" />
+        </svg>
         <span class="label">조회</span>
       </NuxtLink>
       <NuxtLink to="/market" class="nav-item" active-class="active">
-        <span>🤝</span>
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          width="22"
+          height="22"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+        >
+          <circle cx="9" cy="21" r="1" />
+          <circle cx="20" cy="21" r="1" />
+          <path
+            d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"
+          />
+        </svg>
         <span class="label">장터</span>
       </NuxtLink>
       <NuxtLink to="/community" class="nav-item" active-class="active">
-        <span>💬</span>
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          width="22"
+          height="22"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+        >
+          <path
+            d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"
+          />
+        </svg>
         <span class="label">소통</span>
       </NuxtLink>
     </nav>
