@@ -20,6 +20,13 @@ const handleTelegramAuth = async (user: any) => {
   }
 };
 
+// TypeScript에게 window 객체에 onTelegramAuth 함수가 있을 수 있다고 알려줍니다.
+declare global {
+  interface Window {
+    onTelegramAuth: (user: any) => void;
+  }
+}
+
 // Load Telegram Widget Script
 // 페이지가 열릴 때(Mounted) 텔레그램 위젯 스크립트를 수동으로 추가합니다.
 // (Nuxt/Vue에서 외부 스크립트를 로딩하는 일반적인 방법입니다)
@@ -43,6 +50,14 @@ onMounted(() => {
   window.onTelegramAuth = (user: any) => {
     handleTelegramAuth(user);
   };
+});
+
+// 페이지를 떠날 때(Unmounted) 전역 함수를 정리합니다. (메모리 누수/충돌 방지)
+onUnmounted(() => {
+  if (window.onTelegramAuth) {
+    // @ts-ignore
+    delete window.onTelegramAuth;
+  }
 });
 </script>
 

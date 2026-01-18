@@ -48,6 +48,9 @@ fun Application.configureRouting(config: ApplicationConfig) {
     val telegramAuthService by inject<TelegramAuthService>()
     val telegramBotService by inject<TelegramBotService>()
 
+    val cookieSecure = config.tryGetString("jwt.cookie.secure")?.toBoolean() ?: true
+    val cookieSameSite = config.tryGetString("jwt.cookie.sameSite") ?: "Lax"
+
     val productService by inject<ProductService>()
     val badUserService by inject<BadUserService>()
     val boardService by inject<BoardService>()
@@ -116,10 +119,10 @@ fun Application.configureRouting(config: ApplicationConfig) {
                     name = "refresh_token",
                     value = refreshToken,
                     httpOnly = true,
-                    secure = true, // HTTPS 환경에서만 전송 (개발환경에서는 false 로 해야할 수도 있음)
-                    path = "/api/auth", // Auth 관련 경로에서만 쿠키 전송
+                    secure = cookieSecure, 
+                    path = "/api/auth", 
                     maxAge = jwtService.getRefreshExpirationSeconds(),
-                    extensions = mapOf("SameSite" to "Lax")
+                    extensions = mapOf("SameSite" to cookieSameSite)
                 )
                 
                 call.respond(HttpStatusCode.OK, authResponse)
@@ -159,10 +162,10 @@ fun Application.configureRouting(config: ApplicationConfig) {
                     name = "refresh_token",
                     value = newRefreshToken,
                     httpOnly = true,
-                    secure = true,
+                    secure = cookieSecure,
                     path = "/api/auth",
                     maxAge = jwtService.getRefreshExpirationSeconds(),
-                    extensions = mapOf("SameSite" to "Lax")
+                    extensions = mapOf("SameSite" to cookieSameSite)
                 )
                 
                 val newAccessToken = jwtService.generateAccessToken(user)
@@ -241,10 +244,10 @@ fun Application.configureRouting(config: ApplicationConfig) {
                     name = "refresh_token",
                     value = refreshToken,
                     httpOnly = true,
-                    secure = true, 
+                    secure = cookieSecure, 
                     path = "/api/auth",
                     maxAge = jwtService.getRefreshExpirationSeconds(),
-                    extensions = mapOf("SameSite" to "Lax")
+                    extensions = mapOf("SameSite" to cookieSameSite)
                 )
                 
                 call.respond(TelegramAuthResponse(
