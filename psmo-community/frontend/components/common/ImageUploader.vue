@@ -4,6 +4,7 @@ import { useImageOptimization } from "~/composables/useImageOptimization";
 interface ExistingImage {
   id: number;
   url: string;
+  thumbnailUrl?: string;
 }
 
 const props = defineProps({
@@ -128,7 +129,7 @@ const visibleExistingImages = computed(() => {
           :key="'exist-' + img.id"
           class="preview-item existing"
         >
-          <img :src="img.url" />
+          <img :src="img.thumbnailUrl || img.url" />
           <button
             type="button"
             class="remove-btn"
