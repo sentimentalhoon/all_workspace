@@ -483,19 +483,31 @@ $text-secondary: #b0b0b0;
       font-weight: 700;
       font-size: 0.95rem;
       color: white;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      max-width: 150px;
     }
 
     .date {
       font-size: 0.8rem;
       color: $text-secondary;
+      flex-shrink: 0;
+      margin-left: 8px;
     }
 
     .reason {
       font-size: 0.9rem;
-      color: #ff6b6b; /* Red text for danger/alert feel */
-      white-space: nowrap;
+      color: #ff6b6b;
+
+      /* Multi-line truncation (max 1 line or 2 lines) */
+      display: -webkit-box;
+      -webkit-line-clamp: 1;
+      line-clamp: 1; /* Standard property */
+      -webkit-box-orient: vertical;
       overflow: hidden;
-      text-overflow: ellipsis;
+      white-space: normal; /* Override nowrap */
+
       font-style: italic;
       opacity: 0.9;
     }
