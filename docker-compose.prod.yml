@@ -11,6 +11,8 @@ services:
     volumes:
       # SSL 인증서 디렉토리 전체 마운트
       - /etc/letsencrypt:/etc/letsencrypt:ro
+      # 설정 파일 핫로드 (빌드 없이 적용)
+      - ./infrastructure/nginx/conf.d:/etc/nginx/conf.d:ro
       # 로그
       - nginx_logs:/var/log/nginx
       # Certbot (SSL 갱신용)
