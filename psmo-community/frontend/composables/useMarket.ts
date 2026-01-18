@@ -1,9 +1,17 @@
+export type ProductStatus =
+  | "SALE"
+  | "RESERVED"
+  | "SOLD"
+  | "PENDING"
+  | "HIDDEN"
+  | "DELETED";
+
 export interface Product {
   id: number;
   title: string;
   description: string | null;
   price: number;
-  status: "SALE" | "RESERVED" | "SOLD";
+  status: ProductStatus;
   category: string;
   seller: {
     id: number;
@@ -26,8 +34,15 @@ export interface ProductRealEstate {
   monthlyRent: number;
   managementFee: number;
   averageMonthlyRevenue: number;
+  rightsMoney: number;
   floor: number | null;
   areaMeters: number | null;
+  areaPyeong: number | null;
+  facilities: string | null;
+  moveInDate: string | null;
+  permitStatus: string | null;
+  adminActionHistory: string | null;
+  contactNumber: string | null;
 }
 
 export interface ProductImage {
@@ -42,6 +57,15 @@ export interface ProductCreateRequest {
   description: string;
   price: number;
   category: string;
+  realEstate?: ProductRealEstate;
+}
+
+export interface ProductUpdateRequest {
+  title?: string;
+  description?: string;
+  price?: number;
+  status?: ProductStatus;
+  category?: string;
   realEstate?: ProductRealEstate;
 }
 
@@ -69,13 +93,7 @@ export const useMarket = () => {
 
   const createProduct = async (data: ProductCreateRequest, files: File[]) => {
     const formData = new FormData();
-
-    // Backend expects 'product' part as JSON string
     formData.append("product", JSON.stringify(data));
-
-    // Backend expects 'images' part or individual file parts?
-    // Controller: multipart.forEachPart...
-    // if PartData.FileItem -> uploads it. Name doesn't seem to be strictly checked for "images", just any file item.
     files.forEach((file) => {
       formData.append("file", file);
     });
@@ -89,9 +107,38 @@ export const useMarket = () => {
     );
   };
 
+  const updateProduct = async (id: number, data: ProductUpdateRequest) => {
+    return await fetchClient<{ status: string; data: Product }>(
+      `/v1/market/products/${id}`,
+      {
+        method: "PUT",
+        body: data,
+      },
+    );
+  };
+
+  const deleteProduct = async (id: number) => {
+    return await fetchClient<{ status: string }>(`/v1/market/products/${id}`, {
+      method: "DELETE",
+    });
+  };
+
+  const updateProductStatus = async (id: number, status: ProductStatus) => {
+    return await fetchClient<{ status: string; newStatus: ProductStatus }>(
+      `/v1/market/products/${id}/status`,
+      {
+        method: "PUT",
+        body: { status },
+      },
+    );
+  };
+
   return {
     fetchProducts,
     fetchProductById,
     createProduct,
+    updateProduct,
+    deleteProduct,
+    updateProductStatus,
   };
 };

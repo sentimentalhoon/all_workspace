@@ -110,7 +110,15 @@ onMounted(() => {
             class="status-badge"
             :class="item.status"
           >
-            {{ item.status }}
+            {{
+              item.status === "PENDING"
+                ? "승인 대기"
+                : item.status === "SOLD"
+                  ? "판매 완료"
+                  : item.status === "RESERVED"
+                    ? "예약중"
+                    : item.status
+            }}
           </div>
         </div>
 
@@ -257,6 +265,21 @@ onMounted(() => {
   font-weight: bold;
   color: white;
   background: rgba(0, 0, 0, 0.6);
+}
+
+.status-badge.PENDING {
+  background: #ffc107;
+  color: #000;
+}
+
+.status-badge.SOLD {
+  background: #6c757d;
+  color: #fff;
+}
+
+.status-badge.RESERVED {
+  background: #17a2b8;
+  color: #fff;
 }
 
 .content {

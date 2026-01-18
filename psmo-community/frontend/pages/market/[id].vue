@@ -1,13 +1,54 @@
 <script setup lang="ts">
-import { useRoute } from "vue-router";
-import { useMarket, type Product } from "~/composables/useMarket";
+import { useRoute, useRouter } from "vue-router";
+import {
+  useMarket,
+  type Product,
+  type ProductStatus,
+} from "~/composables/useMarket";
+import { useAuthStore } from "~/stores/auth";
 
 const route = useRoute();
-const { fetchProductById } = useMarket();
+const router = useRouter();
+const { fetchProductById, deleteProduct, updateProductStatus } = useMarket();
+const authStore = useAuthStore();
 
 const product = ref<Product | null>(null);
 const loading = ref(true);
 const activeImageIndex = ref(0);
+
+const isOwner = computed(() => {
+  return product.value?.seller.id === authStore.user?.id;
+});
+
+const isAdmin = computed(() => {
+  return authStore.user?.role === "ADMIN";
+});
+
+const handleDelete = async () => {
+  if (!confirm("정말 삭제하시겠습니까?")) return;
+  if (!product.value) return;
+
+  try {
+    await deleteProduct(product.value.id);
+    alert("삭제되었습니다.");
+    router.push("/market");
+  } catch (e: any) {
+    alert("삭제 실패: " + (e.response?.data?.message || e.message));
+  }
+};
+
+const handleStatusChange = async (status: ProductStatus) => {
+  if (!confirm(`${status} 상태로 변경하시겠습니까?`)) return;
+  if (!product.value) return;
+
+  try {
+    const res = await updateProductStatus(product.value.id, status);
+    product.value.status = res.newStatus;
+    alert("상태가 변경되었습니다.");
+  } catch (e: any) {
+    alert("변경 실패: " + (e.response?.data?.message || e.message));
+  }
+};
 
 onMounted(async () => {
   const id = route.params.id as string;
@@ -103,22 +144,56 @@ onMounted(async () => {
           <span class="label">평균 월매출</span>
           <span class="val"
             >{{
-              product.realEstate.averageMonthlyRevenue.toLocaleString()
+              product.realEstate?.averageMonthlyRevenue.toLocaleString()
             }}원</span
           >
         </div>
         <div class="grid-item">
           <span class="label">층수 / 면적</span>
           <span class="val"
-            >{{ product.realEstate.floor }}층 /
-            {{ product.realEstate.areaMeters }}㎡</span
+            >{{ product.realEstate?.floor }}층 /
+            {{ product.realEstate?.areaMeters }}㎡ ({{
+              product.realEstate?.areaPyeong
+            }}평)</span
           >
+        </div>
+        <div class="grid-item">
+          <span class="label">권리금</span>
+          <span class="val"
+            >{{ product.realEstate?.rightsMoney.toLocaleString() }}원</span
+          >
+        </div>
+        <div class="grid-item">
+          <span class="label">입주 가능일</span>
+          <span class="val">{{ product.realEstate?.moveInDate || "-" }}</span>
+        </div>
+        <div class="grid-item">
+          <span class="label">허가 여부</span>
+          <span class="val">{{ product.realEstate?.permitStatus || "-" }}</span>
+        </div>
+        <div class="grid-item">
+          <span class="label">행정처분 이력</span>
+          <span class="val">{{
+            product.realEstate?.adminActionHistory || "없음"
+          }}</span>
+        </div>
+        <div class="grid-item full-width">
+          <span class="label">시설 정보</span>
+          <span class="val pre-wrap">{{
+            product.realEstate?.facilities || "내용 없음"
+          }}</span>
+        </div>
+        <div class="grid-item full-width">
+          <span class="label">연락처</span>
+          <span class="val highlight">{{
+            product.realEstate?.contactNumber
+          }}</span>
         </div>
         <div class="grid-item full-width">
           <span class="label">위치</span>
           <span class="val"
-            >{{ product.realEstate.locationCity }}
-            {{ product.realEstate.locationDistrict }}</span
+            >{{ product.realEstate?.locationCity }}
+            {{ product.realEstate?.locationDistrict }}</span
           >
         </div>
       </div>
@@ -128,10 +203,49 @@ onMounted(async () => {
         <p>{{ product.description }}</p>
       </div>
 
-      <div class="action-bar">
-        <!-- Call/Chat buttons placeholders -->
-        <button class="chat-btn">💬 채팅하기</button>
-        <button class="call-btn">📞 전화하기</button>
+      <div class="action-bar-wrapper">
+        <div
+          v-if="product.status === 'PENDING' && isAdmin"
+          class="admin-actions"
+        >
+          <p class="admin-notice">📢 관리자 승인 대기 중인 상품입니다.</p>
+          <button @click="handleStatusChange('SALE')" class="approve-btn">
+            승인 (공개)
+          </button>
+          <button @click="handleStatusChange('DELETED')" class="reject-btn">
+            반려 (삭제)
+          </button>
+        </div>
+
+        <div class="action-bar">
+          <!-- Owner Actions -->
+          <template v-if="isOwner">
+            <button @click="handleDelete" class="delete-btn">삭제</button>
+            <button
+              v-if="product.status === 'SALE'"
+              @click="handleStatusChange('SOLD')"
+              class="sold-btn"
+            >
+              판매 완료 처리
+            </button>
+            <button
+              v-else-if="product.status === 'SOLD'"
+              class="sold-btn disabled"
+              disabled
+            >
+              판매 완료됨
+            </button>
+          </template>
+
+          <!-- Contact Buttons -->
+          <a
+            :href="`tel:${product.realEstate?.contactNumber}`"
+            v-if="product.realEstate?.contactNumber"
+            class="call-btn"
+            >📞 전화하기</a
+          >
+          <button class="chat-btn">💬 채팅하기</button>
+        </div>
       </div>
     </div>
   </div>
@@ -302,6 +416,73 @@ onMounted(async () => {
 .call-btn {
   background: #16213e;
   color: #c5a059;
+  text-decoration: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.action-bar-wrapper {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  z-index: 100;
+}
+
+.admin-actions {
+  background: #fff3cd;
+  padding: 10px;
+  text-align: center;
+  border-top: 1px solid #ffeeba;
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+  align-items: center;
+}
+
+.admin-notice {
+  margin: 0;
+  font-weight: bold;
+  color: #856404;
+}
+
+.approve-btn {
+  background: #28a745;
+  color: white;
+  padding: 5px 15px;
+  border-radius: 4px;
+}
+
+.reject-btn {
+  background: #dc3545;
+  color: white;
+  padding: 5px 15px;
+  border-radius: 4px;
+}
+
+.delete-btn {
+  background: #dc3545;
+  color: white;
+}
+
+.sold-btn {
+  background: #6c757d;
+  color: white;
+}
+
+.sold-btn.disabled {
+  cursor: not-allowed;
+  opacity: 0.7;
+}
+
+.pre-wrap {
+  white-space: pre-wrap;
+}
+
+.val.highlight {
+  color: #e94560;
+  font-size: 1.1rem;
 }
 
 @media (min-width: 800px) {

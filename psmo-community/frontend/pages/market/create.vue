@@ -17,8 +17,15 @@ const form = ref<ProductCreateRequest>({
     monthlyRent: 0,
     managementFee: 0,
     averageMonthlyRevenue: 0,
+    rightsMoney: 0,
     floor: null,
     areaMeters: null,
+    areaPyeong: null,
+    facilities: "",
+    moveInDate: "",
+    permitStatus: "",
+    adminActionHistory: "",
+    contactNumber: "",
   },
 });
 
@@ -173,6 +180,72 @@ const submit = async () => {
             type="number"
             v-model="form.realEstate!.averageMonthlyRevenue"
             required
+          />
+        </div>
+        <div class="field">
+          <label>권리금 (원)</label>
+          <input
+            type="number"
+            v-model="form.realEstate!.rightsMoney"
+            required
+          />
+        </div>
+        <div class="field">
+          <label>평수 (평)</label>
+          <input
+            type="number"
+            v-model="form.realEstate!.areaPyeong"
+            step="0.1"
+            required
+          />
+        </div>
+        <div class="field">
+          <label>연락처</label>
+          <input
+            v-model="form.realEstate!.contactNumber"
+            placeholder="010-0000-0000"
+            required
+          />
+        </div>
+        <div class="field">
+          <label>입주 가능일</label>
+          <input
+            v-model="form.realEstate!.moveInDate"
+            placeholder="즉시 가능 / 협의"
+          />
+        </div>
+        <div class="field">
+          <label>허가 여부</label>
+          <input
+            v-model="form.realEstate!.permitStatus"
+            placeholder="허가 완료 / 진행 중"
+          />
+        </div>
+        <div class="field full-width">
+          <label>행정 처분 이력</label>
+          <input
+            v-model="form.realEstate!.adminActionHistory"
+            placeholder="없음 / 상세 내용"
+          />
+        </div>
+        <div class="field full-width">
+          <label>시설/집기 정보</label>
+          <textarea
+            v-model="form.realEstate!.facilities"
+            rows="3"
+            placeholder="PC 사양, 에어컨, 인테리어 상태 등"
+          ></textarea>
+        </div>
+        <div class="field">
+          <label>층수</label>
+          <input type="number" v-model="form.realEstate!.floor" />
+        </div>
+        <div class="field">
+          <label>면적 (㎡)</label>
+          <input
+            type="number"
+            v-model="form.realEstate!.areaMeters"
+            step="0.1"
           />
         </div>
       </div>
@@ -366,5 +439,9 @@ input[type="file"] {
   .real-estate-grid {
     grid-template-columns: 1fr;
   }
+}
+
+.field.full-width {
+  grid-column: 1 / -1;
 }
 </style>
