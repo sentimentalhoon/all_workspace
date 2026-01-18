@@ -88,12 +88,27 @@ class ProductService(private val repository: ProductRepository) {
         ).toResponse(user.toResponse())
     }
     
-    suspend fun updateProduct(id: Long, request: ProductUpdateRequest, userId: Long, isAdmin: Boolean = false): ProductResponse? {
+    suspend fun updateProduct(
+        id: Long, 
+        request: ProductUpdateRequest, 
+        userId: Long, 
+        isAdmin: Boolean = false,
+        newImages: List<Pair<String, com.psmo.model.ProductMediaType>> = emptyList(),
+        deleteImageIds: List<Long> = emptyList()
+    ): ProductResponse? {
         val existing = getProductById(id) ?: return null
         
         // Owner Check bypassed if Admin
         if (existing.seller.id != userId && !isAdmin) {
             throw IllegalArgumentException("Not the owner of this product")
+        }
+        
+        // Handle Images
+        if (deleteImageIds.isNotEmpty()) {
+            repository.deleteImages(deleteImageIds)
+        }
+        if (newImages.isNotEmpty()) {
+            repository.saveImages(id, newImages)
         }
         
         repository.update(id, request)

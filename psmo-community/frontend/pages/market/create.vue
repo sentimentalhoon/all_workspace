@@ -683,6 +683,23 @@ select.dark-input {
         display: flex;
         align-items: center;
         justify-content: center;
+        z-index: 2;
+      }
+
+      .badge {
+        position: absolute;
+        bottom: 4px;
+        right: 4px;
+        background: rgba(0, 0, 0, 0.6);
+        color: white;
+        font-size: 0.7rem;
+        padding: 2px 6px;
+        border-radius: 4px;
+      }
+      .new-badge {
+        background: $color-accent;
+        color: black;
+        font-weight: bold;
       }
     }
   }

@@ -110,16 +110,24 @@ class ProductRepository(private val config: ApplicationConfig) {
     }
     
     suspend fun saveImages(productId: Long, images: List<Pair<String, com.psmo.model.ProductMediaType>>) = newSuspendedTransaction(Dispatchers.IO) {
-        // Clear existing (if this becomes a full replacement strategy, otherwise append)
-        // For simplicity in create, just append. For update, might need logic.
-        // Assuming append for now or handled by service.
+        // Find max order index to append
+        val maxOrder = ProductImages.slice(ProductImages.orderIndex.max())
+            .select { ProductImages.productId eq productId }
+            .singleOrNull()?.get(ProductImages.orderIndex.max()) ?: -1
+
         images.forEachIndexed { index, (url, type) -> 
              ProductImages.insert {
                  it[ProductImages.productId] = productId
                  it[ProductImages.url] = url
                  it[ProductImages.type] = type
-                 it[ProductImages.orderIndex] = index
+                 it[ProductImages.orderIndex] = maxOrder + 1 + index
              }
+        }
+    }
+
+    suspend fun deleteImages(imageIds: List<Long>) = newSuspendedTransaction(Dispatchers.IO) {
+        if (imageIds.isNotEmpty()) {
+            ProductImages.deleteWhere { ProductImages.id inList imageIds }
         }
     }
     

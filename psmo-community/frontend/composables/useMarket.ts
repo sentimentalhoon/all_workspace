@@ -107,12 +107,28 @@ export const useMarket = () => {
     );
   };
 
-  const updateProduct = async (id: number, data: ProductUpdateRequest) => {
+  const updateProduct = async (
+    id: number,
+    data: ProductUpdateRequest,
+    files: File[] = [],
+    deleteImageIds: number[] = [],
+  ) => {
+    const formData = new FormData();
+    formData.append("product", JSON.stringify(data));
+
+    if (deleteImageIds.length > 0) {
+      formData.append("deleteImageIds", JSON.stringify(deleteImageIds));
+    }
+
+    files.forEach((file) => {
+      formData.append("file", file);
+    });
+
     return await fetchClient<{ status: string; data: Product }>(
       `/v1/market/products/${id}`,
       {
         method: "PUT",
-        body: data,
+        body: formData,
       },
     );
   };

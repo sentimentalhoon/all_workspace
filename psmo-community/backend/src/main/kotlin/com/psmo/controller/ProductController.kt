@@ -128,7 +128,6 @@ fun Route.productRoutes(service: ProductService, imageService: ImageService) {
         }
         
         put<MarketResources.Products.Id> { params ->
-             val request = call.receive<ProductUpdateRequest>()
              val principal = call.principal<JWTPrincipal>()
              val userId = principal?.subject?.toLongOrNull()
              val role = principal?.payload?.getClaim("role")?.asString()
@@ -140,15 +139,71 @@ fun Route.productRoutes(service: ProductService, imageService: ImageService) {
              
              val isAdmin = role == "ADMIN" || role == "SYSTEM" || role == "MANAGER"
 
+             // Multipart Processing
+             var updateRequest: ProductUpdateRequest? = null
+             val newImages = mutableListOf<Pair<String, com.psmo.model.ProductMediaType>>()
+             var deleteImageIds: List<Long> = emptyList()
+             
+             val jackson = jacksonObjectMapper()
+
              try {
-                val updated = service.updateProduct(params.id, request, userId, isAdmin)
+                // Check content type. If JSON, standard update (backward compatibility/simple update). 
+                // However, frontend will send Multipart. So we assume Multipart if typical header presence, 
+                // but receiveMultipart throws if not multipart.
+                // Let's assume frontend ALWAYs sends multipart for update now if we change the service/frontend.
+                // Or try/catch? receiveMultipart() works if Content-Type is multipart/form-data.
+                
+                if (call.request.contentType().match(ContentType.MultiPart.FormData)) {
+                     val multipart = call.receiveMultipart()
+                     multipart.forEachPart { part ->
+                        when(part) {
+                            is PartData.FormItem -> {
+                                if (part.name == "product") {
+                                    updateRequest = jackson.readValue(part.value, ProductUpdateRequest::class.java)
+                                } else if (part.name == "deleteImageIds") {
+                                    // Expecting JSON array "[1, 2]"
+                                    deleteImageIds = jackson.readValue(part.value, object : com.fasterxml.jackson.core.type.TypeReference<List<Long>>() {})
+                                }
+                            }
+                            is PartData.FileItem -> {
+                                val fileName = part.originalFileName as String
+                                val contentType = part.contentType?.toString() ?: "application/octet-stream"
+                                val url = withContext(Dispatchers.IO) {
+                                    part.provider().toInputStream().use { inputStream ->
+                                        val type = if (contentType.startsWith("video")) com.psmo.model.ProductMediaType.VIDEO else com.psmo.model.ProductMediaType.IMAGE
+                                         val uploadedUrl = if (type == com.psmo.model.ProductMediaType.VIDEO) {
+                                            imageService.uploadVideo(inputStream, fileName, contentType)
+                                        } else {
+                                            imageService.uploadImage(inputStream, fileName, contentType)
+                                        }
+                                        uploadedUrl to type
+                                    }
+                                }
+                                newImages.add(url)
+                            }
+                            else -> {}
+                        }
+                        part.dispose()
+                     }
+                } else {
+                     // Fallback for JSON only requests
+                     updateRequest = call.receive<ProductUpdateRequest>()
+                }
+
+                 if (updateRequest == null) {
+                     call.respond(HttpStatusCode.BadRequest, mapOf("status" to "error", "message" to "Missing product data"))
+                     return@put
+                 }
+
+                val updated = service.updateProduct(params.id, updateRequest!!, userId, isAdmin, newImages, deleteImageIds)
                 if (updated != null) {
                     call.respond(mapOf("status" to "success", "data" to updated))
                 } else {
                     call.respond(HttpStatusCode.NotFound, mapOf("status" to "error", "message" to "Product not found or access denied"))
                 }
-             } catch (e: IllegalArgumentException) {
-                 call.respond(HttpStatusCode.Forbidden, mapOf("status" to "error", "message" to e.message))
+             } catch (e: Exception) {
+                 e.printStackTrace() // Log error
+                 call.respond(HttpStatusCode.InternalServerError, mapOf("status" to "error", "message" to (e.message ?: "Unknown error")))
              }
         }
 
