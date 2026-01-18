@@ -295,7 +295,7 @@ $text-secondary: #b0b0b0;
   max-width: 800px;
   margin: 0 auto;
   padding: 16px;
-  padding-bottom: 100px; /* Space for fixed bottom bar */
+  /* padding-bottom: 100px; /* Space for fixed bottom bar */
 }
 
 /* Glass Panel */
