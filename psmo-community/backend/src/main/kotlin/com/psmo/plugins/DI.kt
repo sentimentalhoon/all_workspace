@@ -55,6 +55,6 @@ fun appModule(config: ApplicationConfig) = module {
     single { ImageService(get()) }
     single { CloudflareStreamService(get()) } // Placeholder for Video Upload
     single { BadUserService(get()) }
-    
-
+    single { com.psmo.repository.BoardRepository(get()) }
+    single { BoardService(get()) }
 }

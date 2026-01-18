@@ -2,11 +2,13 @@ package com.psmo
 
 import com.psmo.model.dto.ProfileResponse
 import com.psmo.model.dto.toResponse
-import com.psmo.service.*
-import com.psmo.service.*
+import com.psmo.controller.authRoutes
+import com.psmo.controller.qrAuthRoutes
 import com.psmo.controller.productRoutes
 import com.psmo.controller.badUserRoutes
-
+import com.psmo.controller.boardRoutes
+import com.psmo.service.*
+import com.psmo.service.*
 import io.ktor.server.application.*
 import io.ktor.server.auth.*
 import io.ktor.server.auth.jwt.*
@@ -92,12 +94,14 @@ fun Application.configureRouting(config: ApplicationConfig) {
             }
         }
 
-        // Market 관련 API들은 다른 파일(ProductController)에 따로 정리해두었습니다.
-        // 여기서 불러옵니다.
-        // Market Routes
-        // Market Routes
+        authRoutes(telegramAuthService, userService)
+        qrAuthRoutes(telegramAuthService)
         productRoutes(productService)
         badUserRoutes(badUserService)
+        boardRoutes(boardService)
+
+        // Static files (Images) - For MVP
+        staticFiles("/images", java.io.File("uploads"))
 
         // 텔레그램 로그인 요청을 처리합니다.
         // 프론트엔드에서 받은 로그인 정보(Telegram Widget 데이터)를 검증하고, 우리가 만든 '출입증(JWT 토큰)'을 발급해줍니다.
