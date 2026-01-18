@@ -415,16 +415,16 @@ input[type="file"] {
 }
 
 .preview-list {
-  display: flex;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
   gap: 10px;
   margin-top: 15px;
-  overflow-x: auto;
 }
 
 .preview-item {
   position: relative;
-  width: 100px;
-  height: 100px;
+  width: 100%;
+  aspect-ratio: 1 / 1;
 }
 
 .preview-item img {
