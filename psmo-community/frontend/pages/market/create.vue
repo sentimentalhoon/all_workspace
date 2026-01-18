@@ -35,6 +35,9 @@ const form = ref<ProductCreateRequest>({
 const isStoreTrading = computed(() => form.value.category === "PC_BUSINESS");
 const files = ref<File[]>([]);
 const previewUrls = ref<string[]>([]);
+const existingImages = ref<{ id: number; url: string }[]>([]); // Existing images
+const deleteImageIds = ref<number[]>([]); // IDs to delete
+
 const loading = ref(false);
 const processingImages = ref(false); // processing state
 
@@ -55,6 +58,14 @@ onMounted(async () => {
         category: data.category,
         realEstate: data.realEstate ? { ...data.realEstate } : undefined,
       };
+
+      // Load existing images
+      if (data.images) {
+        existingImages.value = data.images.map((img: any) => ({
+          id: img.id,
+          url: img.url,
+        }));
+      }
 
       // Initialize default values for realEstate if missing but category is PC_BUSINESS
       if (data.category === "PC_BUSINESS" && !form.value.realEstate) {
@@ -92,7 +103,9 @@ const handleFileChange = async (e: Event) => {
     const newFiles = Array.from(target.files);
 
     // Limit Check (Max 20 total)
-    if (files.value.length + newFiles.length > 20) {
+    const totalCount =
+      existingImages.value.length + files.value.length + newFiles.length;
+    if (totalCount > 20) {
       alert("이미지는 최대 20장까지만 첨부할 수 있습니다.");
       return;
     }
@@ -124,9 +137,15 @@ const handleFileChange = async (e: Event) => {
   }
 };
 
-const removeFile = (index: number) => {
+const removeNewFile = (index: number) => {
   files.value.splice(index, 1);
   previewUrls.value.splice(index, 1);
+};
+
+const removeExistingImage = (index: number) => {
+  const img = existingImages.value[index];
+  deleteImageIds.value.push(img.id);
+  existingImages.value.splice(index, 1);
 };
 
 const submit = async () => {
@@ -144,8 +163,13 @@ const submit = async () => {
   loading.value = true;
   try {
     if (isEditMode.value) {
-      // Update (No Image Upload support yet)
-      await updateProduct(productId.value, payload);
+      // Update with Images
+      await updateProduct(
+        productId.value,
+        payload,
+        files.value,
+        deleteImageIds.value,
+      );
       alert("수정되었습니다.");
     } else {
       // Create
@@ -407,11 +431,7 @@ const submit = async () => {
       <div class="form-section">
         <label class="section-label">사진 첨부 (최대 20장)</label>
 
-        <div v-if="isEditMode" class="edit-notice glass-panel-sm">
-          ⚠️ 이미지 수정은 현재 지원되지 않습니다. (추후 업데이트 예정)
-        </div>
-
-        <div v-else class="file-upload-area">
+        <div class="file-upload-area">
           <input
             type="file"
             multiple
@@ -423,18 +443,46 @@ const submit = async () => {
           <label for="file-input" class="upload-box hover-glow">
             <span class="icon">📸</span>
             <span>사진 추가하기</span>
+            <span
+              class="count-badge"
+              v-if="existingImages.length + files.length > 0"
+              >{{ existingImages.length + files.length }} / 20</span
+            >
           </label>
 
           <div class="preview-grid">
+            <!-- Existing Images -->
             <div
-              v-for="(url, idx) in previewUrls"
-              :key="idx"
-              class="preview-item"
+              v-for="(img, idx) in existingImages"
+              :key="'exist-' + img.id"
+              class="preview-item existing"
             >
-              <img :src="url" />
-              <button type="button" class="remove-btn" @click="removeFile(idx)">
+              <img :src="img.url" />
+              <button
+                type="button"
+                class="remove-btn"
+                @click="removeExistingImage(idx)"
+              >
                 ✕
               </button>
+              <span class="badge">기존</span>
+            </div>
+
+            <!-- New Images -->
+            <div
+              v-for="(url, idx) in previewUrls"
+              :key="'new-' + idx"
+              class="preview-item new"
+            >
+              <img :src="url" />
+              <button
+                type="button"
+                class="remove-btn"
+                @click="removeNewFile(idx)"
+              >
+                ✕
+              </button>
+              <span class="badge new-badge">신규</span>
             </div>
           </div>
         </div>
@@ -448,11 +496,17 @@ const submit = async () => {
       <button
         type="submit"
         class="submit-btn hover-glow"
-        :disabled="loading || processingImages"
+        :disabled="
+          loading ||
+          processingImages ||
+          existingImages.length + files.length > 20
+        "
       >
         {{
           loading
-            ? "등록 중..."
+            ? isEditMode
+              ? "수정 중..."
+              : "등록 중..."
             : processingImages
               ? "이미지 처리 대기 중..."
               : isEditMode
@@ -684,6 +738,22 @@ select.dark-input {
         align-items: center;
         justify-content: center;
         z-index: 2;
+      }
+
+      .badge {
+        position: absolute;
+        bottom: 4px;
+        right: 4px;
+        background: rgba(0, 0, 0, 0.6);
+        color: white;
+        font-size: 0.7rem;
+        padding: 2px 6px;
+        border-radius: 4px;
+      }
+      .new-badge {
+        background: $color-accent;
+        color: black;
+        font-weight: bold;
       }
 
       .badge {
