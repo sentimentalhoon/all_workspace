@@ -16,6 +16,14 @@ const { fetchProducts } = useMarket();
 const recentBadUsers = ref<BadUser[]>([]);
 const recentProducts = ref<Product[]>([]);
 
+// 시간대에 따른 인사말 생성
+const greetingMessage = computed(() => {
+  const hour = new Date().getHours();
+  if (hour < 12) return "활기찬 오전 되세요!";
+  if (hour < 18) return "오후도 힘내세요!";
+  return "오늘 하루도 고생 많으셨습니다.";
+});
+
 // 데이터 로딩
 onMounted(async () => {
   try {
@@ -35,373 +43,537 @@ onMounted(async () => {
 </script>
 
 <template>
-  <div class="home-page">
-    <!-- Hero Section -->
-    <div class="hero-section">
+  <div class="home-container">
+    <!-- Hero Section: User Status & Welcome -->
+    <section class="hero-section glass-panel">
       <div class="hero-content">
-        <h2>안전한 매장 운영의 시작</h2>
-        <p>불량 사용자 공유 및 매장 거래 플랫폼</p>
-        <button class="primary-btn" @click="navigateTo('/blacklist')">
-          🚨 불량 사용자 조회
-        </button>
-      </div>
-    </div>
-
-    <!-- Quick Menu Grid -->
-    <div class="menu-grid">
-      <NuxtLink to="/blacklist" class="menu-item highlight">
-        <span class="icon">🚫</span>
-        <span class="text">블랙리스트</span>
-        <span class="sub-text">불량 이용자 조회</span>
-      </NuxtLink>
-      <NuxtLink to="/market" class="menu-item">
-        <span class="icon">🤝</span>
-        <span class="text">매장 거래</span>
-        <span class="sub-text">PC방 양도/양수</span>
-      </NuxtLink>
-      <NuxtLink to="/market?category=PC_FULL" class="menu-item">
-        <span class="icon">📦</span>
-        <span class="text">중고 장터</span>
-        <span class="sub-text">PC 부품/집기</span>
-      </NuxtLink>
-      <NuxtLink to="/community" class="menu-item">
-        <span class="icon">💬</span>
-        <span class="text">점주 소통방</span>
-        <span class="sub-text">운영 노하우 공유</span>
-      </NuxtLink>
-    </div>
-
-    <!-- Dashboard Status -->
-    <div class="dashboard-card">
-      <div class="user-info">
-        <span class="greeting">사장님, 안녕하세요!</span>
-        <strong class="username">{{
-          authStore.user?.displayName || "Guest"
-        }}</strong>
-      </div>
-      <div class="points">
-        <span>보유 포인트</span>
-        <strong>{{ authStore.user?.score?.toLocaleString() || 0 }} P</strong>
-      </div>
-    </div>
-
-    <!-- Recent Bad Users Section -->
-    <section class="dashboard-section" v-if="recentBadUsers.length > 0">
-      <div class="section-header">
-        <h3>최근 등록된 불량 사용자</h3>
-        <NuxtLink to="/blacklist" class="more-link">더보기 ></NuxtLink>
-      </div>
-      <div class="bad-user-list">
-        <div
-          v-for="user in recentBadUsers"
-          :key="user.id"
-          class="bad-user-card"
-        >
-          <div class="bad-user-name">
-            {{ user.name }} <span class="phone">({{ user.phoneLast4 }})</span>
-          </div>
-          <div class="bad-user-reason">{{ user.reason }}</div>
-          <div class="bad-user-date">
-            {{ new Date(user.createdAt).toLocaleDateString() }}
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <!-- Recent Products Section -->
-    <section class="dashboard-section" v-if="recentProducts.length > 0">
-      <div class="section-header">
-        <h3>최근 올라온 매물</h3>
-        <NuxtLink to="/market" class="more-link">더보기 ></NuxtLink>
-      </div>
-      <div class="product-grid">
-        <div
-          v-for="product in recentProducts"
-          :key="product.id"
-          class="product-card"
-          @click="navigateTo(`/market/${product.id}`)"
-        >
-          <div class="product-info">
-            <span class="badge" :class="product.status.toLowerCase()">{{
-              product.status
+        <div class="greeting-box">
+          <span class="sub-greeting">{{ greetingMessage }}</span>
+          <h1 class="username">
+            <span class="highlight">{{
+              authStore.user?.displayName || "Guest"
             }}</span>
-            <div class="product-title">{{ product.title }}</div>
-            <div class="product-price">
-              {{ product.price.toLocaleString() }}원
-            </div>
-            <div class="product-meta">
-              {{ product.realEstate?.locationCity || product.category }}
-            </div>
+            사장님
+          </h1>
+        </div>
+        <div class="stats-box">
+          <div class="stat-item">
+            <span class="label">보유 포인트</span>
+            <strong class="value gold-text"
+              >{{ authStore.user?.score?.toLocaleString() || 0 }} P</strong
+            >
           </div>
         </div>
       </div>
+      <div class="hero-bg-decoration"></div>
     </section>
+
+    <!-- Quick Access Navigation -->
+    <nav class="quick-menu">
+      <NuxtLink
+        to="/blacklist"
+        class="menu-card glass-panel"
+        title="불량 사용자 검색"
+      >
+        <div class="icon-box red-glow">🚫</div>
+        <span class="menu-title">블랙리스트</span>
+        <span class="menu-desc">불량 이용자 조회</span>
+      </NuxtLink>
+      <NuxtLink to="/market" class="menu-card glass-panel" title="매장 거래">
+        <div class="icon-box blue-glow">🤝</div>
+        <span class="menu-title">매장 거래</span>
+        <span class="menu-desc">PC방 양도/양수</span>
+      </NuxtLink>
+      <NuxtLink
+        to="/market?category=PC_FULL"
+        class="menu-card glass-panel"
+        title="중고 장터"
+      >
+        <div class="icon-box gold-glow">📦</div>
+        <span class="menu-title">중고 장터</span>
+        <span class="menu-desc">PC 부품/집기</span>
+      </NuxtLink>
+      <NuxtLink to="/community" class="menu-card glass-panel" title="커뮤니티">
+        <div class="icon-box green-glow">💬</div>
+        <span class="menu-title">소통방</span>
+        <span class="menu-desc">운영 노하우</span>
+      </NuxtLink>
+    </nav>
+
+    <!-- Main Content Area: Split View -->
+    <div class="content-grid">
+      <!-- Recent Bad Users -->
+      <section class="content-section" v-if="recentBadUsers.length > 0">
+        <div class="section-header">
+          <h3>🚨 최근 불량 사용자</h3>
+          <NuxtLink to="/blacklist" class="more-btn">더보기</NuxtLink>
+        </div>
+        <div class="list-container glass-panel">
+          <div v-for="user in recentBadUsers" :key="user.id" class="list-item">
+            <div class="user-avatar placeholder">
+              {{ user.name.substring(0, 1) }}
+            </div>
+            <div class="info-col">
+              <div class="name-row">
+                <span class="name">{{ user.name }}</span>
+                <span class="phone">({{ user.phoneLast4 }})</span>
+              </div>
+              <div class="reason">{{ user.reason }}</div>
+            </div>
+            <div class="date-col">
+              {{ new Date(user.createdAt).toLocaleDateString() }}
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Recent Products -->
+      <section class="content-section" v-if="recentProducts.length > 0">
+        <div class="section-header">
+          <h3>🛒 최근 올라온 매물</h3>
+          <NuxtLink to="/market" class="more-btn">더보기</NuxtLink>
+        </div>
+        <div class="product-grid">
+          <div
+            v-for="product in recentProducts"
+            :key="product.id"
+            class="product-card glass-panel hover-lift"
+            @click="navigateTo(`/market/${product.id}`)"
+          >
+            <div class="product-thumb">
+              <!-- Placeholder Icon used if no image -->
+              <div
+                v-if="!product.images || product.images.length === 0"
+                class="no-image-placeholder"
+              >
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="24"
+                  height="24"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                >
+                  <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+                  <circle cx="8.5" cy="8.5" r="1.5"></circle>
+                  <polyline points="21 15 16 10 5 21"></polyline>
+                </svg>
+              </div>
+              <img
+                v-else
+                :src="product.images[0].url"
+                alt="상품 이미지"
+                loading="lazy"
+              />
+              <span
+                class="status-badge"
+                :class="product.status.toLowerCase()"
+                >{{ product.status }}</span
+              >
+            </div>
+            <div class="product-details">
+              <h4 class="title">{{ product.title }}</h4>
+              <div class="price-row">
+                <span class="price"
+                  >{{ product.price.toLocaleString() }}원</span
+                >
+                <span class="location">{{
+                  product.realEstate?.locationCity || "지역"
+                }}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+    </div>
   </div>
 </template>
 
-<style scoped>
-.home-page {
+<style scoped lang="scss">
+/* --- Variables & Theme --- */
+$color-bg-dark: #121212;
+$color-primary: #1e88e5; /* Blue */
+$color-accent: #c5a059; /* Gold */
+$color-danger: #e94560; /* Red */
+$glass-bg: rgba(255, 255, 255, 0.05);
+$glass-border: rgba(255, 255, 255, 0.1);
+$glass-blur: 10px;
+$text-primary: #ffffff;
+$text-secondary: #b0b0b0;
+
+.home-container {
   display: flex;
   flex-direction: column;
-  gap: 20px;
+  gap: 24px;
+  padding-bottom: 40px;
+  color: $text-primary;
+  animation: fadeIn 0.6s ease-out;
 }
 
-.hero-section {
-  background: linear-gradient(135deg, #16213e 0%, #0f3460 100%);
-  padding: 30px 20px;
+/* --- Common Utility Classes --- */
+.glass-panel {
+  background: $glass-bg;
+  backdrop-filter: blur($glass-blur);
+  -webkit-backdrop-filter: blur($glass-blur);
+  border: 1px solid $glass-border;
   border-radius: 16px;
-  color: white;
-  text-align: center;
-  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+  box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
 }
 
-.hero-content h2 {
-  margin: 0 0 10px 0;
-  font-size: 1.4rem;
-  font-weight: 700;
+.gold-text {
+  color: $color-accent;
+}
+.red-glow {
+  background: rgba(233, 69, 96, 0.2);
+  color: #ff6b6b;
+}
+.blue-glow {
+  background: rgba(30, 136, 229, 0.2);
+  color: #64b5f6;
+}
+.gold-glow {
+  background: rgba(197, 160, 89, 0.2);
+  color: #ffd54f;
+}
+.green-glow {
+  background: rgba(76, 175, 80, 0.2);
+  color: #81c784;
 }
 
-.hero-content p {
-  margin: 0 0 20px 0;
-  opacity: 0.8;
-  font-size: 0.9rem;
+/* --- Hero Section --- */
+.hero-section {
+  position: relative;
+  padding: 30px;
+  overflow: hidden;
+  background: linear-gradient(
+    135deg,
+    rgba(22, 33, 62, 0.8) 0%,
+    rgba(15, 52, 96, 0.8) 100%
+  );
+
+  .hero-content {
+    position: relative;
+    z-index: 2;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .sub-greeting {
+    display: block;
+    font-size: 0.9rem;
+    color: $text-secondary;
+    margin-bottom: 4px;
+  }
+
+  h1.username {
+    margin: 0;
+    font-size: 1.5rem;
+    font-weight: 300;
+
+    .highlight {
+      font-weight: 700;
+      color: $text-primary;
+    }
+  }
+
+  .stats-box {
+    text-align: right;
+
+    .stat-item {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .label {
+      font-size: 0.8rem;
+      color: $text-secondary;
+    }
+    .value {
+      font-size: 1.5rem;
+      font-weight: 700;
+    }
+  }
+
+  .hero-bg-decoration {
+    position: absolute;
+    top: -50%;
+    right: -10%;
+    width: 300px;
+    height: 300px;
+    background: radial-gradient(
+      circle,
+      rgba(197, 160, 89, 0.15) 0%,
+      transparent 70%
+    );
+    border-radius: 50%;
+    z-index: 1;
+    pointer-events: none;
+  }
 }
 
-.primary-btn {
-  background: #e94560; /* Red Accent */
-  color: white;
-  border: none;
-  padding: 12px 24px;
-  border-radius: 8px;
-  font-weight: bold;
-  font-size: 1rem;
-  cursor: pointer;
-  width: 100%;
-  max-width: 200px;
-  box-shadow: 0 4px 6px rgba(233, 69, 96, 0.3);
-  transition: transform 0.2s;
-}
-
-.primary-btn:active {
-  transform: scale(0.98);
-}
-
-.menu-grid {
+/* --- Quick Menu --- */
+.quick-menu {
   display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 15px;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 16px;
+
+  .menu-card {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 20px;
+    text-decoration: none;
+    transition:
+      transform 0.2s,
+      background 0.2s;
+
+    &:hover {
+      transform: translateY(-5px);
+      background: rgba(255, 255, 255, 0.1);
+    }
+
+    .icon-box {
+      width: 50px;
+      height: 50px;
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.5rem;
+      margin-bottom: 12px;
+    }
+
+    .menu-title {
+      font-weight: 700;
+      font-size: 1rem;
+      color: $text-primary;
+      margin-bottom: 4px;
+    }
+
+    .menu-desc {
+      font-size: 0.75rem;
+      color: $text-secondary;
+    }
+  }
 }
 
-.menu-item {
-  background: white;
-  padding: 20px 15px;
-  border-radius: 12px;
-  text-decoration: none;
-  color: #333;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  text-align: center;
-  gap: 8px;
-  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
-  transition:
-    transform 0.2s,
-    box-shadow 0.2s;
-  border: 1px solid transparent;
-}
-
-.menu-item:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
-}
-
-.menu-item.highlight {
-  border: 1px solid #e94560;
-  background: #fff5f6;
-}
-
-.menu-item .icon {
-  font-size: 2rem;
-  margin-bottom: 5px;
-}
-
-.menu-item .text {
-  font-weight: 700;
-  font-size: 1rem;
-  color: #16213e;
-}
-
-.menu-item .sub-text {
-  font-size: 0.75rem;
-  color: #888;
-}
-
-.dashboard-card {
-  background: white;
-  padding: 20px;
-  border-radius: 12px;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
-  border-left: 5px solid #c5a059; /* Gold border */
-}
-
-.user-info {
-  display: flex;
-  flex-direction: column;
-}
-
-.greeting {
-  font-size: 0.8rem;
-  color: #666;
-}
-
-.username {
-  font-size: 1rem;
-  color: #333;
-}
-
-.points {
-  text-align: right;
-  display: flex;
-  flex-direction: column;
-}
-
-.points span {
-  font-size: 0.7rem;
-  color: #888;
-}
-
-.points strong {
-  font-size: 1.1rem;
-  color: #c5a059;
-}
-
-/* Dashboard Section Styles */
-.dashboard-section {
-  margin-top: 10px;
+/* --- Content Grid --- */
+.content-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 30px;
 }
 
 .section-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 15px;
+  margin-bottom: 16px;
+  padding: 0 4px;
+
+  h3 {
+    margin: 0;
+    font-size: 1.2rem;
+    font-weight: 700;
+    color: $text-primary;
+  }
+
+  .more-btn {
+    font-size: 0.85rem;
+    color: $text-secondary;
+    text-decoration: none;
+    transition: color 0.2s;
+    &:hover {
+      color: $color-primary;
+    }
+  }
 }
 
-.section-header h3 {
-  margin: 0;
-  font-size: 1.1rem;
-  color: #16213e;
+/* --- List Styling (Bad Users) --- */
+.list-container {
+  padding: 10px;
 }
 
-.more-link {
-  font-size: 0.8rem;
-  color: #888;
-  text-decoration: none;
-}
-
-.bad-user-list {
+.list-item {
   display: flex;
-  flex-direction: column;
-  gap: 10px;
+  align-items: center;
+  padding: 12px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  gap: 12px;
+
+  &:last-child {
+    border-bottom: none;
+  }
+
+  .user-avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: #333;
+    color: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    font-size: 1.1rem;
+  }
+
+  .info-col {
+    flex: 1;
+    min-width: 0; /* Text truncation fix */
+
+    .name-row {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      margin-bottom: 2px;
+
+      .name {
+        font-weight: 700;
+        color: $text-primary;
+      }
+      .phone {
+        font-size: 0.85rem;
+        color: $text-secondary;
+      }
+    }
+
+    .reason {
+      font-size: 0.85rem;
+      color: #ff6b6b;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+  }
+
+  .date-col {
+    font-size: 0.75rem;
+    color: $text-secondary;
+  }
 }
 
-.bad-user-card {
-  background: white;
-  padding: 15px;
-  border-radius: 8px;
-  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
-  border-left: 3px solid #e94560;
-}
-
-.bad-user-name {
-  font-weight: bold;
-  font-size: 0.95rem;
-}
-
-.bad-user-name .phone {
-  font-size: 0.8rem;
-  color: #666;
-  font-weight: normal;
-}
-
-.bad-user-reason {
-  margin-top: 5px;
-  font-size: 0.9rem;
-  color: #555;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-.bad-user-date {
-  margin-top: 5px;
-  font-size: 0.75rem;
-  color: #999;
-  text-align: right;
-}
-
+/* --- Product Grid --- */
 .product-grid {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
-  gap: 12px;
+  gap: 16px;
 }
 
 .product-card {
-  background: white;
-  border-radius: 8px;
   overflow: hidden;
-  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
   cursor: pointer;
+
+  .product-thumb {
+    position: relative;
+    width: 100%;
+    aspect-ratio: 4 / 3;
+    background: #2a2a2a;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .no-image-placeholder {
+      color: #555;
+    }
+
+    .status-badge {
+      position: absolute;
+      top: 8px;
+      left: 8px;
+      padding: 4px 8px;
+      border-radius: 4px;
+      font-size: 0.7rem;
+      font-weight: bold;
+
+      &.pending {
+        background: rgba(255, 193, 7, 0.9);
+        color: black;
+      }
+      &.sale {
+        background: rgba(30, 136, 229, 0.9);
+        color: white;
+      }
+      &.reserved {
+        background: rgba(255, 87, 34, 0.9);
+        color: white;
+      }
+      &.sold {
+        background: rgba(158, 158, 158, 0.9);
+        color: white;
+      }
+    }
+  }
+
+  .product-details {
+    padding: 12px;
+
+    .title {
+      font-size: 0.95rem;
+      font-weight: 600;
+      margin: 0 0 6px 0;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      color: $text-primary;
+    }
+
+    .price-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+
+      .price {
+        font-weight: 700;
+        color: $color-accent;
+        font-size: 1rem;
+      }
+      .location {
+        font-size: 0.75rem;
+        color: $text-secondary;
+      }
+    }
+  }
 }
 
-.product-info {
-  padding: 12px;
+/* --- Mobile Responsiveness --- */
+@media (max-width: 600px) {
+  .quick-menu {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .hero-content {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 16px;
+
+    .stats-box {
+      width: 100%;
+      text-align: left;
+      border-top: 1px solid rgba(255, 255, 255, 0.1);
+      padding-top: 12px;
+    }
+  }
 }
 
-.product-title {
-  font-size: 0.9rem;
-  font-weight: bold;
-  margin: 5px 0;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-.product-price {
-  font-size: 0.95rem;
-  color: #16213e;
-  font-weight: bold;
-}
-
-.product-meta {
-  font-size: 0.75rem;
-  color: #888;
-  margin-top: 4px;
-}
-
-.badge {
-  font-size: 0.7rem;
-  padding: 2px 6px;
-  border-radius: 4px;
-  font-weight: bold;
-  text-transform: uppercase;
-}
-
-.badge.sale {
-  background: #e3f2fd;
-  color: #1976d2;
-}
-
-.badge.reserved {
-  background: #fff3e0;
-  color: #f57c00;
-}
-
-.badge.sold {
-  background: #eeeeee;
-  color: #9e9e9e;
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 </style>
