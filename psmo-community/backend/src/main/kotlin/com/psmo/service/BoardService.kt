@@ -6,7 +6,7 @@ import com.psmo.repository.BoardRepository
 
 class BoardService(private val repository: BoardRepository) {
 
-    fun createPost(userId: Long, request: PostCreateRequest): PostResponse {
+    suspend fun createPost(userId: Long, request: PostCreateRequest): PostResponse {
         val post = repository.createPost(userId, request)
         return PostResponse(
             post.id.value, post.title, post.content, post.category, post.author.toDomain().toResponse(),
@@ -16,7 +16,7 @@ class BoardService(private val repository: BoardRepository) {
         )
     }
 
-    fun getPosts(page: Int, size: Int, category: BoardCategory?): List<PostResponse> {
+    suspend fun getPosts(page: Int, size: Int, category: BoardCategory?): List<PostResponse> {
         return repository.findPosts(page, size, category).map { post ->
             PostResponse(
                 post.id.value, post.title, post.content, post.category, post.author.toDomain().toResponse(),
@@ -27,7 +27,7 @@ class BoardService(private val repository: BoardRepository) {
         }
     }
 
-    fun getPostDetail(id: Long, userId: Long?): PostResponse? {
+    suspend fun getPostDetail(id: Long, userId: Long?): PostResponse? {
         val post = repository.findPostById(id) ?: return null
         repository.incrementViewCount(id)
         val isLiked = repository.isLiked(id, userId)
@@ -40,14 +40,14 @@ class BoardService(private val repository: BoardRepository) {
         )
     }
 
-    fun addComment(postId: Long, userId: Long, content: String): CommentResponse {
+    suspend fun addComment(postId: Long, userId: Long, content: String): CommentResponse {
         val comment = repository.createComment(postId, userId, content)
         return CommentResponse(
             comment.id.value, comment.content, comment.author.toDomain().toResponse(), comment.createdAt.toString()
         )
     }
     
-    fun getComments(postId: Long): List<CommentResponse> {
+    suspend fun getComments(postId: Long): List<CommentResponse> {
         return repository.findComments(postId).map {
              CommentResponse(
                 it.id.value, it.content, it.author.toDomain().toResponse(), it.createdAt.toString()
@@ -55,7 +55,7 @@ class BoardService(private val repository: BoardRepository) {
         }
     }
 
-    fun toggleLike(postId: Long, userId: Long): Boolean {
+    suspend fun toggleLike(postId: Long, userId: Long): Boolean {
         return repository.toggleLike(postId, userId)
     }
 }

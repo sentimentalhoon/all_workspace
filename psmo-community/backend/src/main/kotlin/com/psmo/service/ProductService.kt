@@ -20,7 +20,7 @@ import java.time.format.DateTimeFormatter
  */
 class ProductService(private val repository: ProductRepository) {
 
-    fun createProduct(request: ProductCreateRequest, sellerId: Long, images: List<Pair<String, com.psmo.model.ProductMediaType>> = emptyList()): ProductResponse {
+    suspend fun createProduct(request: ProductCreateRequest, sellerId: Long, images: List<Pair<String, com.psmo.model.ProductMediaType>> = emptyList()): ProductResponse {
         val product = repository.create(request, sellerId)
         
         // Save Images
@@ -43,7 +43,7 @@ class ProductService(private val repository: ProductRepository) {
     /**
      * 상품 목록을 가져와서 화면에 보여줄 수 있는 형태(DTO)로 변환합니다.
      */
-    fun getProducts(page: Int, size: Int, category: String?): List<ProductResponse> {
+    suspend fun getProducts(page: Int, size: Int, category: String?): List<ProductResponse> {
         val categoryEnum = category?.let { 
             try { com.psmo.model.ProductCategory.valueOf(it) } catch (e: Exception) { null } 
         }
@@ -69,7 +69,7 @@ class ProductService(private val repository: ProductRepository) {
         }
     }
 
-    fun getProductById(id: Long): ProductResponse? {
+    suspend fun getProductById(id: Long): ProductResponse? {
         val row = repository.findById(id) ?: return null
         val product = row.toProduct()
         val user = row.toUser()
@@ -88,7 +88,7 @@ class ProductService(private val repository: ProductRepository) {
         ).toResponse(user.toResponse())
     }
     
-    fun updateProduct(id: Long, request: ProductUpdateRequest, userId: Long): ProductResponse? {
+    suspend fun updateProduct(id: Long, request: ProductUpdateRequest, userId: Long): ProductResponse? {
         val existing = getProductById(id) ?: return null
         if (existing.seller.id != userId) {
             throw IllegalArgumentException("Not the owner of this product")

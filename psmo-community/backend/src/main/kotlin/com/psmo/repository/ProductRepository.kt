@@ -13,7 +13,8 @@ import com.psmo.model.toProduct
 import io.ktor.server.config.ApplicationConfig
 import org.jetbrains.exposed.sql.*
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
-import org.jetbrains.exposed.sql.transactions.transaction
+import kotlinx.coroutines.Dispatchers
+import org.jetbrains.exposed.sql.transactions.experimental.newSuspendedTransaction
 
 /**
  * 상품 관련 데이터를 직접 DB에 저장하거나 꺼내오는 역할을 합니다.
@@ -26,7 +27,7 @@ class ProductRepository(private val config: ApplicationConfig) {
      * 상품을 새로 등록합니다.
      * transaction 블록: "이 작업들은 모두 성공하거나, 하나라도 실패하면 시도조차 안 한 것으로 하겠다"는 약속입니다.
      */
-    fun create(request: ProductCreateRequest, sellerId: Long): Product = transaction(database) {
+    suspend fun create(request: ProductCreateRequest, sellerId: Long): Product = newSuspendedTransaction(Dispatchers.IO) {
         val id = Products.insertAndGetId {
             it[Products.title] = request.title
             it[Products.description] = request.description
@@ -61,7 +62,7 @@ class ProductRepository(private val config: ApplicationConfig) {
      * size: 한 번에 몇 개씩 보여줄지
      * category: 특정 카테고리만 보고 싶을 때 (없으면 전체 조회)
      */
-    fun findAll(page: Int, size: Int, category: ProductCategory?): List<ResultRow> = transaction(database) {
+    suspend fun findAll(page: Int, size: Int, category: ProductCategory?): List<ResultRow> = newSuspendedTransaction(Dispatchers.IO) {
         // 상품 테이블(Products)과 사용자 테이블(Users)을 연결(Inner Join)해서 판매자 정보도 같이 가져옵니다.
         // 부동산 정보(RealEstate)는 있을 수도 있고 없을 수도 있어서 Left Join을 사용합니다.
         val query = (Products innerJoin Users).leftJoin(ProductRealEstateInfos) { Products.id eq ProductRealEstateInfos.id }.selectAll()
@@ -72,11 +73,12 @@ class ProductRepository(private val config: ApplicationConfig) {
 
         // 최신순(내림차순)으로 정렬하고 필요한 개수만 잘라서 가져옵니다.
         query.orderBy(Products.createdAt to SortOrder.DESC)
-            .limit(size, offset = ((page - 1) * size).toLong())
+            .limit(size)
+            .offset(((page - 1) * size).toLong())
             .toList()
     }
 
-    fun findById(id: Long): ResultRow? = transaction(database) {
+    suspend fun findById(id: Long): ResultRow? = newSuspendedTransaction(Dispatchers.IO) {
         (Products innerJoin Users).leftJoin(ProductRealEstateInfos) { Products.id eq ProductRealEstateInfos.id }.selectAll()
             .andWhere { Products.id eq id }
             .singleOrNull()
@@ -85,14 +87,14 @@ class ProductRepository(private val config: ApplicationConfig) {
     /**
      * 특정 상품의 이미지 목록을 가져옵니다.
      */
-    fun getImages(productId: Long): List<ResultRow> = transaction(database) {
+    suspend fun getImages(productId: Long): List<ResultRow> = newSuspendedTransaction(Dispatchers.IO) {
         ProductImages.selectAll()
             .andWhere { ProductImages.productId eq productId }
             .orderBy(ProductImages.orderIndex to SortOrder.ASC) // 순서대로 정렬
             .toList()
     }
     
-    fun saveImages(productId: Long, images: List<Pair<String, com.psmo.model.ProductMediaType>>) = transaction(database) {
+    suspend fun saveImages(productId: Long, images: List<Pair<String, com.psmo.model.ProductMediaType>>) = newSuspendedTransaction(Dispatchers.IO) {
         // Clear existing (if this becomes a full replacement strategy, otherwise append)
         // For simplicity in create, just append. For update, might need logic.
         // Assuming append for now or handled by service.
@@ -106,7 +108,7 @@ class ProductRepository(private val config: ApplicationConfig) {
         }
     }
     
-    fun update(id: Long, request: ProductUpdateRequest): Boolean = transaction(database) {
+    suspend fun update(id: Long, request: ProductUpdateRequest): Boolean = newSuspendedTransaction(Dispatchers.IO) {
         val updated = Products.update({ Products.id eq id }) { stmt ->
             request.title?.let { stmt[Products.title] = it }
             request.description?.let { stmt[Products.description] = it }

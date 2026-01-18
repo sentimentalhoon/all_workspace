@@ -7,12 +7,13 @@ import com.psmo.model.dto.PostCreateRequest
 import io.ktor.server.config.ApplicationConfig
 import org.jetbrains.exposed.sql.*
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
-import org.jetbrains.exposed.sql.transactions.transaction
+import kotlinx.coroutines.Dispatchers
+import org.jetbrains.exposed.sql.transactions.experimental.newSuspendedTransaction
 
 class BoardRepository(private val config: ApplicationConfig) {
     private val database by lazy { DatabaseConfig.connectToDatabase(config) }
 
-    fun createPost(userId: Long, request: PostCreateRequest): Post = transaction(database) {
+    suspend fun createPost(userId: Long, request: PostCreateRequest): Post = newSuspendedTransaction(Dispatchers.IO) {
         val user = UserEntity.findById(userId) ?: throw IllegalArgumentException("User not found")
         val post = Post.new {
             this.title = request.title
@@ -31,23 +32,24 @@ class BoardRepository(private val config: ApplicationConfig) {
         post
     }
 
-    fun findPosts(page: Int, size: Int, category: BoardCategory?): List<Post> = transaction(database) {
+    suspend fun findPosts(page: Int, size: Int, category: BoardCategory?): List<Post> = newSuspendedTransaction(Dispatchers.IO) {
         val query = Posts.selectAll()
         category?.let {
             query.andWhere { Posts.category eq it }
         }
         
         val sortedQuery = query.orderBy(Posts.createdAt to SortOrder.DESC)
-            .limit(size, offset = ((page - 1) * size).toLong())
+            .limit(size)
+            .offset(((page - 1) * size).toLong())
         
         Post.wrapRows(sortedQuery).toList()
     }
 
-    fun findPostById(id: Long): Post? = transaction(database) {
+    suspend fun findPostById(id: Long): Post? = newSuspendedTransaction(Dispatchers.IO) {
         Post.findById(id)
     }
 
-    fun createComment(postId: Long, userId: Long, content: String): Comment = transaction(database) {
+    suspend fun createComment(postId: Long, userId: Long, content: String): Comment = newSuspendedTransaction(Dispatchers.IO) {
         val post = Post.findById(postId) ?: throw IllegalArgumentException("Post not found")
         val user = UserEntity.findById(userId) ?: throw IllegalArgumentException("User not found")
         
@@ -58,13 +60,13 @@ class BoardRepository(private val config: ApplicationConfig) {
         }
     }
     
-    fun findComments(postId: Long): List<Comment> = transaction(database) {
+    suspend fun findComments(postId: Long): List<Comment> = newSuspendedTransaction(Dispatchers.IO) {
         Comment.find { Comments.postId eq postId }
             .orderBy(Comments.createdAt to SortOrder.ASC)
             .toList()
     }
 
-    fun toggleLike(postId: Long, userId: Long): Boolean = transaction(database) {
+    suspend fun toggleLike(postId: Long, userId: Long): Boolean = newSuspendedTransaction(Dispatchers.IO) {
         // Returns true if liked, false if unliked
         val existing = PostLikes.selectAll().where { (PostLikes.postId eq postId) and (PostLikes.userId eq userId) }.count() > 0
         if (existing) {
@@ -89,12 +91,12 @@ class BoardRepository(private val config: ApplicationConfig) {
         }
     }
     
-    fun isLiked(postId: Long, userId: Long?): Boolean = transaction(database) {
-        if (userId == null) return@transaction false
+    suspend fun isLiked(postId: Long, userId: Long?): Boolean = newSuspendedTransaction(Dispatchers.IO) {
+        if (userId == null) return@newSuspendedTransaction false
         PostLikes.selectAll().where { (PostLikes.postId eq postId) and (PostLikes.userId eq userId) }.count() > 0
     }
 
-    fun incrementViewCount(postId: Long) = transaction(database) {
+    suspend fun incrementViewCount(postId: Long) = newSuspendedTransaction(Dispatchers.IO) {
         Posts.update({ Posts.id eq postId }) {
             with(SqlExpressionBuilder) {
                 it.update(viewCount, viewCount + 1)
