@@ -6,6 +6,10 @@ const route = useRoute();
 const router = useRouter();
 const { user } = storeToRefs(useAuthStore());
 
+definePageMeta({
+  auth: false,
+});
+
 const reportId = Number(route.params.id);
 const item = ref<BadUser | null>(null);
 const loading = ref(true);

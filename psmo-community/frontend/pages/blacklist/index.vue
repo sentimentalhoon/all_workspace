@@ -90,6 +90,10 @@
 const { searchBadUsers } = useBlacklist();
 const router = useRouter();
 
+definePageMeta({
+  auth: false,
+});
+
 // --- Search Logic ---
 const searchKeyword = ref("");
 const searchResults = ref<any[]>([]);
