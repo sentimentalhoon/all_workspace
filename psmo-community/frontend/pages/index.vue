@@ -167,7 +167,7 @@ onMounted(async () => {
               </div>
               <img
                 v-else
-                :src="product.images?.[0]?.url"
+                :src="product.images?.[0]?.thumbnailUrl"
                 alt="상품 이미지"
                 loading="lazy"
               />
