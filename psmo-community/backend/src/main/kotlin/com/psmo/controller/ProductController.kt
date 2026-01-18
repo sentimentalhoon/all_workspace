@@ -131,14 +131,17 @@ fun Route.productRoutes(service: ProductService, imageService: ImageService) {
              val request = call.receive<ProductUpdateRequest>()
              val principal = call.principal<JWTPrincipal>()
              val userId = principal?.subject?.toLongOrNull()
+             val role = principal?.payload?.getClaim("role")?.asString()
 
              if (userId == null) {
                  call.respond(HttpStatusCode.Unauthorized, mapOf("status" to "error", "message" to "Invalid token"))
                  return@put
              }
              
+             val isAdmin = role == "ADMIN" || role == "SYSTEM" || role == "MANAGER"
+
              try {
-                val updated = service.updateProduct(params.id, request, userId)
+                val updated = service.updateProduct(params.id, request, userId, isAdmin)
                 if (updated != null) {
                     call.respond(mapOf("status" to "success", "data" to updated))
                 } else {
@@ -153,14 +156,17 @@ fun Route.productRoutes(service: ProductService, imageService: ImageService) {
         delete<MarketResources.Products.Id> { params ->
             val principal = call.principal<JWTPrincipal>()
             val userId = principal?.subject?.toLongOrNull()
+             val role = principal?.payload?.getClaim("role")?.asString()
 
             if (userId == null) {
                 call.respond(HttpStatusCode.Unauthorized, mapOf("status" to "error", "message" to "Invalid token"))
                 return@delete
             }
 
+            val isAdmin = role == "ADMIN" || role == "SYSTEM" || role == "MANAGER"
+
             try {
-                val deleted = service.deleteProduct(params.id, userId)
+                val deleted = service.deleteProduct(params.id, userId, isAdmin)
                 if (deleted) {
                     call.respond(mapOf("status" to "success"))
                 } else {

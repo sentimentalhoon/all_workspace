@@ -88,18 +88,20 @@ class ProductService(private val repository: ProductRepository) {
         ).toResponse(user.toResponse())
     }
     
-    suspend fun updateProduct(id: Long, request: ProductUpdateRequest, userId: Long): ProductResponse? {
+    suspend fun updateProduct(id: Long, request: ProductUpdateRequest, userId: Long, isAdmin: Boolean = false): ProductResponse? {
         val existing = getProductById(id) ?: return null
-        if (existing.seller.id != userId) {
+        
+        // Owner Check bypassed if Admin
+        if (existing.seller.id != userId && !isAdmin) {
             throw IllegalArgumentException("Not the owner of this product")
         }
         
         repository.update(id, request)
         return getProductById(id)
     }
-    suspend fun deleteProduct(id: Long, userId: Long): Boolean {
+    suspend fun deleteProduct(id: Long, userId: Long, isAdmin: Boolean = false): Boolean {
         val existing = getProductById(id) ?: return false
-        if (existing.seller.id != userId) {
+        if (existing.seller.id != userId && !isAdmin) {
             throw IllegalArgumentException("Not the owner of this product")
         }
         return repository.delete(id)
