@@ -1,0 +1,22 @@
+> Task :checkKotlinGradlePluginConfigurationErrors SKIPPED
+
+> Task :compileKotlin FAILED
+e: file:///C:/Users/say4u/workspace/psmo-community/backend/src/main/kotlin/com/psmo/repository/ProductRepository.kt:114:38 'fun slice(column: Expression<*>, vararg columns: Expression<*>): FieldSet' is deprecated. As part of SELECT DSL design changes, this will be removed in future releases.
+e: file:///C:/Users/say4u/workspace/psmo-community/backend/src/main/kotlin/com/psmo/repository/ProductRepository.kt:115:14 'fun FieldSet.select(where: SqlExpressionBuilder.() -> Op<Boolean>): Query' is deprecated. As part of SELECT DSL design changes, this will be removed in future releases.
+e: file:///C:/Users/say4u/workspace/psmo-community/backend/src/main/kotlin/com/psmo/repository/ProductRepository.kt:130:58 Unresolved reference 'inList'.
+
+FAILURE: Build failed with an exception.
+
+* What went wrong:
+Execution failed for task ':compileKotlin'.
+> A failure occurred while executing org.jetbrains.kotlin.compilerRunner.GradleCompilerRunnerWithWorkers$GradleKotlinCompilerWorkAction
+   > Compilation error. See log for more details
+
+* Try:
+> Run with --stacktrace option to get the stack trace.
+> Run with --info or --debug option to get more log output.
+> Run with --scan to get full insights.
+> Get more help at https://help.gradle.org.
+
+BUILD FAILED in 4s
+1 actionable task: 1 executed

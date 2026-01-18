@@ -1,0 +1,7 @@
+> Task :checkKotlinGradlePluginConfigurationErrors SKIPPED
+
+> Task :compileKotlin
+w: file:///C:/Users/say4u/workspace/psmo-community/backend/src/main/kotlin/com/psmo/service/TelegramBotService.kt:215:57 Unchecked cast of 'kotlin.collections.Map<*, *>!' to 'kotlin.collections.Map<kotlin.String, kotlin.Any>'.
+
+BUILD SUCCESSFUL in 11s
+1 actionable task: 1 executed

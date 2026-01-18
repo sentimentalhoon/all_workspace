@@ -13,6 +13,7 @@ import com.psmo.model.toProduct
 import io.ktor.server.config.ApplicationConfig
 import org.jetbrains.exposed.sql.*
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
+import org.jetbrains.exposed.sql.SqlExpressionBuilder.inList
 import kotlinx.coroutines.Dispatchers
 import org.jetbrains.exposed.sql.transactions.experimental.newSuspendedTransaction
 
@@ -111,9 +112,11 @@ class ProductRepository(private val config: ApplicationConfig) {
     
     suspend fun saveImages(productId: Long, images: List<Pair<String, com.psmo.model.ProductMediaType>>) = newSuspendedTransaction(Dispatchers.IO) {
         // Find max order index to append
-        val maxOrder = ProductImages.slice(ProductImages.orderIndex.max())
-            .select { ProductImages.productId eq productId }
-            .singleOrNull()?.get(ProductImages.orderIndex.max()) ?: -1
+        val maxExpr = ProductImages.orderIndex.max()
+        val maxOrder = ProductImages.select(maxExpr)
+            .where { ProductImages.productId eq productId }
+            .singleOrNull()
+            ?.get(maxExpr) ?: -1
 
         images.forEachIndexed { index, (url, type) -> 
              ProductImages.insert {
