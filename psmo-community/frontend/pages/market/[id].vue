@@ -222,59 +222,59 @@ onMounted(async () => {
       </div>
 
       <div class="action-spacer"></div>
+    </div>
 
-      <!-- Bottom Floating Action Bar -->
-      <div class="action-bar-wrapper">
-        <div
-          v-if="product.status === 'PENDING' && isAdmin"
-          class="admin-actions glass-panel-sm"
-        >
-          <p class="admin-notice">📢 관리자 승인 대기 중</p>
-          <div class="btn-group">
-            <button @click="handleStatusChange('SALE')" class="approve-btn">
-              승인 (공개)
-            </button>
-            <button @click="handleStatusChange('DELETED')" class="reject-btn">
-              반려 (삭제)
-            </button>
-          </div>
+    <!-- Bottom Floating Action Bar -->
+    <div class="action-bar-wrapper">
+      <div
+        v-if="product.status === 'PENDING' && isAdmin"
+        class="admin-actions glass-panel-sm"
+      >
+        <p class="admin-notice">📢 관리자 승인 대기 중</p>
+        <div class="btn-group">
+          <button @click="handleStatusChange('SALE')" class="approve-btn">
+            승인 (공개)
+          </button>
+          <button @click="handleStatusChange('DELETED')" class="reject-btn">
+            반려 (삭제)
+          </button>
         </div>
+      </div>
 
-        <div class="action-bar glass-panel">
-          <!-- Owner Actions -->
-          <template v-if="isOwner">
-            <button @click="handleDelete" class="delete-btn">삭제</button>
-            <button
-              v-if="product.status === 'SALE'"
-              @click="handleStatusChange('SOLD')"
-              class="sold-btn"
-            >
-              판매 완료 처리
-            </button>
-            <button
-              v-else-if="product.status === 'SOLD'"
-              class="sold-btn disabled"
-              disabled
-            >
-              판매 완료됨
-            </button>
-          </template>
+      <div class="action-bar glass-panel">
+        <!-- Owner Actions -->
+        <template v-if="isOwner">
+          <button @click="handleDelete" class="delete-btn">삭제</button>
+          <button
+            v-if="product.status === 'SALE'"
+            @click="handleStatusChange('SOLD')"
+            class="sold-btn"
+          >
+            판매 완료 처리
+          </button>
+          <button
+            v-else-if="product.status === 'SOLD'"
+            class="sold-btn disabled"
+            disabled
+          >
+            판매 완료됨
+          </button>
+        </template>
 
-          <template v-else>
-            <!-- Contact Buttons -->
-            <button class="chat-btn">💬 채팅하기</button>
-            <a
-              :href="`tel:${product.realEstate?.contactNumber}`"
-              v-if="
-                product.category === 'PC_BUSINESS' &&
-                product.realEstate?.contactNumber
-              "
-              class="call-btn"
-              >📞 전화하기</a
-            >
-            <a href="#" v-else class="call-btn disabled">📞 연락처 없음</a>
-          </template>
-        </div>
+        <template v-else>
+          <!-- Contact Buttons -->
+          <button class="chat-btn">💬 채팅하기</button>
+          <a
+            :href="`tel:${product.realEstate?.contactNumber}`"
+            v-if="
+              product.category === 'PC_BUSINESS' &&
+              product.realEstate?.contactNumber
+            "
+            class="call-btn"
+            >📞 전화하기</a
+          >
+          <a href="#" v-else class="call-btn disabled">📞 연락처 없음</a>
+        </template>
       </div>
     </div>
   </div>
