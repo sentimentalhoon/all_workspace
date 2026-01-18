@@ -60,8 +60,12 @@ class ProductRepository(private val config: ApplicationConfig) {
             }
         }
 
-        // 방금 만든 상품 정보를 다시 읽어서 반환합니다.
-        findById(id.value)!!.toProduct()
+        // 방금 만든 상품 정보를 다시 읽어서 반환합니다. (같은 트랜잭션 내에서 조회)
+        (Products innerJoin Users).leftJoin(ProductRealEstateInfos) { Products.id eq ProductRealEstateInfos.id }
+            .selectAll()
+            .andWhere { Products.id eq id }
+            .single()
+            .toProduct()
     }
 
     /**
