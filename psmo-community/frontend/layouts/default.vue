@@ -6,10 +6,22 @@
 const route = useRoute();
 const router = useRouter();
 
-// 하단 네비게이션 표시 여부
-const showBottomNav = computed(
-  () => route.path !== "/login" && route.path !== "/admin",
-);
+// 하단 네비게이션 표시 여부 (로그인, 관리자, 그리고 상세/작성 페이지에서는 숨김)
+const showBottomNav = computed(() => {
+  const path = route.path;
+  const hideOnPaths = ["/login", "/admin"];
+  if (hideOnPaths.some((p) => path.startsWith(p))) return false;
+
+  // 서브 페이지(상세, 글쓰기 등)에서는 하단 탭바 숨기기 (Native App 스타일)
+  // 예: /market (보임), /market/create (숨김), /market/123 (숨김)
+  // 예: /community (보임), /community/write (숨김), /community/123 (숨김)
+  // 단, /my 는 항상 보임
+  if (path === "/market" || path === "/community") return true;
+  if (path.startsWith("/market/") || path.startsWith("/community/"))
+    return false;
+
+  return true;
+});
 
 // --- Smart Header Logic ---
 

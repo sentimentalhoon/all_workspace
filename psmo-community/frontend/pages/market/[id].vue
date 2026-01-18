@@ -531,7 +531,7 @@ $text-secondary: #b0b0b0;
 /* Action Bar */
 .action-bar-wrapper {
   position: fixed;
-  bottom: 20px;
+  bottom: 10px; /* 조금 더 아래로 내림 */
   left: 50%;
   transform: translateX(-50%);
   width: 95%;
