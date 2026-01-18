@@ -67,7 +67,12 @@ fun Route.productRoutes(service: ProductService) {
         // 상품 등록 (로그인 필요)
         post<MarketResources.Products> {
             val principal = call.principal<JWTPrincipal>()
-            val userId = principal!!.payload.getClaim("id").asLong()
+            val userId = principal?.subject?.toLongOrNull()
+            
+            if (userId == null) {
+                call.respond(HttpStatusCode.Unauthorized, mapOf("status" to "error", "message" to "Invalid token"))
+                return@post
+            }
 
             // Handle Multipart (파일 업로드 처리)
             // 상품 정보(JSON)와 사진 파일(File)이 섞여서 들어오기 때문에 복잡한 처리가 필요합니다.
@@ -124,7 +129,12 @@ fun Route.productRoutes(service: ProductService) {
         put<MarketResources.Products.Id> { params ->
              val request = call.receive<ProductUpdateRequest>()
              val principal = call.principal<JWTPrincipal>()
-             val userId = principal!!.payload.getClaim("id").asLong()
+             val userId = principal?.subject?.toLongOrNull()
+
+             if (userId == null) {
+                 call.respond(HttpStatusCode.Unauthorized, mapOf("status" to "error", "message" to "Invalid token"))
+                 return@put
+             }
              
              try {
                 val updated = service.updateProduct(params.id, request, userId)
@@ -141,7 +151,12 @@ fun Route.productRoutes(service: ProductService) {
         // 상품 삭제 (Soft Delete)
         delete<MarketResources.Products.Id> { params ->
             val principal = call.principal<JWTPrincipal>()
-            val userId = principal!!.payload.getClaim("id").asLong()
+            val userId = principal?.subject?.toLongOrNull()
+
+            if (userId == null) {
+                call.respond(HttpStatusCode.Unauthorized, mapOf("status" to "error", "message" to "Invalid token"))
+                return@delete
+            }
 
             try {
                 val deleted = service.deleteProduct(params.id, userId)
@@ -161,7 +176,12 @@ fun Route.productRoutes(service: ProductService) {
         put<MarketResources.Products.Id.Status> { params ->
              val request = call.receive<com.psmo.model.dto.ProductStatusUpdateRequest>()
              val principal = call.principal<JWTPrincipal>()
-             val userId = principal!!.payload.getClaim("id").asLong()
+             val userId = principal?.subject?.toLongOrNull()
+             
+             if (userId == null) {
+                 call.respond(HttpStatusCode.Unauthorized, mapOf("status" to "error", "message" to "Invalid token"))
+                 return@put
+             }
              // val role = principal.payload.getClaim("role").asString() // TODO: Use role for strict check
              
              // Currently allows Owner or Admin to change status (logic in Service/Repo is generic, need specific rules)
