@@ -17,6 +17,7 @@ services:
       - certbot_www:/var/www/certbot:ro
     networks:
       - proxy-network
+      - psmo-network
     restart: unless-stopped
     depends_on:
       - psmo-frontend
