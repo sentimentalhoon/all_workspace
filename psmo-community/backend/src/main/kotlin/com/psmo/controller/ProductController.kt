@@ -3,6 +3,7 @@ package com.psmo.controller
 import com.psmo.model.dto.ProductCreateRequest
 import com.psmo.model.dto.ProductUpdateRequest
 import com.psmo.service.ProductService
+import com.psmo.service.ImageService
 import io.ktor.http.*
 import io.ktor.resources.*
 import io.ktor.server.application.*
@@ -22,6 +23,8 @@ import org.koin.ktor.ext.inject
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import io.ktor.utils.io.jvm.javaio.toInputStream
+
+
 
 /**
  * 장터(Market) API 주소를 정의하는 곳입니다.
@@ -45,11 +48,7 @@ class MarketResources {
     }
 }
 
-import com.psmo.service.ImageService
-
 fun Route.productRoutes(service: ProductService, imageService: ImageService) {
-
-
     get<MarketResources.Products> { params ->
         val products = service.getProducts(params.page, params.size, params.category)
         call.respond(mapOf("status" to "success", "data" to products))
