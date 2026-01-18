@@ -45,6 +45,10 @@ const showBottomNav = computed(
         <span>👤</span>
         <span class="label">마이</span>
       </NuxtLink>
+      <NuxtLink to="/community" class="nav-item" active-class="active">
+        <span>💬</span>
+        <span class="label">소통</span>
+      </NuxtLink>
     </nav>
   </div>
 </template>

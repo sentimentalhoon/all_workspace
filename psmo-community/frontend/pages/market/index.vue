@@ -8,7 +8,10 @@ const router = useRouter();
 const products = ref<Product[]>([]);
 const loading = ref(true);
 const page = ref(1);
-const categoryFilter = ref<string | undefined>("PC_BUSINESS"); // Default to Store Trading
+const route = useRoute();
+const categoryFilter = ref<string | undefined>(
+  (route.query.category as string) || "PC_BUSINESS",
+);
 
 const loadData = async () => {
   loading.value = true;
@@ -21,6 +24,22 @@ const loadData = async () => {
     loading.value = false;
   }
 };
+
+// Watch for route query changes (for deep linking)
+watch(
+  () => route.query.category,
+  (newCat) => {
+    if (newCat) {
+      categoryFilter.value = newCat as string;
+    } else {
+      // If query removed, maybe default? Or stay?
+      // Let's stick to current logic: if query empty, maybe user wants "ALL" or "Default".
+      // If clicking nav, query might be empty.
+    }
+    page.value = 1;
+    loadData();
+  },
+);
 
 const setCategory = (cat?: string) => {
   categoryFilter.value = cat;

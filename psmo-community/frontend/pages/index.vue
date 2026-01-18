@@ -31,7 +31,7 @@ const authStore = useAuthStore();
         <span class="text">매장 거래</span>
         <span class="sub-text">PC방 양도/양수</span>
       </NuxtLink>
-      <NuxtLink to="/parts-market" class="menu-item">
+      <NuxtLink to="/market?category=PC_FULL" class="menu-item">
         <span class="icon">📦</span>
         <span class="text">중고 장터</span>
         <span class="sub-text">PC 부품/집기</span>
