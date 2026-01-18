@@ -50,9 +50,12 @@ SELECT
         WHEN 1 THEN 'RESERVED'
         ELSE 'SOLD'
     END,
-    CASE CAST(FLOOR(RANDOM() * 2) AS INT)
+    CASE CAST(FLOOR(RANDOM() * 5) AS INT)
         WHEN 0 THEN 'PC_FULL'
-        ELSE 'PART'
+        WHEN 1 THEN 'PC_BUSINESS'
+        WHEN 2 THEN 'GPU'
+        WHEN 3 THEN 'MONITOR'
+        ELSE 'ETC'
     END,
     (SELECT id FROM users WHERE telegram_id = 999999999),
     CAST(FLOOR(RANDOM() * 500) AS INT),
