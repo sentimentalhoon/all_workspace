@@ -30,8 +30,15 @@ data class ProductRealEstateDto(
     val monthlyRent: Int,
     val managementFee: Int,
     val averageMonthlyRevenue: Long,
+    val rightsMoney: Long,
     val floor: Int?,
-    val areaMeters: Float?
+    val areaMeters: Float?,
+    val areaPyeong: Float?,
+    val facilities: String?,
+    val moveInDate: String?,
+    val permitStatus: String?,
+    val adminActionHistory: String?,
+    val contactNumber: String?
 )
 
 data class ProductImageDto(
@@ -92,7 +99,9 @@ fun Product.toResponse(seller: UserResponse): ProductResponse {
              ProductRealEstateDto(
                  it.locationCity, it.locationDistrict, it.pcCount, it.deposit, 
                  it.monthlyRent, it.managementFee, it.averageMonthlyRevenue, 
-                 it.floor, it.areaMeters
+                 it.rightsMoney, it.floor, it.areaMeters,
+                 it.areaPyeong, it.facilities, it.moveInDate,
+                 it.permitStatus, it.adminActionHistory, it.contactNumber
              )
         },
         images = this.images.map {

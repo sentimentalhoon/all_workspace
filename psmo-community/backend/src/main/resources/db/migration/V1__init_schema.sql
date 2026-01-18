@@ -63,14 +63,21 @@ CREATE INDEX idx_products_seller_id ON products(seller_id);
 CREATE TABLE product_real_estate_info (
     product_id BIGINT PRIMARY KEY REFERENCES products(id) ON DELETE CASCADE,
     location_city VARCHAR(50) NOT NULL,
-    location_district VARCHAR(50) NOT NULL,
+    location_district VARCHAR(50) NOT NULL, -- "부천북부역 인근" 같은 상세 위치
     pc_count INT NOT NULL DEFAULT 0,
     deposit BIGINT NOT NULL DEFAULT 0,
     monthly_rent INT NOT NULL DEFAULT 0,
+    rights_money BIGINT NOT NULL DEFAULT 0, -- 권리금
     management_fee INT NOT NULL DEFAULT 0,
     average_monthly_revenue BIGINT NOT NULL DEFAULT 0,
     floor INT,
-    area_meters FLOAT
+    area_meters FLOAT,
+    area_pyeong FLOAT, -- 평수
+    facilities TEXT, -- 시설/집기
+    move_in_date VARCHAR(50), -- 입주가능일
+    permit_status VARCHAR(50), -- 허가여부
+    admin_action_history VARCHAR(255), -- 행정처분이력
+    contact_number VARCHAR(20) -- 연락처 (010-...)
 );
 
 CREATE TABLE product_images (

@@ -47,8 +47,15 @@ class ProductRepository(private val config: ApplicationConfig) {
                 it[ProductRealEstateInfos.monthlyRent] = info.monthlyRent
                 it[ProductRealEstateInfos.managementFee] = info.managementFee
                 it[ProductRealEstateInfos.averageMonthlyRevenue] = info.averageMonthlyRevenue
+                it[ProductRealEstateInfos.rightsMoney] = info.rightsMoney
                 it[ProductRealEstateInfos.floor] = info.floor
                 it[ProductRealEstateInfos.areaMeters] = info.areaMeters
+                it[ProductRealEstateInfos.areaPyeong] = info.areaPyeong
+                it[ProductRealEstateInfos.facilities] = info.facilities
+                it[ProductRealEstateInfos.moveInDate] = info.moveInDate
+                it[ProductRealEstateInfos.permitStatus] = info.permitStatus
+                it[ProductRealEstateInfos.adminActionHistory] = info.adminActionHistory
+                it[ProductRealEstateInfos.contactNumber] = info.contactNumber
             }
         }
 
@@ -129,8 +136,15 @@ class ProductRepository(private val config: ApplicationConfig) {
                     it[ProductRealEstateInfos.monthlyRent] = info.monthlyRent
                     it[ProductRealEstateInfos.managementFee] = info.managementFee
                     it[ProductRealEstateInfos.averageMonthlyRevenue] = info.averageMonthlyRevenue
+                    it[ProductRealEstateInfos.rightsMoney] = info.rightsMoney
                     it[ProductRealEstateInfos.floor] = info.floor
                     it[ProductRealEstateInfos.areaMeters] = info.areaMeters
+                    it[ProductRealEstateInfos.areaPyeong] = info.areaPyeong
+                    it[ProductRealEstateInfos.facilities] = info.facilities
+                    it[ProductRealEstateInfos.moveInDate] = info.moveInDate
+                    it[ProductRealEstateInfos.permitStatus] = info.permitStatus
+                    it[ProductRealEstateInfos.adminActionHistory] = info.adminActionHistory
+                    it[ProductRealEstateInfos.contactNumber] = info.contactNumber
                  }
             } else {
                 ProductRealEstateInfos.insert {
@@ -142,8 +156,15 @@ class ProductRepository(private val config: ApplicationConfig) {
                     it[ProductRealEstateInfos.monthlyRent] = info.monthlyRent
                     it[ProductRealEstateInfos.managementFee] = info.managementFee
                     it[ProductRealEstateInfos.averageMonthlyRevenue] = info.averageMonthlyRevenue
+                    it[ProductRealEstateInfos.rightsMoney] = info.rightsMoney
                     it[ProductRealEstateInfos.floor] = info.floor
                     it[ProductRealEstateInfos.areaMeters] = info.areaMeters
+                    it[ProductRealEstateInfos.areaPyeong] = info.areaPyeong
+                    it[ProductRealEstateInfos.facilities] = info.facilities
+                    it[ProductRealEstateInfos.moveInDate] = info.moveInDate
+                    it[ProductRealEstateInfos.permitStatus] = info.permitStatus
+                    it[ProductRealEstateInfos.adminActionHistory] = info.adminActionHistory
+                    it[ProductRealEstateInfos.contactNumber] = info.contactNumber
                 }
             }
         }

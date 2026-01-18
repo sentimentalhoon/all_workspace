@@ -52,8 +52,15 @@ object ProductRealEstateInfos : LongIdTable("product_real_estate_info", "product
     val monthlyRent = integer("monthly_rent").default(0)
     val managementFee = integer("management_fee").default(0)
     val averageMonthlyRevenue = long("average_monthly_revenue").default(0)
+    val rightsMoney = long("rights_money").default(0)
     val floor = integer("floor").nullable()
     val areaMeters = float("area_meters").nullable()
+    val areaPyeong = float("area_pyeong").nullable()
+    val facilities = text("facilities").nullable()
+    val moveInDate = varchar("move_in_date", 50).nullable()
+    val permitStatus = varchar("permit_status", 50).nullable()
+    val adminActionHistory = varchar("admin_action_history", 255).nullable()
+    val contactNumber = varchar("contact_number", 20).nullable()
 }
 
 enum class ProductMediaType { IMAGE, VIDEO }
@@ -96,8 +103,15 @@ data class ProductRealEstateInfo(
     val monthlyRent: Int,
     val managementFee: Int,
     val averageMonthlyRevenue: Long,
+    val rightsMoney: Long,
     val floor: Int?,
-    val areaMeters: Float?
+    val areaMeters: Float?,
+    val areaPyeong: Float?,
+    val facilities: String?,
+    val moveInDate: String?,
+    val permitStatus: String?,
+    val adminActionHistory: String?,
+    val contactNumber: String?
 )
 
 data class ProductImage(
@@ -127,8 +141,15 @@ fun ResultRow.toProduct(): Product = Product(
             this[ProductRealEstateInfos.monthlyRent],
             this[ProductRealEstateInfos.managementFee],
             this[ProductRealEstateInfos.averageMonthlyRevenue],
+            this[ProductRealEstateInfos.rightsMoney],
             this[ProductRealEstateInfos.floor],
-            this[ProductRealEstateInfos.areaMeters]
+            this[ProductRealEstateInfos.areaMeters],
+            this[ProductRealEstateInfos.areaPyeong],
+            this[ProductRealEstateInfos.facilities],
+            this[ProductRealEstateInfos.moveInDate],
+            this[ProductRealEstateInfos.permitStatus],
+            this[ProductRealEstateInfos.adminActionHistory],
+            this[ProductRealEstateInfos.contactNumber]
         )
     } else null
 )

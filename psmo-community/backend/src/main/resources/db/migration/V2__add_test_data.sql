@@ -67,7 +67,7 @@ FROM GENERATE_SERIES(1, 50) AS x;
 -- 테스트 DB 특성상 방금 넣은 50개가 가장 최근 것임을 가정하고 넣습니다.
 -- 혹은, 단순함을 위해 서브쿼리로 연결합니다.
 
-INSERT INTO product_real_estate_info (product_id, location_city, location_district, pc_count, deposit, monthly_rent, management_fee, average_monthly_revenue, floor, area_meters)
+INSERT INTO product_real_estate_info (product_id, location_city, location_district, pc_count, deposit, monthly_rent, management_fee, average_monthly_revenue, floor, area_meters, rights_money, area_pyeong, facilities, move_in_date, permit_status, admin_action_history, contact_number)
 SELECT 
     id,
     '서울',
@@ -84,7 +84,14 @@ SELECT
     500000,
     15000000,
     2,
-    150.5
+    150.5,
+    30000000, -- 권리금
+    45.5, -- 평수
+    'PC 70대, 최신형 에어컨 3대, 흡연실 완비', -- 시설
+    '즉시 입주 가능', -- 입주가능일
+    '정상 영업 허가', -- 허가여부
+    '해당 없음', -- 행정처분이력
+    '010-1234-5678' -- 연락처
 FROM products
 WHERE seller_id = (SELECT id FROM users WHERE telegram_id = 999999999)
 AND NOT EXISTS (SELECT 1 FROM product_real_estate_info WHERE product_id = products.id);
