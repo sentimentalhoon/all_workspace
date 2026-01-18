@@ -2,6 +2,7 @@ package com.psmo.service
 
 import com.psmo.database.MinioConfig
 import io.ktor.server.config.ApplicationConfig
+import io.ktor.server.config.tryGetString
 import io.minio.MinioClient
 import io.minio.PutObjectArgs
 import io.minio.BucketExistsArgs
@@ -11,8 +12,8 @@ import java.util.UUID
 
 class ImageService(private val config: ApplicationConfig) {
     private val minioClient: MinioClient by lazy { MinioConfig.createMinioClient(config) }
-    private val bucketName = "community-images"
-    private val videoBucketName = "community-videos"
+    private val bucketName = config.tryGetString("minio.bucket") ?: "psmo"
+    private val videoBucketName = "${bucketName}-videos"
 
     init {
         ensureBucketExists(bucketName)
