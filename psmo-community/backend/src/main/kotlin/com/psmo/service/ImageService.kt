@@ -25,8 +25,30 @@ class ImageService(private val config: ApplicationConfig) {
             val found = minioClient.bucketExists(BucketExistsArgs.builder().bucket(bucket).build())
             if (!found) {
                 minioClient.makeBucket(MakeBucketArgs.builder().bucket(bucket).build())
-                // TODO: Set policy to public read if needed, or rely on MinIO console/presigned config
             }
+            
+            // Set Bucket Policy to Public Read
+            val policy = """
+                {
+                  "Version": "2012-10-17",
+                  "Statement": [
+                    {
+                      "Effect": "Allow",
+                      "Principal": {"AWS": ["*"]},
+                      "Action": ["s3:GetObject"],
+                      "Resource": ["arn:aws:s3:::$bucket/*"]
+                    }
+                  ]
+                }
+            """.trimIndent()
+            
+            minioClient.setBucketPolicy(
+                io.minio.SetBucketPolicyArgs.builder()
+                    .bucket(bucket)
+                    .config(policy)
+                    .build()
+            )
+            
         } catch (e: Exception) {
             // Log but don't crash app start if MinIO is down, retry later
             e.printStackTrace()
