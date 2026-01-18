@@ -11,7 +11,9 @@ const { loginWithTelegram, loginPending, error } = useTelegramAuth();
  */
 const handleTelegramAuth = async (user: any) => {
   try {
-    await loginWithTelegram(user);
+    const loggedInUser = await loginWithTelegram(user);
+    const authStore = useAuthStore();
+    authStore.user = loggedInUser; // 스토어 상태 업데이트
     navigateTo("/"); // 로그인 성공하면 홈으로 이동
   } catch (e) {
     console.error("Login error", e);
@@ -26,7 +28,7 @@ onMounted(() => {
   script.src = "https://telegram.org/js/telegram-widget.js?22";
   script.setAttribute(
     "data-telegram-login",
-    import.meta.env.VITE_TELEGRAM_BOT_USERNAME || "Psmo_community_bot"
+    import.meta.env.VITE_TELEGRAM_BOT_USERNAME || "Psmo_community_bot",
   );
   script.setAttribute("data-size", "large");
 
