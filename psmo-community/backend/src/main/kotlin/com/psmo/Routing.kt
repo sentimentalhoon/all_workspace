@@ -54,6 +54,7 @@ fun Application.configureRouting(config: ApplicationConfig) {
     val productService by inject<ProductService>()
     val badUserService by inject<BadUserService>()
     val boardService by inject<BoardService>()
+    val imageService by inject<ImageService>()
 
     // 서버가 켜질 때(ApplicationStarted) 텔레그램 봇도 같이 일을 시작하라고 시킵니다.
     monitor.subscribe(ApplicationStarted) {
@@ -99,7 +100,7 @@ fun Application.configureRouting(config: ApplicationConfig) {
             }
         }
 
-        productRoutes(productService)
+        productRoutes(productService, imageService)
         badUserRoutes(badUserService)
         boardRoutes(boardService)
 

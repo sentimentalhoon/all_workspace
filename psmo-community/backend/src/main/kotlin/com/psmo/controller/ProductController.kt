@@ -45,7 +45,9 @@ class MarketResources {
     }
 }
 
-fun Route.productRoutes(service: ProductService) {
+import com.psmo.service.ImageService
+
+fun Route.productRoutes(service: ProductService, imageService: ImageService) {
 
 
     get<MarketResources.Products> { params ->
@@ -80,7 +82,7 @@ fun Route.productRoutes(service: ProductService) {
             val uploadedImages = mutableListOf<Pair<String, com.psmo.model.ProductMediaType>>()
             
             // Inject services and mapper once
-            val imageService by inject<com.psmo.service.ImageService>()
+            // val imageService by inject<com.psmo.service.ImageService>() // Removed: Passed via param
             val jackson = jacksonObjectMapper()
 
             val multipart = call.receiveMultipart()
