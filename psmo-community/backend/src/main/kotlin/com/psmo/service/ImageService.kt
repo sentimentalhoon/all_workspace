@@ -55,8 +55,8 @@ class ImageService(private val config: ApplicationConfig) {
         )
         
         // Construct public URL. 
-        // We will proxy this via the backend at /api/v1/storage/{bucket}/{filename}
-        return "/api/v1/storage/$bucket/$filename" 
+        // Nginx should proxy /storage/ requests to MinIO
+        return "/storage/$bucket/$filename" 
     }
 
     fun downloadFile(bucket: String, filename: String): InputStream? {
