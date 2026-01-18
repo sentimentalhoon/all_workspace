@@ -2,9 +2,10 @@
 import { useImageOptimization } from "~/composables/useImageOptimization";
 import { useMarket, type ProductCreateRequest } from "~/composables/useMarket";
 
-const { createProduct } = useMarket();
+const { createProduct, updateProduct, fetchProductById } = useMarket();
 const { compressImage } = useImageOptimization();
 const router = useRouter();
+const route = useRoute();
 
 const form = ref<ProductCreateRequest>({
   title: "",
@@ -36,6 +37,54 @@ const files = ref<File[]>([]);
 const previewUrls = ref<string[]>([]);
 const loading = ref(false);
 const processingImages = ref(false); // processing state
+
+const isEditMode = computed(() => !!route.query.id);
+const productId = computed(() => Number(route.query.id));
+
+onMounted(async () => {
+  if (isEditMode.value) {
+    try {
+      loading.value = true;
+      const res = await fetchProductById(productId.value);
+      const data = res.data;
+
+      form.value = {
+        title: data.title,
+        description: data.description || "",
+        price: data.price,
+        category: data.category,
+        realEstate: data.realEstate ? { ...data.realEstate } : undefined,
+      };
+
+      // Initialize default values for realEstate if missing but category is PC_BUSINESS
+      if (data.category === "PC_BUSINESS" && !form.value.realEstate) {
+        form.value.realEstate = {
+          locationCity: "",
+          locationDistrict: "",
+          pcCount: 0,
+          deposit: 0,
+          monthlyRent: 0,
+          managementFee: 0,
+          averageMonthlyRevenue: 0,
+          rightsMoney: 0,
+          floor: null,
+          areaMeters: null,
+          areaPyeong: null,
+          facilities: "",
+          moveInDate: "",
+          permitStatus: "",
+          adminActionHistory: "",
+          contactNumber: "",
+        };
+      }
+    } catch (e) {
+      alert("매물 정보를 불러오는데 실패했습니다.");
+      router.back();
+    } finally {
+      loading.value = false;
+    }
+  }
+});
 
 const handleFileChange = async (e: Event) => {
   const target = e.target as HTMLInputElement;
@@ -94,11 +143,22 @@ const submit = async () => {
 
   loading.value = true;
   try {
-    await createProduct(payload, files.value);
-    alert("등록되었습니다.");
+    if (isEditMode.value) {
+      // Update (No Image Upload support yet)
+      await updateProduct(productId.value, payload);
+      alert("수정되었습니다.");
+    } else {
+      // Create
+      await createProduct(payload, files.value);
+      alert("등록되었습니다.");
+    }
     router.push("/market");
   } catch (e: any) {
-    alert("등록 실패: " + (e.response?.data?.message || e.message));
+    alert(
+      (isEditMode.value ? "수정" : "등록") +
+        " 실패: " +
+        (e.response?.data?.message || e.message),
+    );
   } finally {
     loading.value = false;
   }
@@ -108,8 +168,16 @@ const submit = async () => {
 <template>
   <div class="page-container fade-in">
     <div class="header">
-      <h2 class="page-title">상품/매장 등록</h2>
-      <p class="page-desc">새로운 매물을 등록하여 거래를 시작해보세요.</p>
+      <h2 class="page-title">
+        {{ isEditMode ? "매물 수정" : "상품/매장 등록" }}
+      </h2>
+      <p class="page-desc">
+        {{
+          isEditMode
+            ? "등록된 내용을 수정합니다."
+            : "새로운 매물을 등록하여 거래를 시작해보세요."
+        }}
+      </p>
     </div>
 
     <form @submit.prevent="submit" class="glass-panel form-card">
@@ -338,7 +406,12 @@ const submit = async () => {
       <!-- Image Upload -->
       <div class="form-section">
         <label class="section-label">사진 첨부 (최대 20장)</label>
-        <div class="file-upload-area">
+
+        <div v-if="isEditMode" class="edit-notice glass-panel-sm">
+          ⚠️ 이미지 수정은 현재 지원되지 않습니다. (추후 업데이트 예정)
+        </div>
+
+        <div v-else class="file-upload-area">
           <input
             type="file"
             multiple
@@ -382,7 +455,9 @@ const submit = async () => {
             ? "등록 중..."
             : processingImages
               ? "이미지 처리 대기 중..."
-              : "등록 완료"
+              : isEditMode
+                ? "수정 완료"
+                : "등록 완료"
         }}
       </button>
     </form>

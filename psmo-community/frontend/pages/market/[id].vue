@@ -242,9 +242,17 @@ onMounted(async () => {
       </div>
 
       <div class="action-bar glass-panel">
-        <!-- Owner Actions -->
-        <template v-if="isOwner">
+        <!-- Owner or Admin Actions -->
+        <template v-if="isOwner || isAdmin">
           <button @click="handleDelete" class="delete-btn">삭제</button>
+
+          <button
+            @click="router.push(`/market/create?id=${product.id}`)"
+            class="edit-btn"
+          >
+            수정
+          </button>
+
           <button
             v-if="product.status === 'SALE'"
             @click="handleStatusChange('SOLD')"
@@ -624,6 +632,11 @@ $text-secondary: #b0b0b0;
     background: rgba(233, 69, 96, 0.2);
     color: $color-danger;
     border: 1px solid $color-danger;
+  }
+  .edit-btn {
+    background: rgba(30, 136, 229, 0.2);
+    color: $color-primary;
+    border: 1px solid $color-primary;
   }
   .sold-btn {
     background: $text-secondary;
