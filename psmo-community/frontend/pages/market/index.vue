@@ -20,8 +20,8 @@ const goToCreate = () => {
 <template>
   <div class="market-page">
     <div class="header">
-      <h2>PC Market</h2>
-      <button @click="goToCreate" class="create-btn">+ Sell Item</button>
+      <h2>매장 거래 (양도/양수)</h2>
+      <button @click="goToCreate" class="create-btn">+ 매장 등록</button>
     </div>
 
     <div v-if="pending" class="loading">Loading items...</div>

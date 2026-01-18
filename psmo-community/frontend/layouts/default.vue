@@ -7,7 +7,7 @@ const route = useRoute();
 
 // 로그인 페이지나 관리자 페이지에서는 하단 버튼(Bottom Nav)을 숨깁니다.
 const showBottomNav = computed(
-  () => route.path !== "/login" && route.path !== "/admin"
+  () => route.path !== "/login" && route.path !== "/admin",
 );
 </script>
 
@@ -15,7 +15,7 @@ const showBottomNav = computed(
   <!-- 모바일 화면 크기에 맞춰서 중앙에 보여주는 컨테이너 -->
   <div class="mobile-container">
     <header>
-      <h1>PSMO Community</h1>
+      <h1>PSMO Manager</h1>
     </header>
 
     <!-- 
@@ -27,18 +27,19 @@ const showBottomNav = computed(
     </main>
 
     <!-- 하단 네비게이션 (메뉴 버튼들) -->
+    <!-- 하단 네비게이션 (메뉴 버튼들) -->
     <nav v-if="showBottomNav" class="bottom-nav">
       <NuxtLink to="/" class="nav-item" exact-active-class="active">
         <span>🏠</span>
         <span class="label">홈</span>
       </NuxtLink>
-      <NuxtLink to="/market" class="nav-item" active-class="active">
-        <span>💻</span>
-        <span class="label">장터</span>
+      <NuxtLink to="/blacklist" class="nav-item" active-class="active">
+        <span>🚨</span>
+        <span class="label">조회</span>
       </NuxtLink>
-      <NuxtLink to="/board" class="nav-item" active-class="active">
-        <span>📋</span>
-        <span class="label">게시판</span>
+      <NuxtLink to="/market" class="nav-item" active-class="active">
+        <span>🤝</span>
+        <span class="label">장터</span>
       </NuxtLink>
       <NuxtLink to="/my" class="nav-item" active-class="active">
         <span>👤</span>
@@ -52,9 +53,20 @@ const showBottomNav = computed(
 /* Global Resets */
 body {
   margin: 0;
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica,
-    Arial, sans-serif;
-  background-color: #f0f2f5;
+  font-family:
+    -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial,
+    sans-serif;
+  background-color: #1a1a2e; /* Dark Navy Background */
+  color: #333;
+}
+
+:root {
+  --primary-color: #c5a059; /* Gold */
+  --secondary-color: #16213e; /* Navy */
+  --accent-color: #e94560; /* Red */
+  --text-dark: #333;
+  --text-light: #f5f5f5;
+  --bg-light: #f0f2f5;
 }
 
 * {
@@ -81,7 +93,8 @@ header {
 header h1 {
   margin: 0;
   font-size: 1.2rem;
-  color: #333;
+  font-weight: 700;
+  color: var(--secondary-color);
 }
 
 .content-wrapper {
@@ -120,6 +133,7 @@ header h1 {
 }
 
 .nav-item.active {
-  color: #2196f3;
+  color: var(--secondary-color);
+  font-weight: bold;
 }
 </style>

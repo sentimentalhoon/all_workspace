@@ -22,7 +22,7 @@ const submit = async () => {
 
     // await fetchClient('/market/products', { method: 'POST', body: form.value })
     alert(
-      "Items creation logic needs Multipart implementation (Media Upload)."
+      "Items creation logic needs Multipart implementation (Media Upload).",
     );
   } catch (e) {
     alert("Error");
@@ -32,7 +32,7 @@ const submit = async () => {
 
 <template>
   <div class="create-page">
-    <h2>Sell Item</h2>
+    <h2>매장 내놓기 (양도)</h2>
     <form @submit.prevent="submit">
       <div class="group">
         <label>Title</label>

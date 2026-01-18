@@ -8,34 +8,54 @@ const authStore = useAuthStore();
 
 <template>
   <div class="home-page">
-    <div class="welcome-card">
-      <h2>Hello, {{ authStore.user?.displayName || "User" }}! 👋</h2>
-      <p>Welcome to PSMO Community.</p>
-
-      <div class="stats-grid">
-        <div class="stat-card">
-          <h3>Score</h3>
-          <div class="value">{{ authStore.user?.score || 0 }}</div>
-        </div>
+    <!-- Hero Section -->
+    <div class="hero-section">
+      <div class="hero-content">
+        <h2>안전한 매장 운영의 시작</h2>
+        <p>불량 사용자 공유 및 매장 거래 플랫폼</p>
+        <button class="primary-btn" @click="navigateTo('/blacklist')">
+          🚨 불량 사용자 조회
+        </button>
       </div>
     </div>
 
+    <!-- Quick Menu Grid -->
     <div class="menu-grid">
+      <NuxtLink to="/blacklist" class="menu-item highlight">
+        <span class="icon">🚫</span>
+        <span class="text">블랙리스트</span>
+        <span class="sub-text">불량 이용자 조회</span>
+      </NuxtLink>
       <NuxtLink to="/market" class="menu-item">
-        <span class="icon">💻</span>
-        <span class="text">PC Market</span>
+        <span class="icon">🤝</span>
+        <span class="text">매장 거래</span>
+        <span class="sub-text">PC방 양도/양수</span>
       </NuxtLink>
-      <NuxtLink to="/board" class="menu-item">
-        <span class="icon">📋</span>
-        <span class="text">Community Board</span>
+      <NuxtLink to="/parts-market" class="menu-item">
+        <span class="icon">📦</span>
+        <span class="text">중고 장터</span>
+        <span class="sub-text">PC 부품/집기</span>
       </NuxtLink>
-      <NuxtLink to="/report" class="menu-item">
-        <span class="icon">⚠️</span>
-        <span class="text">Report Bad User</span>
+      <NuxtLink to="/community" class="menu-item">
+        <span class="icon">💬</span>
+        <span class="text">점주 소통방</span>
+        <span class="sub-text">운영 노하우 공유</span>
       </NuxtLink>
     </div>
 
-    <button @click="authStore.logout" class="logout-btn">Logout</button>
+    <!-- Dashboard/Status -->
+    <div class="dashboard-card">
+      <div class="user-info">
+        <span class="greeting">사장님, 안녕하세요!</span>
+        <strong class="username">{{
+          authStore.user?.displayName || "Guest"
+        }}</strong>
+      </div>
+      <div class="points">
+        <span>보유 포인트</span>
+        <strong>{{ authStore.user?.score?.toLocaleString() || 0 }} P</strong>
+      </div>
+    </div>
   </div>
 </template>
 
@@ -46,44 +66,44 @@ const authStore = useAuthStore();
   gap: 20px;
 }
 
-.welcome-card {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  color: white;
-  padding: 20px;
+.hero-section {
+  background: linear-gradient(135deg, #16213e 0%, #0f3460 100%);
+  padding: 30px 20px;
   border-radius: 16px;
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+  color: white;
+  text-align: center;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
 }
 
-.welcome-card h2 {
-  margin: 0 0 5px 0;
+.hero-content h2 {
+  margin: 0 0 10px 0;
+  font-size: 1.4rem;
+  font-weight: 700;
 }
 
-.welcome-card p {
-  margin: 0;
-  opacity: 0.9;
-}
-
-.stats-grid {
-  margin-top: 15px;
-  display: flex;
-  gap: 15px;
-}
-
-.stat-card {
-  background: rgba(255, 255, 255, 0.2);
-  padding: 10px 15px;
-  border-radius: 8px;
-}
-
-.stat-card h3 {
-  margin: 0;
-  font-size: 0.8rem;
+.hero-content p {
+  margin: 0 0 20px 0;
   opacity: 0.8;
+  font-size: 0.9rem;
 }
 
-.stat-card .value {
-  font-size: 1.2rem;
+.primary-btn {
+  background: #e94560; /* Red Accent */
+  color: white;
+  border: none;
+  padding: 12px 24px;
+  border-radius: 8px;
   font-weight: bold;
+  font-size: 1rem;
+  cursor: pointer;
+  width: 100%;
+  max-width: 200px;
+  box-shadow: 0 4px 6px rgba(233, 69, 96, 0.3);
+  transition: transform 0.2s;
+}
+
+.primary-btn:active {
+  transform: scale(0.98);
 }
 
 .menu-grid {
@@ -94,37 +114,87 @@ const authStore = useAuthStore();
 
 .menu-item {
   background: white;
-  padding: 20px;
+  padding: 20px 15px;
   border-radius: 12px;
   text-decoration: none;
   color: #333;
   display: flex;
   flex-direction: column;
   align-items: center;
+  text-align: center;
   gap: 8px;
   box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
-  transition: transform 0.2s;
+  transition:
+    transform 0.2s,
+    box-shadow 0.2s;
+  border: 1px solid transparent;
 }
 
 .menu-item:hover {
   transform: translateY(-2px);
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+}
+
+.menu-item.highlight {
+  border: 1px solid #e94560;
+  background: #fff5f6;
 }
 
 .menu-item .icon {
   font-size: 2rem;
+  margin-bottom: 5px;
 }
 
 .menu-item .text {
-  font-weight: 600;
+  font-weight: 700;
+  font-size: 1rem;
+  color: #16213e;
 }
 
-.logout-btn {
-  margin-top: 20px;
-  padding: 10px;
-  background: transparent;
-  border: 1px solid #ddd;
-  border-radius: 8px;
+.menu-item .sub-text {
+  font-size: 0.75rem;
+  color: #888;
+}
+
+.dashboard-card {
+  background: white;
+  padding: 20px;
+  border-radius: 12px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+  border-left: 5px solid #c5a059; /* Gold border */
+}
+
+.user-info {
+  display: flex;
+  flex-direction: column;
+}
+
+.greeting {
+  font-size: 0.8rem;
   color: #666;
-  cursor: pointer;
+}
+
+.username {
+  font-size: 1rem;
+  color: #333;
+}
+
+.points {
+  text-align: right;
+  display: flex;
+  flex-direction: column;
+}
+
+.points span {
+  font-size: 0.7rem;
+  color: #888;
+}
+
+.points strong {
+  font-size: 1.1rem;
+  color: #c5a059;
 }
 </style>
