@@ -19,6 +19,7 @@ data class BadUserResponse(
     val incidentDate: String?,
     val images: List<BadUserImageResponse>,
     val reporterName: String,
+    val reporterId: Long,
     val createdAt: String
 )
 
@@ -32,4 +33,12 @@ data class BadUserImageResponse(
 data class BadUserImageDto(
     val id: Long,
     val url: String
+)
+
+@Serializable
+data class BadUserUpdateRequest(
+    val region: String? = null,
+    val reason: String? = null,
+    val physicalDescription: String? = null,
+    val incidentDate: String? = null
 )

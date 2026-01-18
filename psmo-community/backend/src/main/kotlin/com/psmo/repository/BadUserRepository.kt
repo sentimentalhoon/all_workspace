@@ -11,6 +11,9 @@ import kotlinx.coroutines.Dispatchers
 import org.jetbrains.exposed.sql.or
 import org.jetbrains.exposed.sql.transactions.experimental.newSuspendedTransaction
 import java.time.LocalDate
+import org.jetbrains.exposed.sql.and
+import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
+import org.jetbrains.exposed.sql.SqlExpressionBuilder.inList
 
 class BadUserRepository {
 
@@ -51,5 +54,46 @@ class BadUserRepository {
             (BadUsers.region like "%$keyword%") or (BadUsers.reason like "%$keyword%")
         }.sortedByDescending { it.createdAt }
             .map { it.toResponse() }
+    }
+
+    suspend fun findById(id: Long): BadUserResponse? = newSuspendedTransaction(Dispatchers.IO) {
+        BadUser.findById(id)?.toResponse()
+    }
+
+    suspend fun update(
+        id: Long, 
+        request: com.psmo.model.dto.BadUserUpdateRequest,
+        newImages: List<com.psmo.service.ImageService.ImageUploadResult>,
+        deleteImageIds: List<Long>
+    ): BadUserResponse? = newSuspendedTransaction(Dispatchers.IO) {
+        val badUser = BadUser.findById(id) ?: return@newSuspendedTransaction null
+
+        request.region?.let { badUser.region = it }
+        request.reason?.let { badUser.reason = it }
+        request.physicalDescription?.let { badUser.physicalDescription = it }
+        request.incidentDate?.let { badUser.incidentDate = LocalDate.parse(it) }
+
+        // Save new images
+        newImages.forEach { image ->
+             BadUserImage.new {
+                this.badUser = badUser
+                this.url = image.originalUrl
+                this.thumbnailUrl = image.thumbnailUrl
+            }
+        }
+
+        // Delete images
+        if (deleteImageIds.isNotEmpty()) {
+            BadUserImage.find {
+                 (com.psmo.model.BadUserImages.id inList deleteImageIds) and (com.psmo.model.BadUserImages.badUser eq id) 
+            }.forEach { it.delete() }
+        }
+
+        badUser.toResponse()
+    }
+
+    suspend fun delete(id: Long) = newSuspendedTransaction(Dispatchers.IO) {
+        // Cascade delete should handle images if configured, but let's be explicit or rely on Entity delete
+        BadUser.findById(id)?.delete()
     }
 }

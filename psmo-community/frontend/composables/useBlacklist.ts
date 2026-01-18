@@ -4,8 +4,9 @@ export interface BadUser {
   reason: string;
   physicalDescription: string | null;
   incidentDate: string | null;
-  images: { url: string; thumbnailUrl: string }[];
+  images: { id: number; url: string; thumbnailUrl: string }[];
   reporterName: string;
+  reporterId: number;
   createdAt: string;
 }
 
@@ -25,6 +26,10 @@ export const useBlacklist = () => {
     });
   };
 
+  const fetchBadUserById = async (id: number): Promise<BadUser> => {
+    return await fetchClient<BadUser>(`/blacklist/${id}`);
+  };
+
   const reportBadUser = async (data: BadUserCreateRequest, files: File[]) => {
     const formData = new FormData();
 
@@ -42,8 +47,37 @@ export const useBlacklist = () => {
     });
   };
 
+  const updateBadUser = async (
+    id: number,
+    data: BadUserCreateRequest,
+    files: File[],
+    deleteImageIds: number[],
+  ) => {
+    const formData = new FormData();
+    formData.append("data", JSON.stringify(data));
+    formData.append("deleteImageIds", JSON.stringify(deleteImageIds));
+
+    files.forEach((file) => {
+      formData.append("images", file);
+    });
+
+    return await fetchClient(`/blacklist/${id}`, {
+      method: "PUT",
+      body: formData,
+    });
+  };
+
+  const deleteBadUser = async (id: number) => {
+    return await fetchClient(`/blacklist/${id}`, {
+      method: "DELETE",
+    });
+  };
+
   return {
     searchBadUsers,
+    fetchBadUserById,
     reportBadUser,
+    updateBadUser,
+    deleteBadUser,
   };
 };

@@ -42,6 +42,7 @@ class BadUser(id: EntityID<Long>) : LongEntity(id) {
         incidentDate = this.incidentDate?.toString(),
         images = this.images.map { BadUserImageResponse(it.url, it.thumbnailUrl) },
         reporterName = this.reporter.displayName ?: "익명",
+        reporterId = this.reporter.id.value,
         createdAt = this.createdAt.toString()
     )
 }
