@@ -54,8 +54,22 @@ class ImageService(private val config: ApplicationConfig) {
                 .build()
         )
         
-        // Construct public URL (assuming public bucket access)
-        // If MinIO is behind nginx or direct, format: /bucket/filename
-        return "/$bucket/$filename" 
+        // Construct public URL. 
+        // We will proxy this via the backend at /api/v1/storage/{bucket}/{filename}
+        return "/api/v1/storage/$bucket/$filename" 
+    }
+
+    fun downloadFile(bucket: String, filename: String): InputStream? {
+        try {
+            return minioClient.getObject(
+                io.minio.GetObjectArgs.builder()
+                    .bucket(bucket)
+                    .`object`(filename)
+                    .build()
+            )
+        } catch (e: Exception) {
+            e.printStackTrace()
+            return null
+        }
     }
 }
