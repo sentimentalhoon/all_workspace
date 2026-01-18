@@ -1,6 +1,7 @@
 package com.psmo.model
 
 import com.psmo.model.dto.BadUserResponse
+import com.psmo.model.dto.BadUserImageResponse
 import org.jetbrains.exposed.dao.LongEntity
 import org.jetbrains.exposed.dao.LongEntityClass
 import org.jetbrains.exposed.dao.id.EntityID
@@ -39,7 +40,7 @@ class BadUser(id: EntityID<Long>) : LongEntity(id) {
         reason = this.reason,
         physicalDescription = this.physicalDescription,
         incidentDate = this.incidentDate?.toString(),
-        imageUrls = this.images.map { it.url },
+        images = this.images.map { BadUserImageResponse(it.url, it.thumbnailUrl) },
         reporterName = this.reporter.displayName ?: "익명",
         createdAt = this.createdAt.toString()
     )
@@ -48,6 +49,7 @@ class BadUser(id: EntityID<Long>) : LongEntity(id) {
 object BadUserImages : LongIdTable("bad_user_images") {
     val badUser = reference("bad_user_id", BadUsers)
     val url = varchar("url", 500)
+    val thumbnailUrl = varchar("thumbnail_url", 500)
     val createdAt = datetime("created_at").defaultExpression(CurrentDateTime)
 }
 
@@ -56,5 +58,6 @@ class BadUserImage(id: EntityID<Long>) : LongEntity(id) {
 
     var badUser by BadUser referencedOn BadUserImages.badUser
     var url by BadUserImages.url
+    var thumbnailUrl by BadUserImages.thumbnailUrl
     var createdAt by BadUserImages.createdAt
 }

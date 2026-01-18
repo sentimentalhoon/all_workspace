@@ -17,7 +17,7 @@ class BadUserRepository {
     suspend fun create(
         reporter: User,
         request: BadUserCreateRequest,
-        imageUrls: List<String>
+        images: List<com.psmo.service.ImageService.ImageUploadResult>
     ): BadUserResponse = newSuspendedTransaction(Dispatchers.IO) {
         val badUser = BadUser.new {
             this.region = request.region
@@ -28,10 +28,11 @@ class BadUserRepository {
                 ?: throw IllegalArgumentException("Reporter user not found")
         }
 
-        imageUrls.forEach { url ->
+        images.forEach { image ->
             BadUserImage.new {
                 this.badUser = badUser
-                this.url = url
+                this.url = image.originalUrl
+                this.thumbnailUrl = image.thumbnailUrl
             }
         }
 

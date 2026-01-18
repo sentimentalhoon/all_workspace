@@ -74,15 +74,16 @@
               <p class="reason">“ {{ item.reason }} ”</p>
 
               <div
-                v-if="item.imageUrls && item.imageUrls.length > 0"
+                v-if="item.images && item.images.length > 0"
                 class="images-scroll"
               >
                 <div
                   class="image-wrapper"
-                  v-for="(url, idx) in item.imageUrls"
+                  v-for="(img, idx) in item.images"
                   :key="idx"
+                  @click="openImage(img.url)"
                 >
-                  <img :src="url" alt="evidence" loading="lazy" />
+                  <img :src="img.thumbnailUrl" alt="evidence" loading="lazy" />
                 </div>
               </div>
             </div>
@@ -203,6 +204,10 @@ onMounted(async () => {
     searchLoading.value = false;
   }
 });
+
+const openImage = (url: string) => {
+  window.open(url, "_blank");
+};
 
 const handleSearch = async () => {
   if (!searchKeyword.value.trim()) return;

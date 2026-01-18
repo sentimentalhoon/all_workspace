@@ -110,7 +110,13 @@ onMounted(async () => {
         </div>
         <div class="list-container glass-panel">
           <div v-for="user in recentBadUsers" :key="user.id" class="list-item">
-            <div class="user-avatar placeholder">📍</div>
+            <div
+              v-if="user.images && user.images.length > 0"
+              class="user-avatar"
+            >
+              <img :src="user.images[0].thumbnailUrl" alt="thumb" />
+            </div>
+            <div v-else class="user-avatar placeholder">📍</div>
             <div class="info-col">
               <div class="name-row">
                 <span class="name">{{ user.region }}</span>

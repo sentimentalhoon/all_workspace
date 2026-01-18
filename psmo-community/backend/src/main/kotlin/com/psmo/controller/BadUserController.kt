@@ -37,7 +37,7 @@ fun Route.badUserRoutes(badUserService: BadUserService, imageService: ImageServi
             // Multipart Request 처리
             val multipart = call.receiveMultipart()
             var createRequest: BadUserCreateRequest? = null
-            val uploadedImageUrls = mutableListOf<String>()
+            val uploadedImages = mutableListOf<ImageService.ImageUploadResult>()
 
             multipart.forEachPart { part ->
                 when (part) {
@@ -51,12 +51,9 @@ fun Route.badUserRoutes(badUserService: BadUserService, imageService: ImageServi
                         val fileName = part.originalFileName ?: "image.jpg"
                         val contentType = part.contentType?.toString() ?: "image/jpeg"
                         
-                        val url = withContext(Dispatchers.IO) {
-                            part.provider().toInputStream().use { inputStream ->
-                                imageService.uploadImage(inputStream, fileName, contentType)
-                            }
-                        }
-                        uploadedImageUrls.add(url)
+                        val bytes = part.provider().toInputStream().use { it.readBytes() }
+                        val result = imageService.uploadImageWithThumbnail(bytes, fileName, contentType)
+                        uploadedImages.add(result)
                     }
                     else -> {}
                 }
@@ -69,7 +66,7 @@ fun Route.badUserRoutes(badUserService: BadUserService, imageService: ImageServi
             }
 
             // 사진 최대 20장 제한
-            if (uploadedImageUrls.size > 20) {
+            if (uploadedImages.size > 20) {
                 call.respond(HttpStatusCode.BadRequest, mapOf("error" to "사진은 최대 20장까지만 첨부할 수 있습니다."))
                 return@post
             }
@@ -89,7 +86,7 @@ fun Route.badUserRoutes(badUserService: BadUserService, imageService: ImageServi
                     createdAt = now,
                     updatedAt = now
                 )
-                val response = badUserService.reportBadUser(user, createRequest!!, uploadedImageUrls)
+                val response = badUserService.reportBadUser(user, createRequest!!, uploadedImages)
                 call.respond(HttpStatusCode.Created, response)
             } catch (e: IllegalArgumentException) {
                 call.respond(HttpStatusCode.BadRequest, mapOf("error" to (e.message ?: "잘못된 요청")))

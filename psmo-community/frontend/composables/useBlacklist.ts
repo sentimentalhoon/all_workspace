@@ -4,7 +4,7 @@ export interface BadUser {
   reason: string;
   physicalDescription: string | null;
   incidentDate: string | null;
-  imageUrls: string[];
+  images: { url: string; thumbnailUrl: string }[];
   reporterName: string;
   createdAt: string;
 }

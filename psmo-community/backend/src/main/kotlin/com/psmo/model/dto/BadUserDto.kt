@@ -17,9 +17,15 @@ data class BadUserResponse(
     val reason: String,
     val physicalDescription: String?,
     val incidentDate: String?,
-    val imageUrls: List<String>,
+    val images: List<BadUserImageResponse>,
     val reporterName: String,
     val createdAt: String
+)
+
+@Serializable
+data class BadUserImageResponse(
+    val url: String,
+    val thumbnailUrl: String
 )
 
 @Serializable
