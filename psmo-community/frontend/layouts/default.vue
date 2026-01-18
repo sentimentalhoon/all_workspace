@@ -1,33 +1,82 @@
 <script setup lang="ts">
 /**
- * 기본 레이아웃 파일입니다.
- * 모든 페이지의 공통 테두리(헤더, 푸터 등)를 여기서 만듭니다.
+ * 기본 레이아웃 (Smart Header 적용)
+ * route에 따라 헤더의 내용(뒤로가기, 제목, 액션 등)이 동적으로 변경됩니다.
  */
 const route = useRoute();
+const router = useRouter();
 
-// 로그인 페이지나 관리자 페이지에서는 하단 버튼(Bottom Nav)을 숨깁니다.
+// 하단 네비게이션 표시 여부
 const showBottomNav = computed(
   () => route.path !== "/login" && route.path !== "/admin",
 );
+
+// --- Smart Header Logic ---
+
+const pageTitle = computed(() => {
+  const path = route.path;
+  if (path === "/") return "PSMO Manager";
+  if (path.startsWith("/market/create")) return "매물 등록";
+  if (path.startsWith("/market")) return "매장 거래";
+  if (path.startsWith("/community/write")) return "글쓰기";
+  if (path.startsWith("/community")) return "점주 소통방";
+  if (path.startsWith("/blacklist")) return "블랙리스트";
+  if (path.startsWith("/my")) return "워라벨 페이지";
+  return "PSMO Manager";
+});
+
+const isHome = computed(() => route.path === "/");
+const canGoBack = computed(() => route.path !== "/" && route.path !== "/login");
+
+const goBack = () => {
+  router.back();
+};
 </script>
 
 <template>
-  <!-- 모바일 화면 크기에 맞춰서 중앙에 보여주는 컨테이너 -->
   <div class="mobile-container">
-    <header>
-      <h1>PSMO Manager</h1>
+    <!-- Smart Header -->
+    <header class="smart-header glass-panel-header">
+      <!-- Left: Back Button or Logo -->
+      <div class="header-left">
+        <button
+          v-if="canGoBack"
+          @click="goBack"
+          class="icon-btn back-btn"
+          aria-label="뒤로가기"
+        >
+          <span class="icon">❮</span>
+        </button>
+        <span v-else class="brand-logo">💎</span>
+      </div>
+
+      <!-- Center: Title -->
+      <div class="header-center">
+        <transition name="fade-slide" mode="out-in">
+          <h1 :key="pageTitle">{{ pageTitle }}</h1>
+        </transition>
+      </div>
+
+      <!-- Right: Actions (Placeholder for now) -->
+      <div class="header-right">
+        <NuxtLink
+          v-if="isHome"
+          to="/my"
+          class="icon-btn profile-btn"
+          aria-label="내 정보"
+        >
+          <span class="icon">🔔</span>
+        </NuxtLink>
+        <!-- Add more contextual actions here if needed -->
+      </div>
     </header>
 
-    <!-- 
-      <slot /> 자리에 각 페이지(Home, Market 등)의 내용이 들어갑니다. 
-      하단 메뉴가 있으면, 컨텐츠가 버튼에 가려지지 않게 아래쪽에 여백(padding-bottom)을 줍니다.
-    -->
+    <!-- Main Content -->
     <main class="content-wrapper" :class="{ 'with-bottom-nav': showBottomNav }">
       <slot />
     </main>
 
-    <!-- 하단 네비게이션 (메뉴 버튼들) -->
-    <!-- 하단 네비게이션 (메뉴 버튼들) -->
+    <!-- Bottom Navigation -->
     <nav v-if="showBottomNav" class="bottom-nav">
       <NuxtLink to="/" class="nav-item" exact-active-class="active">
         <span>🏠</span>
@@ -40,10 +89,6 @@ const showBottomNav = computed(
       <NuxtLink to="/market" class="nav-item" active-class="active">
         <span>🤝</span>
         <span class="label">장터</span>
-      </NuxtLink>
-      <NuxtLink to="/my" class="nav-item" active-class="active">
-        <span>👤</span>
-        <span class="label">마이</span>
       </NuxtLink>
       <NuxtLink to="/community" class="nav-item" active-class="active">
         <span>💬</span>
@@ -61,24 +106,30 @@ body {
     "Pretendard",
     -apple-system,
     BlinkMacSystemFont,
-    "Segoe UI",
+    system-ui,
     Roboto,
-    Helvetica,
-    Arial,
+    "Helvetica Neue",
+    "Segoe UI",
+    "Apple SD Gothic Neo",
+    "Malgun Gothic",
+    "Apple Color Emoji",
+    "Segoe UI Emoji",
+    "Segoe UI Symbol",
     sans-serif;
-  background-color: #121212; /* Deep Dark Background matching index.vue variable */
+  background-color: #121212;
   color: #ffffff;
+  -webkit-font-smoothing: antialiased;
 }
 
 :root {
   --primary-color: #1e88e5;
   --secondary-color: #16213e;
-  --accent-color: #c5a059; /* Gold */
+  --accent-color: #c5a059;
   --danger-color: #e94560;
   --text-primary: #ffffff;
   --text-secondary: #b0b0b0;
-  --glass-bg: rgba(255, 255, 255, 0.05);
-  --glass-border: rgba(255, 255, 255, 0.1);
+  --glass-bg: rgba(22, 33, 62, 0.85);
+  --glass-border: rgba(255, 255, 255, 0.08);
 }
 
 * {
@@ -89,98 +140,160 @@ body {
   max-width: 600px;
   margin: 0 auto;
   min-height: 100vh;
-  background: linear-gradient(
-    180deg,
-    #16213e 0%,
-    #121212 100%
-  ); /* Subtle Gradient */
-  box-shadow: 0 0 30px rgba(0, 0, 0, 0.5);
+  background: #121212;
+  box-shadow: 0 0 40px rgba(0, 0, 0, 0.5);
   display: flex;
   flex-direction: column;
+  position: relative;
 }
 
-header {
-  padding: 1rem;
-  background: rgba(22, 33, 62, 0.95); /* Semi-transparent header */
-  backdrop-filter: blur(10px);
-  border-bottom: 1px solid var(--glass-border);
-  text-align: center;
+/* --- Smart Header Styles --- */
+.smart-header {
+  height: 56px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 16px;
   position: sticky;
   top: 0;
-  z-index: 100;
+  z-index: 1000;
+
+  /* Glass Effect */
+  background: rgba(18, 18, 18, 0.8);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border-bottom: 1px solid var(--glass-border);
 }
 
-header h1 {
+.header-left,
+.header-right {
+  width: 40px; /* Fixed width to ensure center alignment */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.header-center {
+  flex: 1;
+  text-align: center;
+  overflow: hidden;
+}
+
+.header-center h1 {
   margin: 0;
-  font-size: 1.2rem;
+  font-size: 1.1rem;
   font-weight: 700;
-  color: var(--accent-color);
-  letter-spacing: 1px;
+  color: #fff;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
+.brand-logo {
+  font-size: 1.5rem;
+}
+
+.icon-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 8px;
+  border-radius: 50%;
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.2s;
+}
+
+.icon-btn:active {
+  background: rgba(255, 255, 255, 0.1);
+}
+.icon-btn .icon {
+  font-size: 1.2rem;
+}
+.back-btn .icon {
+  font-size: 1.1rem;
+  font-weight: bold;
+}
+
+/* --- Content & Nav --- */
 .content-wrapper {
   flex: 1;
-  padding: 1.5rem; /* Increased padding */
+  padding: 16px;
 }
-
 .content-wrapper.with-bottom-nav {
   padding-bottom: 90px;
 }
 
-/* Glassmorphism Bottom Nav */
 .bottom-nav {
   position: fixed;
-  bottom: 20px; /* Floating style */
+  bottom: 24px;
   left: 50%;
   transform: translateX(-50%);
-  width: 90%;
-  max-width: 540px;
-  background: rgba(22, 33, 62, 0.85);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  border: 1px solid var(--glass-border);
-  border-radius: 20px;
+  width: calc(100% - 32px);
+  max-width: 568px;
+  height: 64px;
+
+  background: rgba(30, 30, 30, 0.85);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 24px;
+
   display: flex;
   justify-content: space-around;
-  padding: 12px 0;
+  align-items: center;
+  padding: 0 8px;
   z-index: 1000;
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
 }
 
 .nav-item {
+  flex: 1;
+  height: 100%;
   display: flex;
   flex-direction: column;
+  justify-content: center;
   align-items: center;
   text-decoration: none;
-  color: #666;
-  font-size: 0.75rem;
+  color: #888;
   gap: 4px;
-  transition: all 0.3s ease;
-  padding: 4px 12px;
-  border-radius: 12px;
+  transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
 }
 
 .nav-item span:first-child {
-  font-size: 1.4rem;
-  transition: transform 0.2s;
+  font-size: 1.5rem;
+  transition: transform 0.3s;
+}
+.nav-item .label {
+  font-size: 0.7rem;
+  font-weight: 500;
+  opacity: 0.8;
 }
 
 .nav-item.active {
   color: var(--accent-color);
-  background: rgba(197, 160, 89, 0.1);
 }
-
 .nav-item.active span:first-child {
-  transform: translateY(-2px);
+  transform: translateY(-4px);
+}
+.nav-item.active .label {
+  opacity: 1;
+  font-weight: 700;
 }
 
-/* Global Transition */
-.page-enter-active,
-.page-leave-active {
-  transition: opacity 0.3s;
+/* --- Transitions --- */
+.fade-slide-enter-active,
+.fade-slide-leave-active {
+  transition: all 0.2s ease;
 }
-.page-enter-from,
-.page-leave-to {
+.fade-slide-enter-from {
   opacity: 0;
+  transform: translateY(5px);
+}
+.fade-slide-leave-to {
+  opacity: 0;
+  transform: translateY(-5px);
 }
 </style>
