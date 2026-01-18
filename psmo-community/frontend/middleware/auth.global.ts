@@ -5,7 +5,14 @@
  */
 export default defineNuxtRouteMiddleware((to, from) => {
   // 로그인 없이 볼 수 있는 페이지 목록 (프리픽스 매칭)
-  const publicRoutes = ["/login", "/about", "/error", "/market", "/community"];
+  const publicRoutes = [
+    "/login",
+    "/about",
+    "/error",
+    "/market",
+    "/community",
+    "/blacklist",
+  ];
 
   // 1. 정확히 매칭되는 경로 (메인 페이지 등)
   if (to.path === "/") return;
@@ -14,7 +21,8 @@ export default defineNuxtRouteMiddleware((to, from) => {
   //    또는 페이지 자체적으로 auth: false 메타데이터를 가진 경우
   const isPublicPath = publicRoutes.some((path) => to.path.startsWith(path));
 
-  if (isPublicPath || to.meta.auth === false) {
+  // publicPath라도 auth: true가 명시되어 있으면 통과시키지 않음 (검사 진행)
+  if ((isPublicPath && to.meta.auth !== true) || to.meta.auth === false) {
     return; // 그냥 통과
   }
 

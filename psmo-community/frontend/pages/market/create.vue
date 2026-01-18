@@ -7,6 +7,10 @@ const { compressImage } = useImageOptimization();
 const router = useRouter();
 const route = useRoute();
 
+definePageMeta({
+  auth: true,
+});
+
 const form = ref<ProductCreateRequest>({
   title: "",
   description: "",

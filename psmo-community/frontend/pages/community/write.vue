@@ -6,6 +6,10 @@ import { BoardCategory, useBoard } from "~/composables/useBoard";
 const { createPost } = useBoard();
 const router = useRouter();
 
+definePageMeta({
+  auth: true,
+});
+
 const form = ref<PostCreateRequest>({
   title: "",
   content: "",

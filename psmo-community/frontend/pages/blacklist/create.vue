@@ -8,6 +8,10 @@ const { reportBadUser, updateBadUser, fetchBadUserById } = useBlacklist();
 const router = useRouter();
 const route = useRoute();
 
+definePageMeta({
+  auth: true,
+});
+
 const form = ref<BadUserCreateRequest>({
   region: "",
   reason: "",
