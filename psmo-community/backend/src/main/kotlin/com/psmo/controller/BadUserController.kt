@@ -20,13 +20,14 @@ import java.util.*
 import io.ktor.utils.io.jvm.javaio.toInputStream
 
 fun Route.badUserRoutes(badUserService: BadUserService) {
-    // 조회 (공개? 혹은 로그인 필요? 일단 로그인 필요로 설정)
-    authenticate("auth-jwt") {
-        get<BadUserListResource> { resource ->
-            val result = badUserService.searchBadUsers(resource.keyword)
-            call.respond(result)
-        }
+    // 조회 (공개 - 로그인 불필요)
+    get<BadUserListResource> { resource ->
+        val result = badUserService.searchBadUsers(resource.keyword)
+        call.respond(result)
+    }
 
+    // 등록 (로그인 필요)
+    authenticate("auth-jwt") {
         post<BadUserCreateResource> {
             val user = call.principal<User>()!!
             
