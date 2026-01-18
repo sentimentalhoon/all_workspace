@@ -99,12 +99,26 @@ onMounted(() => {
       >
         <div class="img-wrapper">
           <img
-            :src="
-              item.images[0]?.url ||
-              'https://via.placeholder.com/300x200?text=No+Image'
-            "
+            v-if="item.images[0]?.url"
+            :src="item.images[0].url"
             class="thumbnail"
           />
+          <div v-else class="thumbnail no-image">
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke-width="1.5"
+              stroke="currentColor"
+              class="icon"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                d="M2.25 15.75l5.159-5.159a2.25 2.25 0 013.182 0l5.159 5.159m-1.5-1.5l1.409-1.409a2.25 2.25 0 013.182 0l2.909 2.909m-18 3.75h16.5a1.5 1.5 0 001.5-1.5V6a1.5 1.5 0 00-1.5-1.5H3.75A1.5 1.5 0 002.25 6v12a1.5 1.5 0 001.5 1.5zm10.5-11.25h.008v.008h-.008V8.25zm.375 0a.375.375 0 11-.75 0 .375.375 0 01.75 0z"
+              />
+            </svg>
+          </div>
           <div
             v-if="item.status !== 'SALE'"
             class="status-badge"
@@ -253,6 +267,19 @@ onMounted(() => {
   width: 100%;
   height: 100%;
   object-fit: cover;
+}
+
+.no-image {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #e0e0e0;
+  color: #888;
+}
+
+.no-image .icon {
+  width: 48px;
+  height: 48px;
 }
 
 .status-badge {
