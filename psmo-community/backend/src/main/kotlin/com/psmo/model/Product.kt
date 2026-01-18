@@ -118,26 +118,17 @@ fun ResultRow.toProduct(): Product = Product(
     viewCount = this[Products.viewCount],
     createdAt = this[Products.createdAt],
     updatedAt = this[Products.updatedAt],
-    realEstateInfo = if (this.hasValue(ProductRealEstateInfos.pcCount)) { // Check if joined column exists/not null
-        // Exposed's nullable join handling is tricky. If leftJoin returned nulls, fields are null.
-        // But pcCount is integer().default(0), so checking ID or nullable column is better.
-        // Let's check if the ID column of the joined table is present and not null
-        // But Products table also has ID. 
-        // We can check a mandatory column from RealEstate.
-        try {
-             if (this[ProductRealEstateInfos.locationCity] != null) {
-                 ProductRealEstateInfo(
-                     this[ProductRealEstateInfos.locationCity],
-                     this[ProductRealEstateInfos.locationDistrict],
-                     this[ProductRealEstateInfos.pcCount],
-                     this[ProductRealEstateInfos.deposit],
-                     this[ProductRealEstateInfos.monthlyRent],
-                     this[ProductRealEstateInfos.managementFee],
-                     this[ProductRealEstateInfos.averageMonthlyRevenue],
-                     this[ProductRealEstateInfos.floor],
-                     this[ProductRealEstateInfos.areaMeters]
-                 )
-             } else null
-        } catch(e: Exception) { null } // Column might not be in result set if not joined
+    realEstateInfo = if (this.getOrNull(ProductRealEstateInfos.id) != null) {
+        ProductRealEstateInfo(
+            this[ProductRealEstateInfos.locationCity],
+            this[ProductRealEstateInfos.locationDistrict],
+            this[ProductRealEstateInfos.pcCount],
+            this[ProductRealEstateInfos.deposit],
+            this[ProductRealEstateInfos.monthlyRent],
+            this[ProductRealEstateInfos.managementFee],
+            this[ProductRealEstateInfos.averageMonthlyRevenue],
+            this[ProductRealEstateInfos.floor],
+            this[ProductRealEstateInfos.areaMeters]
+        )
     } else null
 )
