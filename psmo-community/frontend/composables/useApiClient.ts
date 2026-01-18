@@ -7,7 +7,6 @@ export const useApiClient = () => {
   // 브라우저 쿠키에 'accessToken'이라는 이름으로 토큰을 저장합니다.
   const accessToken = useCookie<string | null>("accessToken", {
     maxAge: 60 * 60 * 24 * 7, // 7일 동안 유지
-    watch: false, // 쿠키 값이 바뀌어도 반응형으로 동작하지 않게 설정 (성능 최적화)
   });
 
   const isRefreshing = useState("isRefreshing", () => false);
@@ -24,14 +23,14 @@ export const useApiClient = () => {
    */
   const isTokenExpiringSoon = (
     token: string,
-    thresholdSeconds = 300 // 5분(300초) 남았으면 만료된 것으로 간주
+    thresholdSeconds = 300, // 5분(300초) 남았으면 만료된 것으로 간주
   ): boolean => {
     try {
       const parts = token.split(".");
       const payloadPart = parts[1];
       if (!payloadPart) return true;
       const payload = JSON.parse(
-        atob(payloadPart.replace(/-/g, "+").replace(/_/g, "/"))
+        atob(payloadPart.replace(/-/g, "+").replace(/_/g, "/")),
       );
       if (!payload.exp) return false;
       const now = Math.floor(Date.now() / 1000);
@@ -54,7 +53,7 @@ export const useApiClient = () => {
         "/api/auth/refresh",
         {
           method: "POST", // POST 요청
-        }
+        },
       );
 
       const newToken = refreshResponse.token.accessToken;
@@ -76,7 +75,7 @@ export const useApiClient = () => {
    */
   const fetchClient = async <T = any>(
     url: string,
-    options: any = {}
+    options: any = {},
   ): Promise<T> => {
     const defaultHeaders: Record<string, string> = {};
 
