@@ -171,6 +171,7 @@ const submit = async () => {
         <common-image-uploader
           :existing-images="existingImages"
           :max-count="20"
+          :enable-blur="true"
           @update:image-pairs="(f: any[]) => (files = f)"
           @update:delete-ids="(ids: number[]) => (deleteImageIds = ids)"
           @update:processing="(state: boolean) => (processingImages = state)"

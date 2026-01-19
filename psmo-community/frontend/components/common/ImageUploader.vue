@@ -14,6 +14,10 @@ const props = defineProps({
     type: Array as PropType<ExistingImage[]>,
     default: () => [],
   },
+  enableBlur: {
+    type: Boolean,
+    default: false,
+  },
 });
 
 const newFiles = ref<File[]>([]);
@@ -40,7 +44,7 @@ import * as faceapi from "face-api.js";
 const { compressImage } = useImageOptimization();
 
 onMounted(async () => {
-  if (process.client) {
+  if (process.client && props.enableBlur) {
     try {
       await faceapi.nets.tinyFaceDetector.loadFromUri(
         "https://justadudewhohacks.github.io/face-api.js/models",
@@ -55,6 +59,9 @@ onMounted(async () => {
 const processImageWithBlur = async (
   file: File,
 ): Promise<{ original: File; blurred: File | null }> => {
+  if (!props.enableBlur) {
+    return { original: file, blurred: null };
+  }
   return new Promise((resolve) => {
     const img = document.createElement("img");
     const reader = new FileReader();
