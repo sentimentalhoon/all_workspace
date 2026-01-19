@@ -37,6 +37,8 @@ const emit = defineEmits<{
 // Face API Models Loading
 import * as faceapi from "face-api.js";
 
+const { compressImage } = useImageOptimization();
+
 onMounted(async () => {
   if (process.client) {
     try {
