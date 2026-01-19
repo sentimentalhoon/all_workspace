@@ -1,7 +1,7 @@
 <script setup lang="ts">
 interface ExistingImage {
   id: number;
-  url: string;
+  imageUrl: string;
   thumbnailUrl?: string;
 }
 
@@ -228,7 +228,7 @@ const visibleExistingImages = computed(() => {
           :key="'exist-' + img.id"
           class="preview-item existing"
         >
-          <img :src="img.thumbnailUrl || img.url" />
+          <img :src="img.thumbnailUrl || img.imageUrl" />
           <button
             type="button"
             class="remove-btn"

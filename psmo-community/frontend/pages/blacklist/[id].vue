@@ -75,7 +75,7 @@ const setActiveImage = (index: number) => {
         class="gallery-section glass-panel"
       >
         <div class="main-image-frame">
-          <img :src="item.images[activeImageIndex].url" class="main-img" />
+          <img :src="item.images[activeImageIndex].imageUrl" class="main-img" />
         </div>
         <div class="thumbnails" v-if="item.images.length > 1">
           <div

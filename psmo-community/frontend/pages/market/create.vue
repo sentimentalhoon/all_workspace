@@ -39,7 +39,7 @@ const form = ref<ProductCreateRequest>({
 const isStoreTrading = computed(() => form.value.category === "PC_BUSINESS");
 const files = ref<File[]>([]);
 const previewUrls = ref<string[]>([]);
-const existingImages = ref<{ id: number; url: string }[]>([]); // Existing images
+const existingImages = ref<{ id: number; imageUrl: string }[]>([]); // Existing images
 const deleteImageIds = ref<number[]>([]); // IDs to delete
 
 const loading = ref(false);
@@ -67,7 +67,7 @@ onMounted(async () => {
       if (data.images) {
         existingImages.value = data.images.map((img: any) => ({
           id: img.id,
-          url: img.url,
+          imageUrl: img.imageUrl,
         }));
       }
 

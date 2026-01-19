@@ -78,8 +78,8 @@ onMounted(async () => {
     <div class="gallery-section glass-panel">
       <div class="main-image">
         <img
-          v-if="product.images[activeImageIndex]?.url"
-          :src="product.images[activeImageIndex]?.url"
+          v-if="product.images[activeImageIndex]?.imageUrl"
+          :src="product.images[activeImageIndex]?.imageUrl"
           alt="Main Product Image"
           class="zoom-img"
         />

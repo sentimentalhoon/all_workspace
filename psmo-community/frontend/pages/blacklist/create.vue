@@ -20,9 +20,9 @@ const form = ref<BadUserCreateRequest>({
 });
 
 const files = ref<{ original: File; blurred: File | null }[]>([]);
-const existingImages = ref<{ id: number; url: string; thumbnailUrl: string }[]>(
-  [],
-);
+const existingImages = ref<
+  { id: number; imageUrl: string; thumbnailUrl: string }[]
+>([]);
 const deleteImageIds = ref<number[]>([]);
 
 const loading = ref(false);
