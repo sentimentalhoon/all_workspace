@@ -55,34 +55,9 @@ const handleTitleClick = () => {
   }
 };
 
-[
-  {
-    TargetContent: "const goBack = () => {\n  router.back();\n};",
-    ReplacementContent:
-      'const goBack = () => {\n  router.back();\n};\n\nconst currentStyle = ref("");\nonMounted(() => {\n  const styles = ["style-neon", "style-underline", "style-3d"];\n  currentStyle.value = styles[Math.floor(Math.random() * styles.length)];\n});',
-    StartLine: 58,
-    EndLine: 60,
-    AllowMultiple: false,
-  },
-  {
-    TargetContent:
-      '          <h1\n            :key="pageTitle"\n            @click="handleTitleClick"\n            class="clickable-title"\n          >\n            {{ pageTitle }}\n          </h1>',
-    ReplacementContent:
-      '          <h1\n            :key="pageTitle"\n            @click="handleTitleClick"\n            class="clickable-title"\n            :class="currentStyle"\n          >\n            {{ pageTitle }}\n          </h1>',
-    StartLine: 111,
-    EndLine: 117,
-    AllowMultiple: false,
-  },
-  {
-    TargetContent:
-      ".header-center h1 {\n  margin: 0;\n  font-size: 1.2rem;\n  font-weight: 800;\n  color: #ffffff;\n  \n  white-space: nowrap;\n  overflow: hidden;\n  text-overflow: ellipsis;\n  cursor: pointer;\n}",
-    ReplacementContent:
-      ".clickable-title {\n  margin: 0;\n  font-size: 1.2rem;\n  font-weight: 800;\n  color: #ffffff;\n  white-space: nowrap;\n  overflow: hidden;\n  text-overflow: ellipsis;\n  cursor: pointer;\n  display: inline-block;\n  transition: all 0.3s ease;\n}\n\n/* Style 1: Neon Glow */\n.style-neon {\n  color: #fff;\n  text-shadow: 0 0 5px #c5a059, 0 0 15px #c5a059;\n}\n\n/* Style 2: Modern Underline */\n.style-underline {\n  color: #fff;\n  border-bottom: 3px solid #c5a059;\n  padding-bottom: 2px;\n}\n\n/* Style 3: 3D Shadow */\n.style-3d {\n  color: #ffffff;\n  text-shadow: 3px 3px 0px #16213e, 5px 5px 10px rgba(0,0,0,0.5);\n}",
-    StartLine: 307,
-    EndLine: 317,
-    AllowMultiple: false,
-  },
-];
+const goBack = () => {
+  router.back();
+};
 </script>
 
 <template>
