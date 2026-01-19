@@ -122,6 +122,7 @@ const handleSearch = async () => {
 </script>
 
 <style scoped lang="scss">
+@use "sass:color";
 /* --- Theme Variables --- */
 $color-primary: #1e88e5;
 $color-accent: #c5a059;
@@ -204,7 +205,7 @@ $text-secondary: #b0b0b0;
     min-width: 80px;
 
     &:hover {
-      background: lighten($color-primary, 10%);
+      background: color.adjust($color-primary, $lightness: 10%);
     }
     &:disabled {
       opacity: 0.7;
@@ -226,7 +227,7 @@ $text-secondary: #b0b0b0;
   transition: all 0.2s;
 
   &:hover {
-    background: lighten($color-danger, 5%);
+    background: color.adjust($color-danger, $lightness: 5%);
     transform: translateY(-2px);
   }
 }

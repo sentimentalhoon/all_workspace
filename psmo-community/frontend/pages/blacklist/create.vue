@@ -209,6 +209,7 @@ const submit = async () => {
 </template>
 
 <style scoped lang="scss">
+@use "sass:color";
 /* --- Variables --- */
 $color-primary: #1e88e5;
 $color-accent: #c5a059;
@@ -365,7 +366,7 @@ $text-secondary: #b0b0b0;
   &:hover:not(:disabled) {
     transform: translateY(-2px);
     box-shadow: 0 8px 25px rgba(233, 69, 96, 0.4);
-    background: lighten($color-danger, 5%);
+    background: color.adjust($color-danger, $lightness: 5%);
   }
 
   &:disabled {
