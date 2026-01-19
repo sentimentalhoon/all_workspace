@@ -163,8 +163,18 @@ onMounted(() => {
 
   .banner-list {
     display: flex;
-    flex-direction: column;
+    flex-direction: row;
     gap: 12px;
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+    padding-bottom: 8px; /* For scrollbar space */
+
+    /* Hide scrollbar for cleaner look */
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+    &::-webkit-scrollbar {
+      display: none;
+    }
 
     .banner-item {
       display: block;
@@ -172,6 +182,9 @@ onMounted(() => {
       overflow: hidden;
       box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
       transition: transform 0.2s;
+      flex-shrink: 0;
+      width: 280px; /* Consistent width */
+      scroll-snap-align: start;
 
       &:hover {
         transform: translateY(-2px);
@@ -181,6 +194,8 @@ onMounted(() => {
         width: 100%;
         height: auto;
         display: block;
+        object-fit: cover;
+        aspect-ratio: 16/9;
       }
     }
 

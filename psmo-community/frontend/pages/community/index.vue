@@ -181,11 +181,7 @@ onMounted(() => {
     display: flex;
     flex-direction: column;
     gap: 24px;
-
-    @media (min-width: 768px) {
-      display: grid;
-      grid-template-columns: 1fr 300px;
-    }
+    /* Unifying to Mobile-style layout (Single column) */
   }
 
   .board-area {
@@ -328,11 +324,7 @@ onMounted(() => {
     display: flex;
     flex-direction: column;
     gap: 24px;
-    order: -1; /* Mobile: Top */
-
-    @media (min-width: 768px) {
-      order: 0; /* Desktop: Right (Natural Order) */
-    }
+    order: -1; /* Always Top */
 
     .telegram-banner {
       display: flex;
