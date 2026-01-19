@@ -44,8 +44,14 @@ fun Route.boardRoutes(service: BoardService) {
     authenticate("auth-jwt") {
         post<BoardResources.Posts> {
             val principal = call.principal<JWTPrincipal>()
-            val userId = principal!!.payload.getClaim("id").asLong()
-            val role = principal.payload.getClaim("role").asString() // Claim must exist
+            val userId = principal?.payload?.getClaim("id")?.asLong()
+            val role = principal?.payload?.getClaim("role")?.asString() ?: "MEMBER"
+
+            if (userId == null) {
+                call.respond(HttpStatusCode.Unauthorized, mapOf("status" to "error", "message" to "Invalid User Token"))
+                return@post
+            }
+
             val request = call.receive<PostCreateRequest>()
 
             if (request.category == com.psmo.model.dto.BoardCategory.NOTICE && role != com.psmo.model.UserRole.ADMIN.name) {
