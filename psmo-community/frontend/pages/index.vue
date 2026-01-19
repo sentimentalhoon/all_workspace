@@ -204,61 +204,144 @@ onMounted(async () => {
         </div>
       </section>
 
-      <!-- Affiliate Banners -->
+      <!-- Partner Banners (Premium Carousel) -->
       <section class="content-section">
         <div class="section-header">
-          <h3>🤝 제휴 업체</h3>
+          <h3>🏆 프리미엄 제휴</h3>
+          <span class="ad-label">AD</span>
         </div>
-        <div class="banner-scroll-container">
-          <div class="banner-card glass-panel" title="PC방 먹거리 납품">
-            <div class="banner-icon">🍔</div>
-            <div class="banner-info">
-              <span class="banner-title">푸드 딜리버리</span>
-              <span class="banner-desc">전국 최저가 식자재 납품</span>
+        <div class="partner-slider">
+          <!-- Card 1: Food -->
+          <div class="partner-card food-theme" title="푸드 딜리버리">
+            <div class="card-bg"></div>
+            <div class="card-content">
+              <span class="partner-badge">BEST</span>
+              <div class="partner-icon">🍔</div>
+              <div class="partner-text">
+                <h4>푸드 딜리버리</h4>
+                <p>전국 최저가 식자재</p>
+              </div>
             </div>
           </div>
-          <div class="banner-card glass-panel" title="PC 유지보수">
-            <div class="banner-icon">💻</div>
-            <div class="banner-info">
-              <span class="banner-title">컴닥터 24시</span>
-              <span class="banner-desc">야간 긴급 출동 서비스</span>
+          <!-- Card 2: Tech -->
+          <div class="partner-card tech-theme" title="컴닥터 24시">
+            <div class="card-bg"></div>
+            <div class="card-content">
+              <span class="partner-badge">24H</span>
+              <div class="partner-icon">💻</div>
+              <div class="partner-text">
+                <h4>컴닥터 24시</h4>
+                <p>야간 긴급 출동</p>
+              </div>
             </div>
           </div>
-          <div class="banner-card glass-panel" title="인테리어 리모델링">
-            <div class="banner-icon">🎨</div>
-            <div class="banner-info">
-              <span class="banner-title">공간 디자인</span>
-              <span class="banner-desc">프리미엄 인테리어 시공</span>
+          <!-- Card 3: Design -->
+          <div class="partner-card design-theme" title="공간 디자인">
+            <div class="card-bg"></div>
+            <div class="card-content">
+              <span class="partner-badge">NEW</span>
+              <div class="partner-icon">🎨</div>
+              <div class="partner-text">
+                <h4>공간 디자인</h4>
+                <p>프리미엄 인테리어</p>
+              </div>
             </div>
           </div>
         </div>
       </section>
 
-      <!-- Notices -->
+      <!-- Notice Feed (Modern List) -->
       <section class="content-section">
         <div class="section-header">
-          <h3>📢 공지사항</h3>
-          <NuxtLink to="/community" class="more-btn">더보기</NuxtLink>
+          <h3>📢 성피 뉴스</h3>
+          <NuxtLink to="/community" class="more-link">전체보기</NuxtLink>
         </div>
-        <div class="notice-list glass-panel">
-          <div class="notice-item" @click="navigateTo('/community')">
-            <span class="notice-tag important">필독</span>
-            <span class="notice-title">성피천국 커뮤니티 이용 수칙 안내</span>
-            <span class="notice-date">4.20</span>
+        <div class="notice-feed glass-panel">
+          <div class="feed-item" @click="navigateTo('/community')">
+            <div class="feed-icon important">
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="20"
+                height="20"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
+                <path
+                  d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"
+                ></path>
+                <line x1="12" y1="9" x2="12" y2="13"></line>
+                <line x1="12" y1="17" x2="12.01" y2="17"></line>
+              </svg>
+            </div>
+            <div class="feed-content">
+              <span class="feed-title">커뮤니티 이용 수칙 안내</span>
+              <span class="feed-meta">필독 · 4.20</span>
+            </div>
+            <div class="feed-arrow">›</div>
           </div>
-          <div class="notice-item" @click="navigateTo('/community')">
-            <span class="notice-tag event">이벤트</span>
-            <span class="notice-title"
-              >[오픈기념] 포인트 2배 적립 이벤트 진행!</span
-            >
-            <span class="notice-date">4.18</span>
+
+          <div class="feed-item" @click="navigateTo('/community')">
+            <div class="feed-icon event">
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="20"
+                height="20"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
+                <path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"></path>
+                <path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"></path>
+                <path d="M4 22h16"></path>
+                <path
+                  d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22"
+                ></path>
+                <path
+                  d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22"
+                ></path>
+                <path d="M18 2H6v7a6 6 0 0 0 12 0V2z"></path>
+              </svg>
+            </div>
+            <div class="feed-content">
+              <span class="feed-title">[오픈기념] 포인트 2배 적립 이벤트</span>
+              <span class="feed-meta">이벤트 · 4.18</span>
+            </div>
+            <div class="feed-arrow">›</div>
           </div>
-          <div class="notice-item" @click="navigateTo('/community')">
-            <span class="notice-tag">점검</span>
-            <span class="notice-title"
-              >서버 안정화 작업 안내 (02:00 ~ 04:00)</span
-            >
-            <span class="notice-date">4.15</span>
+
+          <div class="feed-item" @click="navigateTo('/community')">
+            <div class="feed-icon system">
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="20"
+                height="20"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
+                <circle cx="12" cy="12" r="3"></circle>
+                <path
+                  d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"
+                ></path>
+              </svg>
+            </div>
+            <div class="feed-content">
+              <span class="feed-title"
+                >서버 안정화 작업 안내 (02:00 ~ 04:00)</span
+              >
+              <span class="feed-meta">점검 · 4.15</span>
+            </div>
+            <div class="feed-arrow">›</div>
           </div>
         </div>
       </section>
