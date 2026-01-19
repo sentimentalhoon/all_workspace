@@ -6,7 +6,7 @@ const { navigateTo } = useRouter();
   <section class="content-section">
     <div class="section-header">
       <h3>📢 성피 뉴스</h3>
-      <NuxtLink to="/community" class="more-link">전체보기</NuxtLink>
+      <NuxtLink to="/community" class="more-btn">전체보기</NuxtLink>
     </div>
     <div class="notice-feed glass-panel">
       <!-- Item 1: Important -->
@@ -117,7 +117,7 @@ const { navigateTo } = useRouter();
     color: $text-primary;
   }
 
-  .more-link {
+  .more-btn {
     font-size: 0.85rem;
     color: $text-secondary;
     text-decoration: none;
