@@ -20,10 +20,13 @@ export default defineNuxtConfig({
   modules: ["@pinia/nuxt", "@vite-pwa/nuxt"],
 
   pwa: {
+    registerType: "autoUpdate",
     manifest: {
       name: "성피천국",
       short_name: "성피천국",
       description: "PC방 사장님들의 커뮤니티 성피천국",
+      start_url: "/",
+      scope: "/",
       theme_color: "#121212",
       background_color: "#121212",
       display: "standalone",
