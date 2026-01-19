@@ -609,126 +609,204 @@ $text-secondary: #b0b0b0;
       color: #555;
     }
 
-    /* --- Affiliate Banners --- */
-    .banner-scroll-container {
+    /* --- Premium Partner Banners --- */
+    .partner-slider {
       display: flex;
       gap: 16px;
       overflow-x: auto;
-      padding-bottom: 8px; /* For scrollbar space */
-      scroll-behavior: smooth;
+      padding: 4px;
+      padding-bottom: 12px;
+      scroll-snap-type: x mandatory;
       -webkit-overflow-scrolling: touch;
 
-      /* Hide scrollbar but keep functionality */
       &::-webkit-scrollbar {
-        height: 4px;
-      }
-      &::-webkit-scrollbar-thumb {
-        background: rgba(255, 255, 255, 0.1);
-        border-radius: 4px;
+        height: 0; /* Hide scrollbar completely for cleaner look */
       }
     }
 
-    .banner-card {
-      min-width: 240px;
-      padding: 16px;
-      display: flex;
-      align-items: center;
-      gap: 16px;
+    .partner-card {
+      position: relative;
+      min-width: 260px;
+      height: 140px;
+      border-radius: 20px;
+      overflow: hidden;
       cursor: pointer;
-      transition:
-        transform 0.2s,
-        background 0.2s;
+      scroll-snap-align: center;
+      transition: transform 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
 
       &:hover {
-        background: rgba(255, 255, 255, 0.08);
-        transform: translateY(-2px);
+        transform: translateY(-4px) scale(1.02);
       }
 
-      .banner-icon {
-        font-size: 2rem;
-        width: 48px;
-        height: 48px;
-        background: rgba(255, 255, 255, 0.05);
-        border-radius: 12px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
+      /* Background Gradients */
+      &.food-theme .card-bg {
+        background: linear-gradient(135deg, #ff9966 0%, #ff5e62 100%);
+      }
+      &.tech-theme .card-bg {
+        background: linear-gradient(135deg, #56ab2f 0%, #a8e063 100%);
+      }
+      &.design-theme .card-bg {
+        background: linear-gradient(135deg, #4568dc 0%, #b06ab3 100%);
       }
 
-      .banner-info {
+      .card-bg {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        opacity: 0.8;
+        transition: opacity 0.3s;
+      }
+      &:hover .card-bg {
+        opacity: 1;
+      }
+
+      .card-content {
+        position: relative;
+        z-index: 2;
+        padding: 20px;
+        height: 100%;
         display: flex;
         flex-direction: column;
+        justify-content: space-between;
+        background: rgba(0, 0, 0, 0.2); /* Soft overlay */
+        backdrop-filter: blur(2px);
+      }
 
-        .banner-title {
+      .partner-badge {
+        align-self: flex-start;
+        padding: 4px 10px;
+        border-radius: 20px;
+        background: rgba(255, 255, 255, 0.25);
+        color: white;
+        font-size: 0.7rem;
+        font-weight: 800;
+        backdrop-filter: blur(5px);
+        border: 1px solid rgba(255, 255, 255, 0.3);
+      }
+
+      .partner-icon {
+        position: absolute;
+        top: 20px;
+        right: 20px;
+        font-size: 2.5rem;
+        opacity: 0.8;
+        filter: drop-shadow(0 4px 10px rgba(0, 0, 0, 0.3));
+      }
+
+      .partner-text {
+        h4 {
+          margin: 0;
+          font-size: 1.1rem;
+          color: white;
           font-weight: 700;
-          color: $text-primary;
-          font-size: 0.95rem;
-          margin-bottom: 2px;
+          text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
         }
-
-        .banner-desc {
-          font-size: 0.8rem;
-          color: $text-secondary;
+        p {
+          margin: 4px 0 0;
+          font-size: 0.85rem;
+          color: rgba(255, 255, 255, 0.9);
         }
       }
     }
 
-    /* --- Notice List --- */
-    .notice-list {
-      padding: 8px 0;
+    /* --- Modern Notice Feed --- */
+    .notice-feed {
+      padding: 0;
+      overflow: hidden;
     }
 
-    .notice-item {
+    .feed-item {
       display: flex;
       align-items: center;
-      padding: 12px 16px;
+      padding: 16px 20px;
       border-bottom: 1px solid rgba(255, 255, 255, 0.05);
       cursor: pointer;
+      position: relative;
       transition: background 0.2s;
 
       &:hover {
-        background: rgba(255, 255, 255, 0.03);
+        background: rgba(255, 255, 255, 0.05);
+      }
+      &:active {
+        background: rgba(255, 255, 255, 0.08);
       }
 
       &:last-child {
         border-bottom: none;
       }
 
-      .notice-tag {
-        font-size: 0.7rem;
-        padding: 2px 6px;
-        border-radius: 4px;
-        background: rgba(255, 255, 255, 0.1);
-        color: $text-secondary;
-        margin-right: 12px;
-        font-weight: bold;
+      .feed-icon {
+        width: 40px;
+        height: 40px;
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-right: 16px;
         flex-shrink: 0;
 
         &.important {
-          background: rgba(233, 69, 96, 0.2);
+          background: rgba(233, 69, 96, 0.15);
           color: #ff6b6b;
         }
         &.event {
-          background: rgba(197, 160, 89, 0.2);
+          background: rgba(197, 160, 89, 0.15);
           color: #ffd54f;
+        }
+        &.system {
+          background: rgba(158, 158, 158, 0.15);
+          color: #b0b0b0;
         }
       }
 
-      .notice-title {
+      .feed-content {
         flex: 1;
-        font-size: 0.9rem;
-        color: $text-primary;
-        white-space: nowrap;
-        overflow: hidden;
-        text-overflow: ellipsis;
+        min-width: 0;
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+
+        .feed-title {
+          font-size: 0.95rem;
+          color: $text-primary;
+          font-weight: 500;
+          white-space: nowrap;
+          overflow: hidden;
+          text-overflow: ellipsis;
+        }
+
+        .feed-meta {
+          font-size: 0.8rem;
+          color: $text-secondary;
+        }
       }
 
-      .notice-date {
-        font-size: 0.75rem;
-        color: $text-secondary;
+      .feed-arrow {
+        color: rgba(255, 255, 255, 0.2);
+        font-size: 1.2rem;
         margin-left: 12px;
-        flex-shrink: 0;
+        transition:
+          transform 0.2s,
+          color 0.2s;
       }
+
+      &:hover .feed-arrow {
+        transform: translateX(3px);
+        color: rgba(255, 255, 255, 0.6);
+      }
+    }
+
+    /* Ad Label */
+    .ad-label {
+      font-size: 0.7rem;
+      color: rgba(255, 255, 255, 0.4);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      padding: 2px 6px;
+      border-radius: 4px;
+      margin-left: auto;
     }
 
     .status-badge {
