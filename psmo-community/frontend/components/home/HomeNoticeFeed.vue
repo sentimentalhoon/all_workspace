@@ -1,7 +1,3 @@
-<script setup lang="ts">
-const { navigateTo } = useRouter();
-</script>
-
 <template>
   <section class="content-section">
     <div class="section-header">
