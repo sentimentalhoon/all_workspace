@@ -4,8 +4,6 @@ import type { BadUser } from "~/composables/useBlacklist";
 defineProps<{
   users: BadUser[];
 }>();
-
-const { navigateTo } = useRouter(); // Use composable directly or import it? Nuxt auto-imports.
 </script>
 
 <template>

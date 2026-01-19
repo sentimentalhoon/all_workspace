@@ -4,8 +4,6 @@ import type { Product } from "~/composables/useMarket";
 defineProps<{
   products: Product[];
 }>();
-
-const { navigateTo } = useRouter();
 </script>
 
 <template>
