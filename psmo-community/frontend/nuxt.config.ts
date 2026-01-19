@@ -45,7 +45,8 @@ export default defineNuxtConfig({
       ],
     },
     workbox: {
-      // navigateFallback: "/",  <-- Removed to fix non-precached-url error in SSR
+      navigateFallback: null,
+      navigateFallbackDenylist: [/^\/$/],
     },
     devOptions: {
       enabled: true,
