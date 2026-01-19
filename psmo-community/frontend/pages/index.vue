@@ -120,7 +120,7 @@ onMounted(async () => {
                 v-if="user.images && user.images.length > 0"
                 class="user-avatar"
               >
-                <img :src="user.images[0].thumbnailUrl" alt="thumb" />
+                <img :src="user.images[0]?.thumbnailUrl" alt="thumb" />
               </div>
               <div v-else class="user-avatar placeholder">
                 <span>📍</span>
@@ -611,21 +611,42 @@ $text-secondary: #b0b0b0;
 
 /* --- Mobile Responsiveness --- */
 @media (max-width: 600px) {
-  .quick-menu {
-    grid-template-columns: repeat(2, 1fr);
+  .hero-section {
+    padding: 20px;
+
+    .hero-content {
+      flex-direction: row; /* Keep row for compact height */
+      align-items: center;
+      gap: 12px;
+
+      .greeting-box {
+        .sub-greeting {
+          font-size: 0.8rem;
+          margin-bottom: 2px;
+        }
+        h1.username {
+          font-size: 1.2rem;
+        }
+      }
+
+      .stats-box {
+        width: auto;
+        text-align: right;
+        border-top: none;
+        padding-top: 0;
+
+        .label {
+          font-size: 0.7rem;
+        }
+        .value {
+          font-size: 1.2rem;
+        }
+      }
+    }
   }
 
-  .hero-content {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 16px;
-
-    .stats-box {
-      width: 100%;
-      text-align: left;
-      border-top: 1px solid rgba(255, 255, 255, 0.1);
-      padding-top: 12px;
-    }
+  .quick-menu {
+    grid-template-columns: repeat(2, 1fr);
   }
 }
 
