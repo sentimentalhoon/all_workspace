@@ -1,0 +1,42 @@
+@use "variables" as *;
+
+/* --- Common Utility Classes --- */
+.glass-panel {
+  background: $glass-bg;
+  backdrop-filter: blur($glass-blur);
+  -webkit-backdrop-filter: blur($glass-blur);
+  border: 1px solid $glass-border;
+  border-radius: 16px;
+  box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
+}
+
+.gold-text {
+  color: $color-accent;
+}
+.red-glow {
+  background: rgba(233, 69, 96, 0.2);
+  color: #ff6b6b;
+}
+.blue-glow {
+  background: rgba(30, 136, 229, 0.2);
+  color: #64b5f6;
+}
+.gold-glow {
+  background: rgba(197, 160, 89, 0.2);
+  color: #ffd54f;
+}
+.green-glow {
+  background: rgba(76, 175, 80, 0.2);
+  color: #81c784;
+}
+
+/* Transitions */
+.fade-enter-active,
+.fade-leave-active {
+  transition: opacity 0.3s ease;
+}
+
+.fade-enter-from,
+.fade-leave-to {
+  opacity: 0;
+}

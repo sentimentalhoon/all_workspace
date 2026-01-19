@@ -36,7 +36,5 @@ export default defineNuxtConfig({
     // devProxy는 routeRules로 대체됨
   },
 
-  css: [
-    // '~/assets/main.scss' // 나중에 공통 CSS 파일을 만들면 주석을 풀어서 씁니다.
-  ],
+  css: ["~/assets/scss/main.scss"],
 });
