@@ -27,6 +27,30 @@
           >
             자유게시판
           </button>
+          <button
+            :class="{ active: currentTab === 'QA' }"
+            @click="currentTab = 'QA'"
+          >
+            질문게시판
+          </button>
+        </div>
+
+        <!-- Sub Categories -->
+        <div v-if="availableSubCategories.length > 0" class="sub-category-tabs">
+          <button
+            :class="{ active: currentSubTab === undefined }"
+            @click="currentSubTab = undefined"
+          >
+            전체
+          </button>
+          <button
+            v-for="sub in availableSubCategories"
+            :key="sub.value"
+            :class="{ active: currentSubTab === sub.value }"
+            @click="currentSubTab = sub.value"
+          >
+            {{ sub.label }}
+          </button>
         </div>
 
         <div class="board-actions">
@@ -48,6 +72,9 @@
               <span class="category-badge" :class="post.category">{{
                 getCategoryLabel(post.category)
               }}</span>
+              <span v-if="post.subCategory" class="sub-category-badge">
+                {{ getSubCategoryLabel(post.subCategory) }}
+              </span>
               <span class="date">{{ formatDate(post.createdAt) }}</span>
             </div>
             <div class="post-title">
@@ -96,25 +123,61 @@
 </template>
 
 <script setup lang="ts">
-import { onMounted, ref, watch } from "vue";
+import { computed, onMounted, ref, watch } from "vue";
 import { useRouter } from "vue-router";
 import BannerSection from "~/components/community/BannerSection.vue";
-import { useBoard } from "~/composables/useBoard";
+import {
+  BoardCategory,
+  BoardSubCategory,
+  useBoard,
+} from "~/composables/useBoard";
 
 const router = useRouter();
 const { fetchPosts } = useBoard();
 
 const currentTab = ref("ALL");
+const currentSubTab = ref<string | undefined>(undefined);
 const posts = ref<any[]>([]);
 const loading = ref(false);
 const page = ref(1);
 const size = 20;
 
+const availableSubCategories = computed(() => {
+  if (currentTab.value === BoardCategory.NOTICE) {
+    return [
+      { value: BoardSubCategory.MUST_READ, label: "필독" },
+      { value: BoardSubCategory.UPDATE, label: "업데이트" },
+      { value: BoardSubCategory.EVENT, label: "이벤트" },
+    ];
+  }
+  if (currentTab.value === BoardCategory.FREE) {
+    return [
+      { value: BoardSubCategory.CHAT, label: "잡담" },
+      { value: BoardSubCategory.HUMOR, label: "유머" },
+      { value: BoardSubCategory.INFO, label: "정보" },
+    ];
+  }
+  if (currentTab.value === BoardCategory.QA) {
+    return [
+      { value: BoardSubCategory.HARDWARE, label: "H/W" },
+      { value: BoardSubCategory.SOFTWARE, label: "S/W" },
+      { value: BoardSubCategory.OPERATION, label: "운영" },
+      { value: BoardSubCategory.ETC, label: "기타" },
+    ];
+  }
+  return [];
+});
+
 const loadPosts = async () => {
   loading.value = true;
   try {
     const category = currentTab.value === "ALL" ? undefined : currentTab.value;
-    const res = await fetchPosts(page.value, size, category);
+    const res = await fetchPosts(
+      page.value,
+      size,
+      category,
+      currentSubTab.value,
+    );
     posts.value = res.data;
   } catch (e) {
     console.error(e);
@@ -124,6 +187,12 @@ const loadPosts = async () => {
 };
 
 watch(currentTab, () => {
+  page.value = 1;
+  currentSubTab.value = undefined; // Reset sub-cat
+  loadPosts();
+});
+
+watch(currentSubTab, () => {
   page.value = 1;
   loadPosts();
 });
@@ -140,7 +209,24 @@ const goToDetail = (id: number) => {
 const getCategoryLabel = (cat: string) => {
   if (cat === "NOTICE") return "공지";
   if (cat === "FREE") return "자유";
+  if (cat === "QA") return "질문";
   return cat;
+};
+
+const getSubCategoryLabel = (sub: string) => {
+  const map: Record<string, string> = {
+    MUST_READ: "필독",
+    UPDATE: "업데이트",
+    EVENT: "이벤트",
+    CHAT: "잡담",
+    HUMOR: "유머",
+    INFO: "정보",
+    HARDWARE: "H/W",
+    SOFTWARE: "S/W",
+    OPERATION: "운영",
+    ETC: "기타",
+  };
+  return map[sub] || sub;
 };
 
 const formatDate = (dateStr: string) => {
@@ -191,9 +277,9 @@ onMounted(() => {
     .board-tabs {
       display: flex;
       gap: 12px;
-      margin-bottom: 16px;
-      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+      margin-bottom: 12px;
       padding-bottom: 12px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
 
       button {
         background: none;
@@ -211,6 +297,35 @@ onMounted(() => {
         }
 
         &:hover {
+          color: $text-primary;
+        }
+      }
+    }
+
+    .sub-category-tabs {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 16px;
+      flex-wrap: wrap;
+
+      button {
+        background: rgba(255, 255, 255, 0.05);
+        border: 1px solid transparent;
+        color: $text-secondary;
+        font-size: 0.85rem;
+        padding: 4px 12px;
+        border-radius: 20px;
+        cursor: pointer;
+        transition: all 0.2s;
+
+        &.active {
+          background: rgba($color-primary, 0.2);
+          color: $color-primary;
+          border-color: rgba($color-primary, 0.3);
+        }
+
+        &:hover {
+          background: rgba(255, 255, 255, 0.1);
           color: $text-primary;
         }
       }
@@ -272,6 +387,18 @@ onMounted(() => {
             &.FREE {
               color: #4caf50;
             }
+            &.QA {
+              color: #2196f3;
+            }
+          }
+
+          .sub-category-badge {
+            margin-left: 6px;
+            color: $text-primary;
+            background: rgba(255, 255, 255, 0.1);
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-size: 0.75rem;
           }
         }
 

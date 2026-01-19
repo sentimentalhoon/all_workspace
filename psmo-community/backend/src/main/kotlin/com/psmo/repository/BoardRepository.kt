@@ -1,8 +1,5 @@
-package com.psmo.repository
- 
-import com.psmo.database.DatabaseConfig
-import com.psmo.model.*
 import com.psmo.model.dto.BoardCategory
+import com.psmo.model.dto.BoardSubCategory
 import com.psmo.model.dto.PostResponse
 import com.psmo.model.dto.CommentResponse
 import com.psmo.model.dto.toResponse
@@ -22,6 +19,7 @@ class BoardRepository(private val config: ApplicationConfig) {
             this.title = request.title
             this.content = request.content
             this.category = request.category
+            this.subCategory = request.subCategory
             this.author = user
         }
         
@@ -33,19 +31,22 @@ class BoardRepository(private val config: ApplicationConfig) {
             }
         }
         
-        // Eager load and map to DTO inside transaction
         PostResponse(
-            post.id.value, post.title, post.content, post.category, post.author.toDomain().toResponse(),
+            post.id.value, post.title, post.content, post.category, post.subCategory, 
+            post.author.toDomain().toResponse(),
             post.viewCount, post.likeCount, post.comments.count(), post.createdAt.toString(),
             post.images.sortedBy { it.orderIndex }.map { it.url },
             false
         )
     }
 
-    suspend fun findPosts(page: Int, size: Int, category: BoardCategory?): List<PostResponse> = newSuspendedTransaction(Dispatchers.IO) {
+    suspend fun findPosts(page: Int, size: Int, category: BoardCategory?, subCategory: BoardSubCategory?): List<PostResponse> = newSuspendedTransaction(Dispatchers.IO) {
         val query = Posts.selectAll()
         category?.let {
             query.andWhere { Posts.category eq it }
+        }
+        subCategory?.let {
+            query.andWhere { Posts.subCategory eq it }
         }
         
         val sortedQuery = query.orderBy(Posts.createdAt to SortOrder.DESC)
@@ -54,7 +55,8 @@ class BoardRepository(private val config: ApplicationConfig) {
         
         Post.wrapRows(sortedQuery).map { post ->
              PostResponse(
-                post.id.value, post.title, post.content, post.category, post.author.toDomain().toResponse(),
+                post.id.value, post.title, post.content, post.category, post.subCategory, 
+                post.author.toDomain().toResponse(),
                 post.viewCount, post.likeCount, post.comments.count(), post.createdAt.toString(),
                 post.images.sortedBy { it.orderIndex }.map { it.url },
                 false
@@ -65,7 +67,8 @@ class BoardRepository(private val config: ApplicationConfig) {
     suspend fun findPostById(id: Long): PostResponse? = newSuspendedTransaction(Dispatchers.IO) {
         val post = Post.findById(id) ?: return@newSuspendedTransaction null
         PostResponse(
-            post.id.value, post.title, post.content, post.category, post.author.toDomain().toResponse(),
+            post.id.value, post.title, post.content, post.category, post.subCategory,
+            post.author.toDomain().toResponse(),
             post.viewCount, post.likeCount, post.comments.count(), post.createdAt.toString(),
             post.images.sortedBy { it.orderIndex }.map { it.url },
             false

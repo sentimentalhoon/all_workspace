@@ -20,7 +20,10 @@ fun Route.boardRoutes(service: BoardService) {
         val categoryIdx = params.category?.let { 
              try { com.psmo.model.dto.BoardCategory.valueOf(it) } catch(e:Exception) { null } 
         }
-        val posts = service.getPosts(params.page, params.size, categoryIdx)
+        val subCategoryIdx = params.subCategory?.let {
+             try { com.psmo.model.dto.BoardSubCategory.valueOf(it) } catch(e:Exception) { null }
+        }
+        val posts = service.getPosts(params.page, params.size, categoryIdx, subCategoryIdx)
         call.respond(mapOf("status" to "success", "data" to posts))
     }
 

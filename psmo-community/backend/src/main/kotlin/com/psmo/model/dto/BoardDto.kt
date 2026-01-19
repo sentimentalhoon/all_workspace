@@ -3,8 +3,19 @@ package com.psmo.model.dto
 import kotlinx.serialization.Serializable
 
 @Serializable
+@Serializable
 enum class BoardCategory {
     NOTICE, FREE, QA
+}
+
+@Serializable
+enum class BoardSubCategory {
+    // Notice
+    MUST_READ, UPDATE, EVENT,
+    // Free
+    CHAT, HUMOR, INFO,
+    // QA
+    HARDWARE, SOFTWARE, OPERATION, ETC
 }
 
 @Serializable
@@ -12,6 +23,7 @@ data class PostCreateRequest(
     val title: String,
     val content: String,
     val category: BoardCategory,
+    val subCategory: BoardSubCategory? = null,
     val imageUrls: List<String> = emptyList() // Optional images in post
 )
 
@@ -21,6 +33,7 @@ data class PostResponse(
     val title: String,
     val content: String,
     val category: BoardCategory,
+    val subCategory: BoardSubCategory? = null,
     val author: UserResponse,
     val viewCount: Int,
     val likeCount: Int,

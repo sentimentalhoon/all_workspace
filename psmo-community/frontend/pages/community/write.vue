@@ -1,8 +1,12 @@
 <script setup lang="ts">
-import { computed } from "vue";
+import { computed, ref, watch } from "vue";
 import { useRouter } from "vue-router";
 import type { PostCreateRequest } from "~/composables/useBoard";
-import { BoardCategory, useBoard } from "~/composables/useBoard";
+import {
+  BoardCategory,
+  BoardSubCategory,
+  useBoard,
+} from "~/composables/useBoard";
 import { useAuthStore } from "~/stores/auth";
 
 const { createPost } = useBoard();
@@ -19,14 +23,54 @@ const form = ref<PostCreateRequest>({
   title: "",
   content: "",
   category: BoardCategory.FREE, // Default
+  subCategory: undefined,
   imageUrls: [], // Future: image upload
 });
+
+const availableSubCategories = computed(() => {
+  if (form.value.category === BoardCategory.NOTICE) {
+    return [
+      { value: BoardSubCategory.MUST_READ, label: "필독" },
+      { value: BoardSubCategory.UPDATE, label: "업데이트" },
+      { value: BoardSubCategory.EVENT, label: "이벤트" },
+    ];
+  }
+  if (form.value.category === BoardCategory.FREE) {
+    return [
+      { value: BoardSubCategory.CHAT, label: "잡담" },
+      { value: BoardSubCategory.HUMOR, label: "유머" },
+      { value: BoardSubCategory.INFO, label: "정보" },
+    ];
+  }
+  if (form.value.category === BoardCategory.QA) {
+    return [
+      { value: BoardSubCategory.HARDWARE, label: "H/W" },
+      { value: BoardSubCategory.SOFTWARE, label: "S/W" },
+      { value: BoardSubCategory.OPERATION, label: "운영" },
+      { value: BoardSubCategory.ETC, label: "기타" },
+    ];
+  }
+  return [];
+});
+
+watch(
+  () => form.value.category,
+  () => {
+    form.value.subCategory = undefined;
+  },
+);
 
 const loading = ref(false);
 
 const submit = async () => {
   if (!form.value.title || !form.value.content) {
     alert("제목과 내용을 입력해주세요.");
+    return;
+  }
+
+  // Require subCategory if available
+  if (availableSubCategories.value.length > 0 && !form.value.subCategory) {
+    alert("세부 카테고리를 선택해주세요.");
     return;
   }
 
@@ -59,6 +103,25 @@ const submit = async () => {
             <option :value="BoardCategory.QA">질문 게시판</option>
             <option v-if="isAdmin" :value="BoardCategory.NOTICE">
               공지사항
+            </option>
+          </select>
+        </div>
+
+        <div
+          v-if="availableSubCategories.length > 0"
+          class="select-wrapper"
+          style="margin-top: 12px"
+        >
+          <select v-model="form.subCategory" class="dark-input" required>
+            <option :value="undefined" disabled selected>
+              세부 카테고리 선택
+            </option>
+            <option
+              v-for="sub in availableSubCategories"
+              :key="sub.value"
+              :value="sub.value"
+            >
+              {{ sub.label }}
             </option>
           </select>
         </div>

@@ -8,7 +8,7 @@ import kotlinx.serialization.Serializable
 class BoardResources {
     @Serializable
     @Resource("posts")
-    class Posts(val parent: BoardResources = BoardResources(), val page: Int = 1, val size: Int = 20, val category: String? = null) {
+    class Posts(val parent: BoardResources = BoardResources(), val page: Int = 1, val size: Int = 20, val category: String? = null, val subCategory: String? = null) {
         @Serializable
         @Resource("{id}")
         class Id(val parent: Posts = Posts(), val id: Long) {

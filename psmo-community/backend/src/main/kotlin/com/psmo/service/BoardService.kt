@@ -4,14 +4,16 @@ import com.psmo.model.dto.*
 // import com.psmo.model.toResponse -- Removed, explicitly allow usage from dto package
 import com.psmo.repository.BoardRepository
 
+import com.psmo.model.dto.BoardSubCategory
+
 class BoardService(private val repository: BoardRepository) {
 
     suspend fun createPost(userId: Long, request: PostCreateRequest): PostResponse {
         return repository.createPost(userId, request)
     }
 
-    suspend fun getPosts(page: Int, size: Int, category: BoardCategory?): List<PostResponse> {
-        return repository.findPosts(page, size, category)
+    suspend fun getPosts(page: Int, size: Int, category: BoardCategory?, subCategory: BoardSubCategory?): List<PostResponse> {
+        return repository.findPosts(page, size, category, subCategory)
     }
 
     suspend fun getPostDetail(id: Long, userId: Long?): PostResponse? {

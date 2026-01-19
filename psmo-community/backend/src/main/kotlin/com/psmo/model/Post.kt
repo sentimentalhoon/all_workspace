@@ -1,6 +1,7 @@
 package com.psmo.model
 
 import com.psmo.model.dto.BoardCategory
+import com.psmo.model.dto.BoardSubCategory
 import com.psmo.model.dto.PostResponse
 import com.psmo.model.dto.UserResponse
 import org.jetbrains.exposed.dao.LongEntity
@@ -14,6 +15,7 @@ object Posts : LongIdTable("posts") {
     val content = text("content")
     val authorId = reference("author_id", Users)
     val category = enumerationByName("category", 20, BoardCategory::class)
+    val subCategory = enumerationByName("sub_category", 20, BoardSubCategory::class).nullable()
     val viewCount = integer("view_count").default(0)
     val likeCount = integer("like_count").default(0) // Denormalized for pref
     val createdAt = datetime("created_at").defaultExpression(org.jetbrains.exposed.sql.javatime.CurrentDateTime)
@@ -26,6 +28,7 @@ class Post(id: EntityID<Long>) : LongEntity(id) {
     var content by Posts.content
     var author by UserEntity referencedOn Posts.authorId
     var category by Posts.category
+    var subCategory by Posts.subCategory
     var viewCount by Posts.viewCount
     var likeCount by Posts.likeCount
     var createdAt by Posts.createdAt

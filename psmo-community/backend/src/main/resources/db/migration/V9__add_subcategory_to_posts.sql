@@ -1,0 +1,1 @@
+ALTER TABLE posts ADD COLUMN sub_category VARCHAR(20) NULL;

@@ -4,11 +4,28 @@ export enum BoardCategory {
   QA = "QA",
 }
 
+export enum BoardSubCategory {
+  // Notice
+  MUST_READ = "MUST_READ",
+  UPDATE = "UPDATE",
+  EVENT = "EVENT",
+  // Free
+  CHAT = "CHAT",
+  HUMOR = "HUMOR",
+  INFO = "INFO",
+  // QA
+  HARDWARE = "HARDWARE",
+  SOFTWARE = "SOFTWARE",
+  OPERATION = "OPERATION",
+  ETC = "ETC",
+}
+
 export interface Post {
   id: number;
   title: string;
   content: string;
   category: BoardCategory;
+  subCategory?: BoardSubCategory;
   author: {
     id: number;
     username: string;
@@ -38,6 +55,7 @@ export interface PostCreateRequest {
   title: string;
   content: string;
   category: BoardCategory;
+  subCategory?: BoardSubCategory;
   imageUrls: string[];
 }
 
@@ -48,9 +66,10 @@ export const useBoard = () => {
     page: number = 1,
     size: number = 20,
     category?: string,
+    subCategory?: string,
   ) => {
     return await fetchClient<{ status: string; data: Post[] }>("/board/posts", {
-      params: { page, size, category },
+      params: { page, size, category, subCategory },
     });
   };
 
