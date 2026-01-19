@@ -178,11 +178,12 @@ onMounted(() => {
   }
 
   .content-grid {
-    display: grid;
-    grid-template-columns: 1fr;
+    display: flex;
+    flex-direction: column;
     gap: 24px;
 
     @media (min-width: 768px) {
+      display: grid;
       grid-template-columns: 1fr 300px;
     }
   }
@@ -327,6 +328,11 @@ onMounted(() => {
     display: flex;
     flex-direction: column;
     gap: 24px;
+    order: -1; /* Mobile: Top */
+
+    @media (min-width: 768px) {
+      order: 0; /* Desktop: Right (Natural Order) */
+    }
 
     .telegram-banner {
       display: flex;
