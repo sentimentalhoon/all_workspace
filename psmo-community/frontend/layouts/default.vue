@@ -204,6 +204,7 @@ const goBack = () => {
         <span class="label">소통</span>
       </NuxtLink>
     </nav>
+    <CommonPwaInstallPrompt />
   </div>
 </template>
 

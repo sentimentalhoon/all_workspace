@@ -17,7 +17,38 @@ export default defineNuxtConfig({
 
   // 사용할 모듈(플러그인) 목록입니다.
   // @pinia/nuxt: 상태 관리(전역 변수) 도구인 Pinia를 사용합니다.
-  modules: ["@pinia/nuxt"],
+  modules: ["@pinia/nuxt", "@vite-pwa/nuxt"],
+
+  pwa: {
+    manifest: {
+      name: "성피천국",
+      short_name: "성피천국",
+      description: "PC방 사장님들의 커뮤니티 성피천국",
+      theme_color: "#121212",
+      background_color: "#121212",
+      display: "standalone",
+      orientation: "portrait",
+      icons: [
+        {
+          src: "pwa-192x192.png",
+          sizes: "192x192",
+          type: "image/png",
+        },
+        {
+          src: "pwa-512x512.png",
+          sizes: "512x512",
+          type: "image/png",
+        },
+      ],
+    },
+    workbox: {
+      navigateFallback: "/",
+    },
+    devOptions: {
+      enabled: true,
+      type: "module",
+    },
+  },
 
   // 개발 서버 설정
   devServer: {
