@@ -120,12 +120,7 @@ const goBack = () => {
 
       <!-- Right: Actions -->
       <div class="header-right">
-        <NuxtLink
-          v-if="isHome"
-          to="/my"
-          class="icon-btn profile-btn"
-          aria-label="내 정보"
-        >
+        <NuxtLink to="/my" class="icon-btn profile-btn" aria-label="내 정보">
           <svg
             xmlns="http://www.w3.org/2000/svg"
             width="20"
