@@ -306,13 +306,39 @@ body {
 
 .header-center h1 {
   margin: 0;
-  font-size: 1.1rem;
-  font-weight: 700;
-  color: #fff;
+  font-size: 1.2rem;
+  font-weight: 800;
+
+  /* Gradient Text Effect */
+  background: linear-gradient(
+    90deg,
+    #ffffff 0%,
+    #c5a059 25%,
+    #e94560 50%,
+    #c5a059 75%,
+    #ffffff 100%
+  );
+  background-size: 200% auto;
+  color: transparent;
+  -webkit-background-clip: text;
+  background-clip: text;
+
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
   cursor: pointer;
+
+  /* Animation */
+  animation: shiny-text 5s linear infinite;
+}
+
+@keyframes shiny-text {
+  0% {
+    background-position: 0% center;
+  }
+  100% {
+    background-position: 200% center;
+  }
 }
 
 .clickable-title:active {
