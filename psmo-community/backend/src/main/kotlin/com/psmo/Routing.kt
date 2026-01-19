@@ -7,6 +7,7 @@ import com.psmo.model.dto.toResponse
 import com.psmo.controller.productRoutes
 import com.psmo.controller.badUserRoutes
 import com.psmo.controller.boardRoutes
+import com.psmo.controller.bannerRoutes
 import io.ktor.server.http.content.staticFiles
 import com.psmo.service.*
 import com.psmo.service.*
@@ -54,6 +55,7 @@ fun Application.configureRouting(config: ApplicationConfig) {
     val productService by inject<ProductService>()
     val badUserService by inject<BadUserService>()
     val boardService by inject<BoardService>()
+    val bannerService by inject<BannerService>()
     val imageService by inject<ImageService>()
 
     // 서버가 켜질 때(ApplicationStarted) 텔레그램 봇도 같이 일을 시작하라고 시킵니다.
@@ -103,6 +105,7 @@ fun Application.configureRouting(config: ApplicationConfig) {
         productRoutes(productService, imageService)
         badUserRoutes(badUserService, imageService)
         boardRoutes(boardService)
+        bannerRoutes(bannerService, imageService)
 
         // Static files (Images) - For MVP (Legacy)
         // staticFiles("/images", java.io.File("uploads"))
@@ -157,7 +160,6 @@ fun Application.configureRouting(config: ApplicationConfig) {
                 val result = refreshTokenService.rotateRefreshToken(refreshToken, jwtService.getRefreshExpirationSeconds())
                 if (result == null) {
                     // 유효하지 않거나 만료된 토큰 -> 쿠키 삭제
-                    call.response.cookies.append(name = "refresh_token", value = "", maxAge = 0, expires = GMTDate.START, path = "/api/auth")
                     call.respond(HttpStatusCode.Unauthorized, mapOf("status" to "error", "message" to "Invalid refresh token"))
                     return@post
                 }
@@ -210,7 +212,7 @@ fun Application.configureRouting(config: ApplicationConfig) {
 
         get<Qr.Check> {
             val uuid = call.request.queryParameters["uuid"] 
-                ?: return@get call.respond(HttpStatusCode.BadRequest, mapOf("status" to "error", "message" to "uuid missing"))
+            ?: return@get call.respond(HttpStatusCode.BadRequest, mapOf("status" to "error", "message" to "uuid missing"))
             
             val statusMap = telegramBotService.checkSession(uuid)
             if (statusMap == null) {

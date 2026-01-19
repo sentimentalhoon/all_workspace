@@ -56,4 +56,6 @@ fun appModule(config: ApplicationConfig) = module {
     single { BadUserService(get(), get()) }
     single { com.psmo.repository.BoardRepository(get()) }
     single { BoardService(get()) }
+    single { com.psmo.repository.BannerRepository() }
+    single { BannerService(get(), get()) }
 }

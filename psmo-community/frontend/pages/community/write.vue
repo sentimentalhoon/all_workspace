@@ -1,10 +1,15 @@
 <script setup lang="ts">
+import { computed } from "vue";
 import { useRouter } from "vue-router";
 import type { PostCreateRequest } from "~/composables/useBoard";
 import { BoardCategory, useBoard } from "~/composables/useBoard";
+import { useAuthStore } from "~/stores/auth";
 
 const { createPost } = useBoard();
 const router = useRouter();
+const authStore = useAuthStore();
+
+const isAdmin = computed(() => authStore.user?.role === "ADMIN");
 
 definePageMeta({
   auth: true,
@@ -52,7 +57,9 @@ const submit = async () => {
           <select v-model="form.category" class="dark-input">
             <option :value="BoardCategory.FREE">자유 게시판</option>
             <option :value="BoardCategory.QA">질문 게시판</option>
-            <option :value="BoardCategory.NOTICE">공지사항</option>
+            <option v-if="isAdmin" :value="BoardCategory.NOTICE">
+              공지사항
+            </option>
           </select>
         </div>
       </div>

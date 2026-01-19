@@ -45,7 +45,13 @@ fun Route.boardRoutes(service: BoardService) {
         post<BoardResources.Posts> {
             val principal = call.principal<JWTPrincipal>()
             val userId = principal!!.payload.getClaim("id").asLong()
+            val role = principal.payload.getClaim("role").asString() // Claim must exist
             val request = call.receive<PostCreateRequest>()
+
+            if (request.category == com.psmo.model.dto.BoardCategory.NOTICE && role != com.psmo.model.UserRole.ADMIN.name) {
+                call.respond(HttpStatusCode.Forbidden, mapOf("status" to "error", "message" to "Admin only for NOTICE"))
+                return@post
+            }
             
             val created = service.createPost(userId, request)
             call.respond(HttpStatusCode.Created, mapOf("status" to "success", "data" to created))
