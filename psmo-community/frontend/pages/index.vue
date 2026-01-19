@@ -48,20 +48,31 @@ onMounted(async () => {
     <section class="hero-section glass-panel">
       <div class="hero-content">
         <div class="greeting-box">
-          <span class="sub-greeting">{{ greetingMessage }}</span>
+          <span class="sub-greeting">
+            <ClientOnly fallback="반갑습니다!">{{
+              greetingMessage
+            }}</ClientOnly>
+          </span>
           <h1 class="username">
-            <span class="highlight">{{
-              authStore.user?.displayName || "Guest"
-            }}</span>
+            <span class="highlight">
+              <ClientOnly fallback="Guest">{{
+                authStore.user?.displayName || "Guest"
+              }}</ClientOnly>
+            </span>
             사장님
           </h1>
         </div>
         <div class="stats-box">
           <div class="stat-item">
             <span class="label">보유 포인트</span>
-            <strong class="value gold-text"
-              >{{ authStore.user?.score?.toLocaleString() || 0 }} P</strong
-            >
+            <strong class="value gold-text">
+              <ClientOnly fallback="0 P"
+                >{{
+                  authStore.user?.score?.toLocaleString() || 0
+                }}
+                P</ClientOnly
+              >
+            </strong>
           </div>
         </div>
       </div>
