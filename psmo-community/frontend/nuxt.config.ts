@@ -5,6 +5,16 @@ export default defineNuxtConfig({
   // 개발자 도구를 켭니다 (F12 말고, 화면 하단에 나오는 Nuxt 전용 도구)
   devtools: { enabled: true },
 
+  app: {
+    head: {
+      title: "성피천국",
+      meta: [
+        { charset: "utf-8" },
+        { name: "viewport", content: "width=device-width, initial-scale=1" },
+      ],
+    },
+  },
+
   // 사용할 모듈(플러그인) 목록입니다.
   // @pinia/nuxt: 상태 관리(전역 변수) 도구인 Pinia를 사용합니다.
   modules: ["@pinia/nuxt"],

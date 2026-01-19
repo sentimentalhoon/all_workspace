@@ -65,7 +65,7 @@ onUnmounted(() => {
   <div class="login-page">
     <div class="login-card glass-panel bounce-in">
       <div class="logo-area">
-        <h1>PSMO</h1>
+        <h1>성피천국</h1>
         <p class="subtitle">PC방 사장님 모임</p>
       </div>
 
