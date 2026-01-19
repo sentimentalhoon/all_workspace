@@ -1,3 +1,7 @@
+package com.psmo.repository
+
+import com.psmo.database.DatabaseConfig
+import com.psmo.model.*
 import com.psmo.model.dto.BoardCategory
 import com.psmo.model.dto.BoardSubCategory
 import com.psmo.model.dto.PostResponse

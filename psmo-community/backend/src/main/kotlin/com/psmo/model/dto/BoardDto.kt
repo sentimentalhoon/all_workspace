@@ -3,7 +3,6 @@ package com.psmo.model.dto
 import kotlinx.serialization.Serializable
 
 @Serializable
-@Serializable
 enum class BoardCategory {
     NOTICE, FREE, QA
 }
