@@ -3,6 +3,7 @@ import { onMounted, ref } from "vue";
 
 const deferredPrompt = ref<any>(null);
 const showInstallPrompt = ref(false);
+const isIos = ref(false);
 
 const dismiss = () => {
   showInstallPrompt.value = false;
@@ -20,20 +21,29 @@ const installPwa = async () => {
 };
 
 onMounted(() => {
+  // 1. Android / Desktop (Chrome/Edge)
   window.addEventListener("beforeinstallprompt", (e) => {
-    // Prevent the mini-infobar from appearing on mobile
     e.preventDefault();
-    // Stash the event so it can be triggered later.
     deferredPrompt.value = e;
-    // Update UI notify the user they can install the PWA
     showInstallPrompt.value = true;
   });
 
   window.addEventListener("appinstalled", () => {
-    // Log install to analytics
     console.log("PWA was installed");
     showInstallPrompt.value = false;
   });
+
+  // 2. iOS Detection
+  const ua = window.navigator.userAgent;
+  const isIosDevice = /iphone|ipad|ipod/i.test(ua);
+  const isStandalone =
+    window.matchMedia("(display-mode: standalone)").matches ||
+    (window.navigator as any).standalone === true;
+
+  if (isIosDevice && !isStandalone) {
+    isIos.value = true;
+    showInstallPrompt.value = true;
+  }
 });
 </script>
 
@@ -44,12 +54,18 @@ onMounted(() => {
         <div class="icon">📲</div>
         <div class="text">
           <strong>성피천국 앱 설치</strong>
-          <p>홈 화면에 추가하여 더 편리하게 이용하세요.</p>
+          <p v-if="isIos">
+            '공유' 버튼 <span class="share-icon">⎋</span>을 누르고<br />'홈
+            화면에 추가'를 선택하세요.
+          </p>
+          <p v-else>홈 화면에 추가하여 더 편리하게 이용하세요.</p>
         </div>
       </div>
       <div class="actions">
-        <button class="btn btn-text" @click="dismiss">나중에</button>
-        <button class="btn btn-primary" @click="installPwa">설치하기</button>
+        <button class="btn btn-text" @click="dismiss">닫기</button>
+        <button v-if="!isIos" class="btn btn-primary" @click="installPwa">
+          설치하기
+        </button>
       </div>
     </div>
   </transition>
