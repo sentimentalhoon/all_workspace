@@ -115,11 +115,7 @@ const loadPosts = async () => {
   try {
     const category = currentTab.value === "ALL" ? undefined : currentTab.value;
     const res = await fetchPosts(page.value, size, category);
-    posts.value = res.data; // Assuming fetchPosts returns { status, data } structure from useBoard?
-    // Checking useBoard signature... usually returns response body directly if wrapped correctly or data.
-    // Based on useMarket, `fetchClient` returns generics. useBoard likely similar.
-    // If unsure, I'll assume standard { data: ... } or array.
-    // Let's assume standard response wrapper based on backend pattern.
+    posts.value = res.data;
   } catch (e) {
     console.error(e);
   } finally {
@@ -213,8 +209,8 @@ onMounted(() => {
         transition: color 0.2s;
 
         &.active {
-          color: $primary;
-          border-bottom: 2px solid $primary;
+          color: $color-primary;
+          border-bottom: 2px solid $color-primary;
         }
 
         &:hover {
@@ -229,7 +225,18 @@ onMounted(() => {
       margin-bottom: 12px;
 
       .write-btn {
-        @include glass-button;
+        /* Copied glass-button styles manually */
+        /* @include glass-button; */
+        background: rgba(255, 255, 255, 0.05);
+        border: 1px solid $glass-border;
+        color: $text-primary;
+        border-radius: 8px;
+        cursor: pointer;
+        transition: all 0.2s;
+        &:hover {
+          background: rgba(255, 255, 255, 0.1);
+        }
+
         font-size: 0.9rem;
         padding: 8px 16px;
         display: flex;
@@ -257,16 +264,16 @@ onMounted(() => {
           display: flex;
           justify-content: space-between;
           font-size: 0.8rem;
-          color: $text-disabled;
+          color: $text-secondary;
           margin-bottom: 4px;
 
           .category-badge {
             &.NOTICE {
-              color: $danger;
+              color: $color-danger;
               font-weight: bold;
             }
             &.FREE {
-              color: $success;
+              color: #4caf50;
             }
           }
         }
@@ -277,7 +284,7 @@ onMounted(() => {
           margin-bottom: 4px;
 
           .comment-count {
-            color: $primary;
+            color: $color-primary;
             font-size: 0.8rem;
             margin-left: 4px;
           }
@@ -310,7 +317,7 @@ onMounted(() => {
         }
       }
       .page-num {
-        color: $primary;
+        color: $color-primary;
         font-weight: bold;
       }
     }
@@ -328,12 +335,16 @@ onMounted(() => {
       padding: 20px;
       text-decoration: none;
       transition: transform 0.2s;
-      border: 1px solid rgba($primary, 0.3);
-      background: linear-gradient(135deg, rgba($primary, 0.1), transparent);
+      border: 1px solid rgba($color-primary, 0.3);
+      background: linear-gradient(
+        135deg,
+        rgba($color-primary, 0.1),
+        transparent
+      );
 
       &:hover {
         transform: translateY(-2px);
-        border-color: $primary;
+        border-color: $color-primary;
       }
 
       .tg-icon {
@@ -345,7 +356,7 @@ onMounted(() => {
         flex-direction: column;
 
         strong {
-          color: $primary;
+          color: $color-primary;
           font-size: 1.1rem;
         }
         span {

@@ -52,15 +52,14 @@
 <script setup lang="ts">
 import { computed, onMounted, ref } from "vue";
 import { useBanner, type Banner } from "~/composables/useBanner";
-import { useAuthStore } from "~/stores/auth"; // Assuming store exists
+import { useAuthStore } from "~/stores/auth";
 
-const { user } = useAuthStore();
-const isAdmin = computed(() => user?.role === "ADMIN");
+const store = useAuthStore();
+const isAdmin = computed(() => store.user?.role === "ADMIN");
 
 const { fetchBanners, createBanner, deleteBanner } = useBanner();
 const banners = ref<Banner[]>([]);
-const allBanners = ref<Banner[]>([]); // For admin view including hidden? API handles it differently?
-// Actually API /banners returns visible. /banners/admin returns all.
+const allBanners = ref<Banner[]>([]);
 
 const showModal = ref(false);
 const uploading = ref(false);
@@ -72,9 +71,6 @@ const newBanner = ref({
 
 const loadBanners = async () => {
   banners.value = await fetchBanners(false);
-  if (isAdmin.value) {
-    allBanners.value = await fetchBanners(true);
-  }
 };
 
 const openAdminModal = async () => {
@@ -111,7 +107,8 @@ const uploadBanner = async () => {
       newBanner.value.image,
     );
     await loadBanners();
-    newBanner.value = { title: "", linkUrl: "", image: null }; // Reset
+    if (showModal.value) allBanners.value = await fetchBanners(true);
+    newBanner.value = { title: "", linkUrl: "", image: null };
     alert("등록되었습니다.");
   } catch (e) {
     alert("등록 실패");
@@ -125,6 +122,7 @@ const removeBanner = async (id: number) => {
   try {
     await deleteBanner(id);
     await loadBanners();
+    if (showModal.value) allBanners.value = await fetchBanners(true);
   } catch (e) {
     alert("삭제 실패");
   }
@@ -157,8 +155,8 @@ onMounted(() => {
     .admin-btn {
       font-size: 0.8rem;
       padding: 4px 8px;
-      background: rgba($primary, 0.2);
-      color: $primary;
+      background: rgba($color-primary, 0.2);
+      color: $color-primary;
       border-radius: 4px;
     }
   }
@@ -219,7 +217,7 @@ onMounted(() => {
 
     h3 {
       text-align: center;
-      color: $primary;
+      color: $color-primary;
     }
 
     .upload-form {
@@ -235,12 +233,22 @@ onMounted(() => {
         color: white;
 
         &::placeholder {
-          color: $text-disabled;
+          color: $text-secondary;
         }
       }
 
       button {
-        @include glass-button;
+        /* glass-button style inline */
+        background: rgba(255, 255, 255, 0.05);
+        border: 1px solid $glass-border;
+        color: $text-primary;
+        border-radius: 8px;
+        cursor: pointer;
+        transition: all 0.2s;
+        &:hover {
+          background: rgba(255, 255, 255, 0.1);
+        }
+
         width: 100%;
         padding: 10px;
       }
@@ -266,7 +274,7 @@ onMounted(() => {
         }
 
         .delete-btn {
-          color: $danger;
+          color: $color-danger;
           font-size: 0.8rem;
         }
       }
@@ -275,7 +283,7 @@ onMounted(() => {
     .close-btn {
       margin-top: 10px;
       background: transparent;
-      border: 1px solid $text-disabled;
+      border: 1px solid $text-secondary;
       color: $text-secondary;
       padding: 8px;
       border-radius: 8px;
