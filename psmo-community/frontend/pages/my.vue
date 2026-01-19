@@ -2,8 +2,6 @@
 import { useAuthStore } from "~/stores/auth";
 
 const authStore = useAuthStore();
-const { navigateTo } = useRouter();
-
 const handleLogout = async () => {
   await authStore.logout();
   navigateTo("/login");
@@ -16,11 +14,8 @@ const handleLogout = async () => {
     <section class="profile-card glass-panel" v-if="authStore.user">
       <div class="profile-top">
         <div class="avatar-wrapper">
-          <div
-            v-if="authStore.user.images && authStore.user.images.length > 0"
-            class="user-avatar"
-          >
-            <img :src="authStore.user.images[0]?.thumbnailUrl" alt="profile" />
+          <div v-if="authStore.user.photoUrl" class="user-avatar">
+            <img :src="authStore.user.photoUrl" alt="profile" />
           </div>
           <div v-else class="user-avatar placeholder">
             <span>👤</span>
