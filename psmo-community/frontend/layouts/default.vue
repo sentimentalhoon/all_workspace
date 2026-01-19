@@ -40,6 +40,21 @@ const pageTitle = computed(() => {
 const isHome = computed(() => route.path === "/");
 const canGoBack = computed(() => route.path !== "/" && route.path !== "/login");
 
+const handleTitleClick = () => {
+  const path = route.path;
+  if (path.startsWith("/market")) {
+    router.push("/market");
+  } else if (path.startsWith("/community")) {
+    router.push("/community");
+  } else if (path.startsWith("/blacklist")) {
+    router.push("/blacklist");
+  } else if (path.startsWith("/my")) {
+    router.push("/my");
+  } else {
+    router.push("/");
+  }
+};
+
 const goBack = () => {
   router.back();
 };
@@ -93,7 +108,13 @@ const goBack = () => {
       <!-- Center: Title -->
       <div class="header-center">
         <transition name="fade-slide" mode="out-in">
-          <h1 :key="pageTitle">{{ pageTitle }}</h1>
+          <h1
+            :key="pageTitle"
+            @click="handleTitleClick"
+            class="clickable-title"
+          >
+            {{ pageTitle }}
+          </h1>
         </transition>
       </div>
 
@@ -297,6 +318,11 @@ body {
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+  cursor: pointer;
+}
+
+.clickable-title:active {
+  opacity: 0.7;
 }
 
 .brand-logo {
