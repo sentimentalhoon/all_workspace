@@ -1,4 +1,3 @@
-```typescript
 <script setup lang="ts">
 import { computed, onMounted, ref, watch } from "vue";
 import { useRoute, useRouter } from "vue-router";
@@ -123,22 +122,7 @@ const submit = async () => {
 <template>
   <div class="page-container fade-in">
     <div class="header">
-      [
-  {
-    "TargetContent": "<h2 class=\"page-title\">글쓰기</h2>",
-    "ReplacementContent": "<h2 class=\"page-title\">{{ isEditMode ? '글 수정' : '글쓰기' }}</h2>",
-    "StartLine": 93,
-    "EndLine": 93,
-    "AllowMultiple": false
-  },
-  {
-    "TargetContent": "{{ loading ? \"등록 중...\" : \"등록\" }}",
-    "ReplacementContent": "{{ loading ? \"처리 중...\" : (isEditMode ? \"수정완료\" : \"등록\") }}",
-    "StartLine": 158,
-    "EndLine": 158,
-    "AllowMultiple": false
-  }
-]
+      <h2 class="page-title">{{ isEditMode ? "글 수정" : "글쓰기" }}</h2>
       <p class="page-desc">소중한 의견을 공유해주세요.</p>
     </div>
 
@@ -203,7 +187,7 @@ const submit = async () => {
           취소
         </button>
         <button type="submit" class="submit-btn hover-glow" :disabled="loading">
-          {{ loading ? "등록 중..." : "등록" }}
+          {{ loading ? "처리 중..." : isEditMode ? "수정완료" : "등록" }}
         </button>
       </div>
     </form>
