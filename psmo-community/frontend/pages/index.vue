@@ -203,6 +203,65 @@ onMounted(async () => {
           </div>
         </div>
       </section>
+
+      <!-- Affiliate Banners -->
+      <section class="content-section">
+        <div class="section-header">
+          <h3>🤝 제휴 업체</h3>
+        </div>
+        <div class="banner-scroll-container">
+          <div class="banner-card glass-panel" title="PC방 먹거리 납품">
+            <div class="banner-icon">🍔</div>
+            <div class="banner-info">
+              <span class="banner-title">푸드 딜리버리</span>
+              <span class="banner-desc">전국 최저가 식자재 납품</span>
+            </div>
+          </div>
+          <div class="banner-card glass-panel" title="PC 유지보수">
+            <div class="banner-icon">💻</div>
+            <div class="banner-info">
+              <span class="banner-title">컴닥터 24시</span>
+              <span class="banner-desc">야간 긴급 출동 서비스</span>
+            </div>
+          </div>
+          <div class="banner-card glass-panel" title="인테리어 리모델링">
+            <div class="banner-icon">🎨</div>
+            <div class="banner-info">
+              <span class="banner-title">공간 디자인</span>
+              <span class="banner-desc">프리미엄 인테리어 시공</span>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Notices -->
+      <section class="content-section">
+        <div class="section-header">
+          <h3>📢 공지사항</h3>
+          <NuxtLink to="/community" class="more-btn">더보기</NuxtLink>
+        </div>
+        <div class="notice-list glass-panel">
+          <div class="notice-item" @click="navigateTo('/community')">
+            <span class="notice-tag important">필독</span>
+            <span class="notice-title">성피천국 커뮤니티 이용 수칙 안내</span>
+            <span class="notice-date">4.20</span>
+          </div>
+          <div class="notice-item" @click="navigateTo('/community')">
+            <span class="notice-tag event">이벤트</span>
+            <span class="notice-title"
+              >[오픈기념] 포인트 2배 적립 이벤트 진행!</span
+            >
+            <span class="notice-date">4.18</span>
+          </div>
+          <div class="notice-item" @click="navigateTo('/community')">
+            <span class="notice-tag">점검</span>
+            <span class="notice-title"
+              >서버 안정화 작업 안내 (02:00 ~ 04:00)</span
+            >
+            <span class="notice-date">4.15</span>
+          </div>
+        </div>
+      </section>
     </div>
   </div>
 </template>
@@ -548,6 +607,128 @@ $text-secondary: #b0b0b0;
 
     .no-image-placeholder {
       color: #555;
+    }
+
+    /* --- Affiliate Banners --- */
+    .banner-scroll-container {
+      display: flex;
+      gap: 16px;
+      overflow-x: auto;
+      padding-bottom: 8px; /* For scrollbar space */
+      scroll-behavior: smooth;
+      -webkit-overflow-scrolling: touch;
+
+      /* Hide scrollbar but keep functionality */
+      &::-webkit-scrollbar {
+        height: 4px;
+      }
+      &::-webkit-scrollbar-thumb {
+        background: rgba(255, 255, 255, 0.1);
+        border-radius: 4px;
+      }
+    }
+
+    .banner-card {
+      min-width: 240px;
+      padding: 16px;
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      cursor: pointer;
+      transition:
+        transform 0.2s,
+        background 0.2s;
+
+      &:hover {
+        background: rgba(255, 255, 255, 0.08);
+        transform: translateY(-2px);
+      }
+
+      .banner-icon {
+        font-size: 2rem;
+        width: 48px;
+        height: 48px;
+        background: rgba(255, 255, 255, 0.05);
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+
+      .banner-info {
+        display: flex;
+        flex-direction: column;
+
+        .banner-title {
+          font-weight: 700;
+          color: $text-primary;
+          font-size: 0.95rem;
+          margin-bottom: 2px;
+        }
+
+        .banner-desc {
+          font-size: 0.8rem;
+          color: $text-secondary;
+        }
+      }
+    }
+
+    /* --- Notice List --- */
+    .notice-list {
+      padding: 8px 0;
+    }
+
+    .notice-item {
+      display: flex;
+      align-items: center;
+      padding: 12px 16px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+      cursor: pointer;
+      transition: background 0.2s;
+
+      &:hover {
+        background: rgba(255, 255, 255, 0.03);
+      }
+
+      &:last-child {
+        border-bottom: none;
+      }
+
+      .notice-tag {
+        font-size: 0.7rem;
+        padding: 2px 6px;
+        border-radius: 4px;
+        background: rgba(255, 255, 255, 0.1);
+        color: $text-secondary;
+        margin-right: 12px;
+        font-weight: bold;
+        flex-shrink: 0;
+
+        &.important {
+          background: rgba(233, 69, 96, 0.2);
+          color: #ff6b6b;
+        }
+        &.event {
+          background: rgba(197, 160, 89, 0.2);
+          color: #ffd54f;
+        }
+      }
+
+      .notice-title {
+        flex: 1;
+        font-size: 0.9rem;
+        color: $text-primary;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+
+      .notice-date {
+        font-size: 0.75rem;
+        color: $text-secondary;
+        margin-left: 12px;
+        flex-shrink: 0;
+      }
     }
 
     .status-badge {
