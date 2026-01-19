@@ -25,6 +25,7 @@ data class BadUserResponse(
 
 @Serializable
 data class BadUserImageResponse(
+    val id: Long,
     val imageUrl: String,
     val thumbnailUrl: String
 )

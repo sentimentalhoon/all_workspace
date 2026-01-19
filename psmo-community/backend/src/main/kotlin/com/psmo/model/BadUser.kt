@@ -44,7 +44,7 @@ class BadUser(id: EntityID<Long>) : LongEntity(id) {
             val showOriginal = viewerId != null
             val finalUrl = if (showOriginal) it.url else (it.blurUrl ?: it.url)
             val finalThumb = if (showOriginal) it.thumbnailUrl else (it.blurThumbnailUrl ?: it.thumbnailUrl)
-            BadUserImageResponse(finalUrl, finalThumb) 
+            BadUserImageResponse(it.id.value, finalUrl, finalThumb) 
         },
         reporterName = this.reporter.displayName ?: "익명",
         reporterId = this.reporter.id.value,
