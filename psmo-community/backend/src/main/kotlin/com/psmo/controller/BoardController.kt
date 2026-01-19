@@ -26,7 +26,7 @@ fun Route.boardRoutes(service: BoardService) {
 
     get<BoardResources.Posts.Id> { params ->
         val principal = call.principal<JWTPrincipal>()
-        val userId = principal?.payload?.getClaim("id")?.asLong()
+        val userId = principal?.subject?.toLongOrNull()
         
         val post = service.getPostDetail(params.id, userId)
         if (post != null) {
@@ -44,7 +44,7 @@ fun Route.boardRoutes(service: BoardService) {
     authenticate("auth-jwt") {
         post<BoardResources.Posts> {
             val principal = call.principal<JWTPrincipal>()
-            val userId = principal?.payload?.getClaim("id")?.asLong()
+            val userId = principal?.subject?.toLongOrNull()
             val role = principal?.payload?.getClaim("role")?.asString() ?: "MEMBER"
 
             if (userId == null) {
@@ -65,7 +65,13 @@ fun Route.boardRoutes(service: BoardService) {
 
         post<BoardResources.Posts.Id.Comments> { params ->
             val principal = call.principal<JWTPrincipal>()
-            val userId = principal!!.payload.getClaim("id").asLong()
+            val userId = principal?.subject?.toLongOrNull()
+            
+            if (userId == null) {
+                call.respond(HttpStatusCode.Unauthorized, mapOf("status" to "error", "message" to "Invalid Token"))
+                return@post
+            }
+
             val request = call.receive<CommentCreateRequest>()
             
             val comment = service.addComment(params.parent.id, userId, request.content)
@@ -74,7 +80,12 @@ fun Route.boardRoutes(service: BoardService) {
 
         post<BoardResources.Posts.Id.Like> { params ->
             val principal = call.principal<JWTPrincipal>()
-            val userId = principal!!.payload.getClaim("id").asLong()
+            val userId = principal?.subject?.toLongOrNull()
+
+            if (userId == null) {
+                call.respond(HttpStatusCode.Unauthorized, mapOf("status" to "error", "message" to "Invalid Token"))
+                return@post
+            }
             
             val isLiked = service.toggleLike(params.parent.id, userId)
             call.respond(mapOf("status" to "success", "isLiked" to isLiked))
