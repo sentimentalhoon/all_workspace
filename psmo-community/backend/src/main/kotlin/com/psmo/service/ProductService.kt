@@ -18,7 +18,10 @@ import java.time.format.DateTimeFormatter
  * 2. 이미지가 있으면 이미지도 저장하고
  * 3. 저장된 결과를 예쁘게 포장해서 돌려줍니다.
  */
-class ProductService(private val repository: ProductRepository) {
+class ProductService(
+    private val repository: ProductRepository,
+    private val imageService: ImageService
+) {
 
     suspend fun createProduct(request: ProductCreateRequest, sellerId: Long, images: List<Pair<com.psmo.service.ImageService.ImageUploadResult, com.psmo.model.ProductMediaType>> = emptyList()): ProductResponse {
         val product = repository.create(request, sellerId)
@@ -110,11 +113,22 @@ class ProductService(private val repository: ProductRepository) {
         repository.update(id, request)
         return getProductById(id, userId)
     }
+
     suspend fun deleteProduct(id: Long, userId: Long, isAdmin: Boolean = false): Boolean {
         val existing = getProductById(id, userId) ?: return false
         if (existing.seller.id != userId && !isAdmin) {
             throw IllegalArgumentException("Not the owner of this product")
         }
+        
+        // Hard Delete Images
+        val imageRows = repository.getImages(id)
+        imageRows.forEach { row ->
+            imageService.deleteImage(row[com.psmo.model.ProductImages.url])
+            imageService.deleteImage(row[com.psmo.model.ProductImages.thumbnailUrl])
+            row[com.psmo.model.ProductImages.blurUrl]?.let { imageService.deleteImage(it) }
+            row[com.psmo.model.ProductImages.blurThumbnailUrl]?.let { imageService.deleteImage(it) }
+        }
+
         return repository.delete(id)
     }
 

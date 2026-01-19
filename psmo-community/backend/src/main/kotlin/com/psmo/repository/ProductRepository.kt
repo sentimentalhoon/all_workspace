@@ -200,9 +200,11 @@ class ProductRepository(private val config: ApplicationConfig) {
     }
 
     suspend fun delete(id: Long): Boolean = newSuspendedTransaction(Dispatchers.IO) {
-        // Soft Delete
-        Products.update({ Products.id eq id }) {
-            it[Products.status] = com.psmo.model.ProductStatus.DELETED
-        } > 0
+        // Hard Delete: Remove related data first (Manual Cascade)
+        ProductRealEstateInfos.deleteWhere { com.psmo.model.ProductRealEstateInfos.id eq id }
+        ProductImages.deleteWhere { com.psmo.model.ProductImages.productId eq id }
+        
+        // Remove Product
+        Products.deleteWhere { Products.id eq id } > 0
     }
 }

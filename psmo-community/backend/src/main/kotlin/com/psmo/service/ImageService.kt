@@ -167,4 +167,26 @@ class ImageService(private val config: ApplicationConfig) {
             return null
         }
     }
+    fun deleteImage(url: String?) {
+        if (url.isNullOrBlank()) return
+
+        try {
+            // URL format: /storage/{bucket}/{filename}
+            val parts = url.split("/")
+            if (parts.size >= 4 && parts[1] == "storage") {
+                val bucket = parts[2]
+                val filename = parts[3]
+
+                minioClient.removeObject(
+                    io.minio.RemoveObjectArgs.builder()
+                        .bucket(bucket)
+                        .`object`(filename)
+                        .build()
+                )
+            }
+        } catch (e: Exception) {
+            e.printStackTrace()
+            // Log error but generally don't throw to avoid blocking DB delete
+        }
+    }
 }

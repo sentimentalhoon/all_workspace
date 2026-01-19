@@ -49,12 +49,11 @@ fun appModule(config: ApplicationConfig) = module {
     single { RefreshTokenService(get(), get()) }
     single { TelegramAuthService(get(), get(), get(), get()) }
     single { TelegramBotService(get()) }
-    single { ProductService(get()) }
+    single { ProductService(get(), get()) }
 
     single { ImageService(get()) }
-    single { ImageService(get()) }
     single { CloudflareStreamService(get()) } // Placeholder for Video Upload
-    single { BadUserService(get()) }
+    single { BadUserService(get(), get()) }
     single { com.psmo.repository.BoardRepository(get()) }
     single { BoardService(get()) }
 }

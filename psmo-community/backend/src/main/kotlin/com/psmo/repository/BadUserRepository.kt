@@ -98,7 +98,13 @@ class BadUserRepository {
     }
 
     suspend fun delete(id: Long) = newSuspendedTransaction(Dispatchers.IO) {
-        // Cascade delete should handle images if configured, but let's be explicit or rely on Entity delete
         BadUser.findById(id)?.delete()
+    }
+
+    suspend fun getAllImageUrls(badUserId: Long): List<String> = newSuspendedTransaction(Dispatchers.IO) {
+         val images = BadUserImage.find { com.psmo.model.BadUserImages.badUser eq badUserId }
+         images.flatMap { 
+             listOfNotNull(it.url, it.thumbnailUrl, it.blurUrl, it.blurThumbnailUrl)
+         }
     }
 }
