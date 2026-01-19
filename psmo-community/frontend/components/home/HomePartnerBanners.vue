@@ -78,31 +78,23 @@
 
 .partner-slider {
   display: flex;
+  flex-direction: column; /* Stack vertically */
   gap: 16px;
-  overflow-x: auto;
-  padding: 4px;
-  padding-bottom: 12px;
-  scroll-snap-type: x mandatory;
-  -webkit-overflow-scrolling: touch;
-
-  &::-webkit-scrollbar {
-    height: 0;
-  }
+  /* Removed overflow-x and scroll snap */
 }
 
 .partner-card {
   position: relative;
-  min-width: 260px;
-  height: 140px;
-  border-radius: 20px;
+  width: 100%; /* Full width */
+  height: 120px; /* Slightly reduced height for stacking */
+  border-radius: 16px; /* Slightly reduced radius */
   overflow: hidden;
   cursor: pointer;
-  scroll-snap-align: center;
-  transition: transform 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
-  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
+  transition: transform 0.2s cubic-bezier(0.25, 0.8, 0.25, 1);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
 
   &:hover {
-    transform: translateY(-4px) scale(1.02);
+    transform: translateY(-2px); /* Milder hover effect */
   }
 
   /* Background Gradients */
