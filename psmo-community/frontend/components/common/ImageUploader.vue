@@ -1,6 +1,4 @@
 <script setup lang="ts">
-import { useImageOptimization } from "~/composables/useImageOptimization";
-
 interface ExistingImage {
   id: number;
   url: string;
@@ -18,20 +16,105 @@ const props = defineProps({
   },
 });
 
-const emit = defineEmits<{
-  (e: "update:files", files: File[]): void;
-  (e: "update:deleteIds", ids: number[]): void;
-  (e: "update:processing", state: boolean): void;
-}>();
-
-const { compressImage } = useImageOptimization();
-
 const newFiles = ref<File[]>([]);
+const imagePairs = ref<{ original: File; blurred: File | null }[]>([]);
 const previewUrls = ref<string[]>([]);
 const deleteIds = ref<number[]>([]);
 
 // Local processing state
 const isProcessing = ref(false);
+
+const emit = defineEmits<{
+  (e: "update:files", files: File[]): void;
+  (
+    e: "update:imagePairs",
+    pairs: { original: File; blurred: File | null }[],
+  ): void;
+  (e: "update:deleteIds", ids: number[]): void;
+  (e: "update:processing", state: boolean): void;
+}>();
+
+// Face API Models Loading
+import * as faceapi from "face-api.js";
+
+onMounted(async () => {
+  if (process.client) {
+    try {
+      await faceapi.nets.tinyFaceDetector.loadFromUri(
+        "https://justadudewhohacks.github.io/face-api.js/models",
+      );
+      console.log("FaceAPI models loaded");
+    } catch (e) {
+      console.error("Failed to load FaceAPI models", e);
+    }
+  }
+});
+
+const processImageWithBlur = async (
+  file: File,
+): Promise<{ original: File; blurred: File | null }> => {
+  return new Promise((resolve) => {
+    const img = document.createElement("img");
+    const reader = new FileReader();
+    reader.onload = async (e) => {
+      img.src = e.target?.result as string;
+      img.onload = async () => {
+        try {
+          const detections = await faceapi.detectAllFaces(
+            img,
+            new faceapi.TinyFaceDetectorOptions(),
+          );
+
+          if (detections.length > 0) {
+            const canvas = document.createElement("canvas");
+            canvas.width = img.width;
+            canvas.height = img.height;
+            const ctx = canvas.getContext("2d");
+            if (!ctx) {
+              resolve({ original: file, blurred: null });
+              return;
+            }
+
+            // Draw original
+            ctx.drawImage(img, 0, 0);
+
+            // Blur faces
+            detections.forEach((det) => {
+              const { x, y, width, height } = det.box;
+              // Simple blur effect by pixelating or applying filter
+              // Using filter requires recreating context state or clipping
+
+              ctx.save();
+              ctx.beginPath();
+              ctx.rect(x, y, width, height);
+              ctx.clip();
+              ctx.filter = "blur(15px)";
+              ctx.drawImage(img, 0, 0);
+              ctx.restore();
+            });
+
+            canvas.toBlob((blob) => {
+              if (blob) {
+                const blurredFile = new File([blob], file.name, {
+                  type: file.type,
+                });
+                resolve({ original: file, blurred: blurredFile });
+              } else {
+                resolve({ original: file, blurred: null });
+              }
+            }, file.type);
+          } else {
+            resolve({ original: file, blurred: null });
+          }
+        } catch (err) {
+          console.error("Face detection error", err);
+          resolve({ original: file, blurred: null });
+        }
+      };
+    };
+    reader.readAsDataURL(file);
+  });
+};
 
 const handleFileChange = async (e: Event) => {
   const target = e.target as HTMLInputElement;
@@ -55,10 +138,14 @@ const handleFileChange = async (e: Event) => {
 
     try {
       for (const file of selectedFiles) {
-        // Optimization
+        // 1. Optimization
         const compressed = await compressImage(file, 1920, 1, 0.8);
 
-        newFiles.value.push(compressed);
+        // 2. Face Blurring
+        const optimizedPair = await processImageWithBlur(compressed);
+
+        newFiles.value.push(optimizedPair.original);
+        imagePairs.value.push(optimizedPair);
 
         // Create Preview
         const reader = new FileReader();
@@ -66,10 +153,11 @@ const handleFileChange = async (e: Event) => {
           if (e.target?.result)
             previewUrls.value.push(e.target.result as string);
         };
-        reader.readAsDataURL(compressed);
+        reader.readAsDataURL(optimizedPair.original);
       }
 
-      emit("update:files", newFiles.value);
+      emit("update:files", newFiles.value); // Backward compatibility
+      emit("update:imagePairs", imagePairs.value); // New event
     } catch (err) {
       console.error("Image processing error", err);
       alert("이미지 처리 중 오류가 발생했습니다.");
@@ -84,8 +172,10 @@ const handleFileChange = async (e: Event) => {
 
 const removeNewFile = (index: number) => {
   newFiles.value.splice(index, 1);
+  imagePairs.value.splice(index, 1);
   previewUrls.value.splice(index, 1);
   emit("update:files", newFiles.value);
+  emit("update:imagePairs", imagePairs.value);
 };
 
 const removeExistingImage = (id: number) => {

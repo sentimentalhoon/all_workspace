@@ -24,21 +24,25 @@ import io.ktor.utils.io.jvm.javaio.toInputStream
 
 fun Route.badUserRoutes(badUserService: BadUserService, imageService: ImageService) {
     // 조회 (공개 - 로그인 불필요)
-    get<BadUserListResource> { resource ->
-        val result = badUserService.searchBadUsers(resource.keyword)
-        call.respond(result)
-    }
-
-    // 등록 (로그인 필요)
-
-
-    // 상세 조회 (공개)
-    get<BadUserCreateResource.Id> { resource ->
-        try {
-            val result = badUserService.getBadUserById(resource.id)
+    authenticate("auth-jwt", optional = true) {
+        // 조회 (공개 - 로그인 불필요, 로그인 시 원본 이미지)
+        get<BadUserListResource> { resource ->
+            val principal = call.principal<JWTPrincipal>()
+            val viewerId = principal?.subject?.toLongOrNull()
+            val result = badUserService.searchBadUsers(resource.keyword, viewerId)
             call.respond(result)
-        } catch (e: IllegalArgumentException) {
-            call.respond(HttpStatusCode.NotFound, mapOf("error" to "존재하지 않는 게시글입니다."))
+        }
+
+        // 상세 조회 (공개 - 로그인 불필요, 로그인 시 원본 이미지)
+        get<BadUserCreateResource.Id> { resource ->
+            val principal = call.principal<JWTPrincipal>()
+            val viewerId = principal?.subject?.toLongOrNull()
+            try {
+                val result = badUserService.getBadUserById(resource.id, viewerId)
+                call.respond(result)
+            } catch (e: IllegalArgumentException) {
+                call.respond(HttpStatusCode.NotFound, mapOf("error" to "존재하지 않는 게시글입니다."))
+            }
         }
     }
 
@@ -52,7 +56,8 @@ fun Route.badUserRoutes(badUserService: BadUserService, imageService: ImageServi
             // Multipart Request 처리
             val multipart = call.receiveMultipart()
             var createRequest: BadUserCreateRequest? = null
-            val uploadedImages = mutableListOf<ImageService.ImageUploadResult>()
+            // Map to store paired images: Index -> { "original": Meta, "blur": Bytes }
+            val imageMap = mutableMapOf<Int, MutableMap<String, Any>>()
 
             multipart.forEachPart { part ->
                 when (part) {
@@ -62,11 +67,26 @@ fun Route.badUserRoutes(badUserService: BadUserService, imageService: ImageServi
                         }
                     }
                     is PartData.FileItem -> {
-                        val fileName = part.originalFileName ?: "image.jpg"
-                        val contentType = part.contentType?.toString() ?: "image/jpeg"
+                        val name = part.name ?: ""
+                        // Read bytes immediately
                         val bytes = part.provider().toInputStream().use { it.readBytes() }
-                        val result = imageService.uploadImageWithThumbnail(bytes, fileName, contentType)
-                        uploadedImages.add(result)
+                        
+                        if (name.startsWith("image_")) {
+                            val idx = name.removePrefix("image_").toIntOrNull()
+                            if (idx != null) {
+                                val meta = mapOf(
+                                    "bytes" to bytes,
+                                    "fileName" to (part.originalFileName ?: "image.jpg"),
+                                    "contentType" to (part.contentType?.toString() ?: "image/jpeg")
+                                )
+                                imageMap.getOrPut(idx) { mutableMapOf() }["original"] = meta
+                            }
+                        } else if (name.startsWith("blur_image_")) {
+                            val idx = name.removePrefix("blur_image_").toIntOrNull()
+                            if (idx != null) {
+                                imageMap.getOrPut(idx) { mutableMapOf() }["blur"] = bytes
+                            }
+                        }
                     }
                     else -> {}
                 }
@@ -78,13 +98,29 @@ fun Route.badUserRoutes(badUserService: BadUserService, imageService: ImageServi
                 return@post
             }
 
+            // Upload processed images
+            val uploadedImages = mutableListOf<ImageService.ImageUploadResult>()
+            imageMap.keys.sorted().forEach { idx ->
+                val data = imageMap[idx]!!
+                val original = data["original"] as? Map<String, Any>
+                if (original != null) {
+                    val bytes = original["bytes"] as ByteArray
+                    val fileName = original["fileName"] as String
+                    val contentType = original["contentType"] as String
+                    val blurBytes = data["blur"] as? ByteArray
+
+                    val result = imageService.uploadImageWithThumbnail(bytes, fileName, contentType, blurBytes)
+                    uploadedImages.add(result)
+                }
+            }
+
             if (uploadedImages.size > 20) {
                 call.respond(HttpStatusCode.BadRequest, mapOf("error" to "사진은 최대 20장까지만 첨부할 수 있습니다."))
                 return@post
             }
 
             try {
-                // User object for service (requires limited fields mostly id)
+                // User object for service
                 val user = User(id = userId, telegramId = 0, displayName = null, username = null, photoUrl = null, role = com.psmo.model.UserRole.MEMBER, score = 0, activityLevel = 0, createdAt = java.time.LocalDateTime.now(), updatedAt = java.time.LocalDateTime.now())
                 val response = badUserService.reportBadUser(user, createRequest!!, uploadedImages)
                 call.respond(HttpStatusCode.Created, response)
@@ -102,7 +138,8 @@ fun Route.badUserRoutes(badUserService: BadUserService, imageService: ImageServi
             
             val multipart = call.receiveMultipart()
             var updateRequest: com.psmo.model.dto.BadUserUpdateRequest? = null
-            val newImages = mutableListOf<ImageService.ImageUploadResult>()
+            // Map to store paired images
+            val imageMap = mutableMapOf<Int, MutableMap<String, Any>>()
             var deleteImageIds: List<Long> = emptyList()
 
             multipart.forEachPart { part ->
@@ -115,11 +152,25 @@ fun Route.badUserRoutes(badUserService: BadUserService, imageService: ImageServi
                         }
                     }
                     is PartData.FileItem -> {
-                        val fileName = part.originalFileName ?: "image.jpg"
-                        val contentType = part.contentType?.toString() ?: "image/jpeg"
+                        val name = part.name ?: ""
                         val bytes = part.provider().toInputStream().use { it.readBytes() }
-                        val result = imageService.uploadImageWithThumbnail(bytes, fileName, contentType)
-                        newImages.add(result)
+                        
+                        if (name.startsWith("image_")) {
+                            val idx = name.removePrefix("image_").toIntOrNull()
+                            if (idx != null) {
+                                val meta = mapOf(
+                                    "bytes" to bytes,
+                                    "fileName" to (part.originalFileName ?: "image.jpg"),
+                                    "contentType" to (part.contentType?.toString() ?: "image/jpeg")
+                                )
+                                imageMap.getOrPut(idx) { mutableMapOf() }["original"] = meta
+                            }
+                        } else if (name.startsWith("blur_image_")) {
+                            val idx = name.removePrefix("blur_image_").toIntOrNull()
+                            if (idx != null) {
+                                imageMap.getOrPut(idx) { mutableMapOf() }["blur"] = bytes
+                            }
+                        }
                     }
                     else -> {}
                 }
@@ -131,11 +182,23 @@ fun Route.badUserRoutes(badUserService: BadUserService, imageService: ImageServi
                 return@put
             }
 
+            // Upload collected images
+            val newImages = mutableListOf<ImageService.ImageUploadResult>()
+            imageMap.keys.sorted().forEach { idx ->
+                val data = imageMap[idx]!!
+                val original = data["original"] as? Map<String, Any>
+                if (original != null) {
+                    val bytes = original["bytes"] as ByteArray
+                    val fileName = original["fileName"] as String
+                    val contentType = original["contentType"] as String
+                    val blurBytes = data["blur"] as? ByteArray
+
+                    val result = imageService.uploadImageWithThumbnail(bytes, fileName, contentType, blurBytes)
+                    newImages.add(result)
+                }
+            }
+
             try {
-                // Fetch User role for admin check if needed, but here simple user object is passed
-                // Ideally should fetch full user from DB to check role, but Service can fetch user or we pass basic user.
-                // Service expects User object. For role check, we need role from JWT or DB.
-                // JWT claims usually have role.
                 val roleStr = principal.payload.getClaim("role").asString() ?: "MEMBER"
                 val role = try { com.psmo.model.UserRole.valueOf(roleStr) } catch(e:Exception) { com.psmo.model.UserRole.MEMBER }
                 

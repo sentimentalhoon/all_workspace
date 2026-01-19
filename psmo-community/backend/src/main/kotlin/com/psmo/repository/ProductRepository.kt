@@ -123,6 +123,8 @@ class ProductRepository(private val config: ApplicationConfig) {
                  it[ProductImages.productId] = productId
                  it[ProductImages.url] = result.originalUrl
                  it[ProductImages.thumbnailUrl] = result.thumbnailUrl
+                 it[ProductImages.blurUrl] = result.blurUrl
+                 it[ProductImages.blurThumbnailUrl] = result.blurThumbnailUrl
                  it[ProductImages.type] = type
                  it[ProductImages.orderIndex] = maxOrder + 1 + index
              }

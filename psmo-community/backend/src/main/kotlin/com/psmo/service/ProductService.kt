@@ -27,13 +27,13 @@ class ProductService(private val repository: ProductRepository) {
         if (images.isNotEmpty()) {
             repository.saveImages(product.id, images)
         }
-        return getProductById(product.id) ?: throw IllegalStateException("Created product not found")
+        return getProductById(product.id, sellerId) ?: throw IllegalStateException("Created product not found")
     }
 
     /**
      * 상품 목록을 가져와서 화면에 보여줄 수 있는 형태(DTO)로 변환합니다.
      */
-    suspend fun getProducts(page: Int, size: Int, category: String?): List<ProductResponse> {
+    suspend fun getProducts(page: Int, size: Int, category: String?, viewerId: Long?): List<ProductResponse> {
         val categoryEnum = category?.let { 
             try { com.psmo.model.ProductCategory.valueOf(it) } catch (e: Exception) { null } 
         }
@@ -43,10 +43,12 @@ class ProductService(private val repository: ProductRepository) {
             val user = row.toUser()
             // 각 상품마다 이미지들을 따로 가져옵니다. (나중에 최적화 필요)
             val images = repository.getImages(product.id).map { 
-                com.psmo.model.dto.ProductImageDto(
+                com.psmo.model.ProductImage(
                     it[com.psmo.model.ProductImages.id].value,
                     it[com.psmo.model.ProductImages.url],
                     it[com.psmo.model.ProductImages.thumbnailUrl],
+                    it[com.psmo.model.ProductImages.blurUrl],
+                    it[com.psmo.model.ProductImages.blurThumbnailUrl],
                     it[com.psmo.model.ProductImages.type],
                     it[com.psmo.model.ProductImages.orderIndex]
                 )
@@ -54,30 +56,32 @@ class ProductService(private val repository: ProductRepository) {
             
             // 모든 정보를 합쳐서 응답 객체(ProductResponse)로 만듭니다.
             product.copy(
-                images = images.map { com.psmo.model.ProductImage(it.id, it.url, it.thumbnailUrl, it.type, it.orderIndex) }
+                images = images
                 // RealEstate populated by join in repo if present in Product object
-            ).toResponse(user.toResponse())
+            ).toResponse(user.toResponse(), viewerId)
         }
     }
 
-    suspend fun getProductById(id: Long): ProductResponse? {
+    suspend fun getProductById(id: Long, viewerId: Long?): ProductResponse? {
         val row = repository.findById(id) ?: return null
         val product = row.toProduct()
         val user = row.toUser()
         
-        val imagesDto = repository.getImages(product.id).map { 
-             com.psmo.model.dto.ProductImageDto(
+        val images = repository.getImages(product.id).map { 
+             com.psmo.model.ProductImage(
                 it[com.psmo.model.ProductImages.id].value,
                 it[com.psmo.model.ProductImages.url],
                 it[com.psmo.model.ProductImages.thumbnailUrl],
+                it[com.psmo.model.ProductImages.blurUrl],
+                it[com.psmo.model.ProductImages.blurThumbnailUrl],
                 it[com.psmo.model.ProductImages.type],
                 it[com.psmo.model.ProductImages.orderIndex]
             )
         }
 
         return product.copy(
-            images = imagesDto.map { com.psmo.model.ProductImage(it.id, it.url, it.thumbnailUrl, it.type, it.orderIndex) }
-        ).toResponse(user.toResponse())
+            images = images
+        ).toResponse(user.toResponse(), viewerId)
     }
     
     suspend fun updateProduct(
@@ -88,7 +92,7 @@ class ProductService(private val repository: ProductRepository) {
         newImages: List<Pair<com.psmo.service.ImageService.ImageUploadResult, com.psmo.model.ProductMediaType>> = emptyList(),
         deleteImageIds: List<Long> = emptyList()
     ): ProductResponse? {
-        val existing = getProductById(id) ?: return null
+        val existing = getProductById(id, userId) ?: return null
         
         // Owner Check bypassed if Admin
         if (existing.seller.id != userId && !isAdmin) {
@@ -104,10 +108,10 @@ class ProductService(private val repository: ProductRepository) {
         }
         
         repository.update(id, request)
-        return getProductById(id)
+        return getProductById(id, userId)
     }
     suspend fun deleteProduct(id: Long, userId: Long, isAdmin: Boolean = false): Boolean {
-        val existing = getProductById(id) ?: return false
+        val existing = getProductById(id, userId) ?: return false
         if (existing.seller.id != userId && !isAdmin) {
             throw IllegalArgumentException("Not the owner of this product")
         }

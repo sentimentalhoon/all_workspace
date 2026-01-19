@@ -49,18 +49,24 @@ class MarketResources {
 }
 
 fun Route.productRoutes(service: ProductService, imageService: ImageService) {
-    get<MarketResources.Products> { params ->
-        val products = service.getProducts(params.page, params.size, params.category)
-        call.respond(mapOf("status" to "success", "data" to products))
-    }
+    authenticate("auth-jwt", optional = true) {
+        get<MarketResources.Products> { params ->
+            val principal = call.principal<JWTPrincipal>()
+            val viewerId = principal?.subject?.toLongOrNull()
+            val products = service.getProducts(params.page, params.size, params.category, viewerId)
+            call.respond(mapOf("status" to "success", "data" to products))
+        }
 
-    // 상품 상세 조회 (누구나 볼 수 있음)
-    get<MarketResources.Products.Id> { params ->
-        val product = service.getProductById(params.id)
-        if (product == null) {
-            call.respond(HttpStatusCode.NotFound, mapOf("status" to "error", "message" to "Product not found"))
-        } else {
-            call.respond(mapOf("status" to "success", "data" to product))
+        // 상품 상세 조회 (누구나 볼 수 있음)
+        get<MarketResources.Products.Id> { params ->
+            val principal = call.principal<JWTPrincipal>()
+            val viewerId = principal?.subject?.toLongOrNull()
+            val product = service.getProductById(params.id, viewerId)
+            if (product == null) {
+                call.respond(HttpStatusCode.NotFound, mapOf("status" to "error", "message" to "Product not found"))
+            } else {
+                call.respond(mapOf("status" to "success", "data" to product))
+            }
         }
     }
 
@@ -76,12 +82,10 @@ fun Route.productRoutes(service: ProductService, imageService: ImageService) {
             }
 
             // Handle Multipart (파일 업로드 처리)
-            // 상품 정보(JSON)와 사진 파일(File)이 섞여서 들어오기 때문에 복잡한 처리가 필요합니다.
             var productRequest: ProductCreateRequest? = null
-            val uploadedImages = mutableListOf<Pair<com.psmo.service.ImageService.ImageUploadResult, com.psmo.model.ProductMediaType>>()
+            // Map: Index -> { "original": Meta, "blur": Bytes }
+            val imageMap = mutableMapOf<Int, MutableMap<String, Any>>()
             
-            // Inject services and mapper once
-            // val imageService by inject<com.psmo.service.ImageService>() // Removed: Passed via param
             val jackson = jacksonObjectMapper()
 
             val multipart = call.receiveMultipart()
@@ -95,28 +99,26 @@ fun Route.productRoutes(service: ProductService, imageService: ImageService) {
                         }
                     }
                     is PartData.FileItem -> {
-                        val fileName = part.originalFileName as String
-                        val contentType = part.contentType?.toString() ?: "application/octet-stream"
+                        val name = part.name ?: ""
+                        // Read bytes immediately (blocking IO context)
+                        val bytes = part.provider().toInputStream().use { it.readBytes() }
                         
-                        // Use provider directly for efficiency (Streaming)
-                        // MinIO SDK is blocking, so offload to IO dispatcher
-                        // MinIO SDK is blocking, so offload to IO dispatcher
-                        val resultIdx = withContext(Dispatchers.IO) {
-                            part.provider().toInputStream().use { inputStream ->
-                                val type = if (contentType.startsWith("video")) com.psmo.model.ProductMediaType.VIDEO else com.psmo.model.ProductMediaType.IMAGE
-                                
-                                val uploadResult = if (type == com.psmo.model.ProductMediaType.VIDEO) {
-                                    val videoUrl = imageService.uploadVideo(inputStream, fileName, contentType)
-                                    com.psmo.service.ImageService.ImageUploadResult(videoUrl, videoUrl) // Video uses same URL for thumb for now
-                                } else {
-                                    // Need bytes for thumbnail generation
-                                    val bytes = inputStream.readBytes()
-                                    imageService.uploadImageWithThumbnail(bytes, fileName, contentType)
-                                }
-                                uploadResult to type
+                        if (name.startsWith("image_")) {
+                            val idx = name.removePrefix("image_").toIntOrNull()
+                            if (idx != null) {
+                                val meta = mapOf(
+                                    "bytes" to bytes,
+                                    "fileName" to (part.originalFileName ?: "file"),
+                                    "contentType" to (part.contentType?.toString() ?: "application/octet-stream")
+                                )
+                                imageMap.getOrPut(idx) { mutableMapOf() }["original"] = meta
+                            }
+                        } else if (name.startsWith("blur_image_")) {
+                            val idx = name.removePrefix("blur_image_").toIntOrNull()
+                            if (idx != null) {
+                                imageMap.getOrPut(idx) { mutableMapOf() }["blur"] = bytes
                             }
                         }
-                        uploadedImages.add(resultIdx)
                     }
                     else -> {}
                 }
@@ -126,6 +128,35 @@ fun Route.productRoutes(service: ProductService, imageService: ImageService) {
             if (productRequest == null) {
                 call.respond(HttpStatusCode.BadRequest, mapOf("status" to "error", "message" to "Missing product data"))
                 return@post
+            }
+
+            val uploadedImages = mutableListOf<Pair<com.psmo.service.ImageService.ImageUploadResult, com.psmo.model.ProductMediaType>>()
+
+            // Process Map
+            imageMap.keys.sorted().forEach { idx ->
+                val data = imageMap[idx]!!
+                val original = data["original"] as? Map<String, Any>
+                
+                if (original != null) {
+                    val bytes = original["bytes"] as ByteArray
+                    val fileName = original["fileName"] as String
+                    val contentType = original["contentType"] as String
+                    val blurBytes = data["blur"] as? ByteArray
+                    
+                    val type = if (contentType.startsWith("video")) com.psmo.model.ProductMediaType.VIDEO else com.psmo.model.ProductMediaType.IMAGE
+                    
+                    // Upload
+                    withContext(Dispatchers.IO) {
+                        val uploadResult = if (type == com.psmo.model.ProductMediaType.VIDEO) {
+                            val videoUrl = imageService.uploadVideo(java.io.ByteArrayInputStream(bytes), fileName, contentType)
+                            // Video supports no blur for now
+                            com.psmo.service.ImageService.ImageUploadResult(videoUrl, videoUrl) 
+                        } else {
+                            imageService.uploadImageWithThumbnail(bytes, fileName, contentType, blurBytes)
+                        }
+                        uploadedImages.add(uploadResult to type)
+                    }
+                }
             }
 
             val created = service.createProduct(productRequest!!, userId, uploadedImages)
@@ -148,16 +179,11 @@ fun Route.productRoutes(service: ProductService, imageService: ImageService) {
              var updateRequest: ProductUpdateRequest? = null
              val newImages = mutableListOf<Pair<com.psmo.service.ImageService.ImageUploadResult, com.psmo.model.ProductMediaType>>()
              var deleteImageIds: List<Long> = emptyList()
+             val imageMap = mutableMapOf<Int, MutableMap<String, Any>>()
              
              val jackson = jacksonObjectMapper()
 
              try {
-                // Check content type. If JSON, standard update (backward compatibility/simple update). 
-                // However, frontend will send Multipart. So we assume Multipart if typical header presence, 
-                // but receiveMultipart throws if not multipart.
-                // Let's assume frontend ALWAYs sends multipart for update now if we change the service/frontend.
-                // Or try/catch? receiveMultipart() works if Content-Type is multipart/form-data.
-                
                 if (call.request.contentType().match(ContentType.MultiPart.FormData)) {
                      val multipart = call.receiveMultipart()
                      multipart.forEachPart { part ->
@@ -171,27 +197,56 @@ fun Route.productRoutes(service: ProductService, imageService: ImageService) {
                                 }
                             }
                             is PartData.FileItem -> {
-                                val fileName = part.originalFileName as String
-                                val contentType = part.contentType?.toString() ?: "application/octet-stream"
-                                val url = withContext(Dispatchers.IO) {
-                                    part.provider().toInputStream().use { inputStream ->
-                                        val type = if (contentType.startsWith("video")) com.psmo.model.ProductMediaType.VIDEO else com.psmo.model.ProductMediaType.IMAGE
-                                         val uploadResult = if (type == com.psmo.model.ProductMediaType.VIDEO) {
-                                            val videoUrl = imageService.uploadVideo(inputStream, fileName, contentType)
-                                            com.psmo.service.ImageService.ImageUploadResult(videoUrl, videoUrl)
-                                        } else {
-                                            val bytes = inputStream.readBytes()
-                                            imageService.uploadImageWithThumbnail(bytes, fileName, contentType)
-                                        }
-                                        uploadResult to type
+                                val name = part.name ?: ""
+                                val bytes = part.provider().toInputStream().use { it.readBytes() }
+                                
+                                if (name.startsWith("image_")) {
+                                    val idx = name.removePrefix("image_").toIntOrNull()
+                                    if (idx != null) {
+                                        val meta = mapOf(
+                                            "bytes" to bytes,
+                                            "fileName" to (part.originalFileName ?: "file"),
+                                            "contentType" to (part.contentType?.toString() ?: "application/octet-stream")
+                                        )
+                                        imageMap.getOrPut(idx) { mutableMapOf() }["original"] = meta
+                                    }
+                                } else if (name.startsWith("blur_image_")) {
+                                    val idx = name.removePrefix("blur_image_").toIntOrNull()
+                                    if (idx != null) {
+                                        imageMap.getOrPut(idx) { mutableMapOf() }["blur"] = bytes
                                     }
                                 }
-                                newImages.add(url)
                             }
                             else -> {}
                         }
                         part.dispose()
                      }
+                     
+                     // Process Map
+                    imageMap.keys.sorted().forEach { idx ->
+                        val data = imageMap[idx]!!
+                        val original = data["original"] as? Map<String, Any>
+                        
+                        if (original != null) {
+                            val bytes = original["bytes"] as ByteArray
+                            val fileName = original["fileName"] as String
+                            val contentType = original["contentType"] as String
+                            val blurBytes = data["blur"] as? ByteArray
+                            
+                            val type = if (contentType.startsWith("video")) com.psmo.model.ProductMediaType.VIDEO else com.psmo.model.ProductMediaType.IMAGE
+                            
+                            withContext(Dispatchers.IO) {
+                                val uploadResult = if (type == com.psmo.model.ProductMediaType.VIDEO) {
+                                    val videoUrl = imageService.uploadVideo(java.io.ByteArrayInputStream(bytes), fileName, contentType)
+                                    com.psmo.service.ImageService.ImageUploadResult(videoUrl, videoUrl) 
+                                } else {
+                                    imageService.uploadImageWithThumbnail(bytes, fileName, contentType, blurBytes)
+                                }
+                                newImages.add(uploadResult to type)
+                            }
+                        }
+                    }
+
                 } else {
                      // Fallback for JSON only requests
                      updateRequest = call.receive<ProductUpdateRequest>()

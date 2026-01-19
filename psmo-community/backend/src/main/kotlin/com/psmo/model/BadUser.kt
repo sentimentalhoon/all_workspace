@@ -34,13 +34,18 @@ class BadUser(id: EntityID<Long>) : LongEntity(id) {
     var createdAt by BadUsers.createdAt
     val images by BadUserImage referrersOn BadUserImages.badUser
 
-    fun toResponse() = BadUserResponse(
+    fun toResponse(viewerId: Long?) = BadUserResponse(
         id = this.id.value,
         region = this.region,
         reason = this.reason,
         physicalDescription = this.physicalDescription,
         incidentDate = this.incidentDate?.toString(),
-        images = this.images.map { BadUserImageResponse(it.url, it.thumbnailUrl) },
+        images = this.images.map { 
+            val showOriginal = viewerId != null
+            val finalUrl = if (showOriginal) it.url else (it.blurUrl ?: it.url)
+            val finalThumb = if (showOriginal) it.thumbnailUrl else (it.blurThumbnailUrl ?: it.thumbnailUrl)
+            BadUserImageResponse(finalUrl, finalThumb) 
+        },
         reporterName = this.reporter.displayName ?: "익명",
         reporterId = this.reporter.id.value,
         createdAt = this.createdAt.toString()
@@ -51,6 +56,8 @@ object BadUserImages : LongIdTable("bad_user_images") {
     val badUser = reference("bad_user_id", BadUsers)
     val url = varchar("url", 500)
     val thumbnailUrl = varchar("thumbnail_url", 500)
+    val blurUrl = varchar("blur_url", 500).nullable()
+    val blurThumbnailUrl = varchar("blur_thumbnail_url", 500).nullable()
     val createdAt = datetime("created_at").defaultExpression(CurrentDateTime)
 }
 
@@ -60,5 +67,7 @@ class BadUserImage(id: EntityID<Long>) : LongEntity(id) {
     var badUser by BadUser referencedOn BadUserImages.badUser
     var url by BadUserImages.url
     var thumbnailUrl by BadUserImages.thumbnailUrl
+    var blurUrl by BadUserImages.blurUrl
+    var blurThumbnailUrl by BadUserImages.blurThumbnailUrl
     var createdAt by BadUserImages.createdAt
 }

@@ -65,9 +65,14 @@ class ImageService(private val config: ApplicationConfig) {
         }
     }
 
-    data class ImageUploadResult(val originalUrl: String, val thumbnailUrl: String)
+    data class ImageUploadResult(
+        val originalUrl: String, 
+        val thumbnailUrl: String,
+        val blurUrl: String? = null,
+        val blurThumbnailUrl: String? = null
+    )
 
-    fun uploadImageWithThumbnail(bytes: ByteArray, originalFileName: String, contentType: String): ImageUploadResult {
+    fun uploadImageWithThumbnail(bytes: ByteArray, originalFileName: String, contentType: String, blurBytes: ByteArray? = null): ImageUploadResult {
         // 1. Upload Original
         val originalUrl = uploadImageBytes(bytes, originalFileName, contentType)
 
@@ -80,8 +85,22 @@ class ImageService(private val config: ApplicationConfig) {
         val thumbName = "${nameWithoutExt}_thumb.$ext"
         
         val thumbnailUrl = uploadImageBytes(thumbnailBytes, thumbName, contentType)
+
+        // 4. Handle Blur Image
+        var blurUrl: String? = null
+        var blurThumbnailUrl: String? = null
+
+        if (blurBytes != null) {
+            val blurName = "${nameWithoutExt}_blur.$ext"
+            blurUrl = uploadImageBytes(blurBytes, blurName, contentType)
+
+            // Blur Thumbnail
+            val blurThumbBytes = createThumbnail(blurBytes, 300)
+            val blurThumbName = "${nameWithoutExt}_blur_thumb.$ext"
+            blurThumbnailUrl = uploadImageBytes(blurThumbBytes, blurThumbName, contentType)
+        }
         
-        return ImageUploadResult(originalUrl, thumbnailUrl)
+        return ImageUploadResult(originalUrl, thumbnailUrl, blurUrl, blurThumbnailUrl)
     }
 
     private fun createThumbnail(bytes: ByteArray, maxWidth: Int): ByteArray {

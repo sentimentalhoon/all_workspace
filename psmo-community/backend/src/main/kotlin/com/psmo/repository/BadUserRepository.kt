@@ -36,35 +36,38 @@ class BadUserRepository {
                 this.badUser = badUser
                 this.url = image.originalUrl
                 this.thumbnailUrl = image.thumbnailUrl
+                this.blurUrl = image.blurUrl
+                this.blurThumbnailUrl = image.blurThumbnailUrl
             }
         }
 
-        badUser.toResponse()
+        badUser.toResponse(reporter.id)
     }
 
-    suspend fun search(keyword: String?): List<BadUserResponse> = newSuspendedTransaction(Dispatchers.IO) {
+    suspend fun search(keyword: String?, viewerId: Long?): List<BadUserResponse> = newSuspendedTransaction(Dispatchers.IO) {
         if (keyword.isNullOrBlank()) {
             return@newSuspendedTransaction BadUser.all()
                 .sortedByDescending { it.createdAt }
-                .map { it.toResponse() }
+                .map { it.toResponse(viewerId) }
         }
 
         // 지역 또는 피해사유로 검색
         BadUser.find {
             (BadUsers.region like "%$keyword%") or (BadUsers.reason like "%$keyword%")
         }.sortedByDescending { it.createdAt }
-            .map { it.toResponse() }
+            .map { it.toResponse(viewerId) }
     }
 
-    suspend fun findById(id: Long): BadUserResponse? = newSuspendedTransaction(Dispatchers.IO) {
-        BadUser.findById(id)?.toResponse()
+    suspend fun findById(id: Long, viewerId: Long?): BadUserResponse? = newSuspendedTransaction(Dispatchers.IO) {
+        BadUser.findById(id)?.toResponse(viewerId)
     }
 
     suspend fun update(
         id: Long, 
         request: com.psmo.model.dto.BadUserUpdateRequest,
         newImages: List<com.psmo.service.ImageService.ImageUploadResult>,
-        deleteImageIds: List<Long>
+        deleteImageIds: List<Long>,
+        viewerId: Long?
     ): BadUserResponse? = newSuspendedTransaction(Dispatchers.IO) {
         val badUser = BadUser.findById(id) ?: return@newSuspendedTransaction null
 
@@ -79,6 +82,8 @@ class BadUserRepository {
                 this.badUser = badUser
                 this.url = image.originalUrl
                 this.thumbnailUrl = image.thumbnailUrl
+                this.blurUrl = image.blurUrl
+                this.blurThumbnailUrl = image.blurThumbnailUrl
             }
         }
 
@@ -89,7 +94,7 @@ class BadUserRepository {
             }.forEach { it.delete() }
         }
 
-        badUser.toResponse()
+        badUser.toResponse(viewerId)
     }
 
     suspend fun delete(id: Long) = newSuspendedTransaction(Dispatchers.IO) {

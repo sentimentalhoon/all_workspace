@@ -21,12 +21,12 @@ class BadUserService(
         return badUserRepository.create(reporter, request, images)
     }
 
-    suspend fun searchBadUsers(keyword: String?): List<BadUserResponse> {
-        return badUserRepository.search(keyword)
+    suspend fun searchBadUsers(keyword: String?, viewerId: Long?): List<BadUserResponse> {
+        return badUserRepository.search(keyword, viewerId)
     }
 
-    suspend fun getBadUserById(id: Long): BadUserResponse {
-        return badUserRepository.findById(id) ?: throw IllegalArgumentException("존재하지 않는 게시글입니다.")
+    suspend fun getBadUserById(id: Long, viewerId: Long?): BadUserResponse {
+        return badUserRepository.findById(id, viewerId) ?: throw IllegalArgumentException("존재하지 않는 게시글입니다.")
     }
 
     suspend fun updateBadUser(
@@ -36,16 +36,16 @@ class BadUserService(
         newImages: List<ImageService.ImageUploadResult>,
         deleteImageIds: List<Long>
     ): BadUserResponse {
-        val existing = getBadUserById(id)
+        val existing = getBadUserById(id, updater.id)
         if (existing.reporterId != updater.id && updater.role != com.psmo.model.UserRole.ADMIN) {
             throw IllegalArgumentException("수정 권한이 없습니다.")
         }
-        return badUserRepository.update(id, request, newImages, deleteImageIds)
+        return badUserRepository.update(id, request, newImages, deleteImageIds, updater.id)
             ?: throw IllegalArgumentException("게시글 수정 실패")
     }
 
     suspend fun deleteBadUser(id: Long, deleter: User) {
-        val existing = getBadUserById(id)
+        val existing = getBadUserById(id, deleter.id)
         if (existing.reporterId != deleter.id && deleter.role != com.psmo.model.UserRole.ADMIN) {
             throw IllegalArgumentException("삭제 권한이 없습니다.")
         }

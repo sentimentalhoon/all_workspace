@@ -19,7 +19,7 @@ const form = ref<BadUserCreateRequest>({
   incidentDate: "",
 });
 
-const files = ref<File[]>([]);
+const files = ref<{ original: File; blurred: File | null }[]>([]);
 const existingImages = ref<{ id: number; url: string; thumbnailUrl: string }[]>(
   [],
 );
@@ -75,16 +75,18 @@ const submit = async () => {
 
   loading.value = true;
   try {
+    // Cast files to any or match the expected type if exported.
+    // Since useBlacklist.ts function arguments updated to accept { original, blurred }[], this matches.
     if (isEditMode.value) {
       await updateBadUser(
         reportId.value,
         form.value,
-        files.value,
+        files.value as any,
         deleteImageIds.value,
       );
       alert("수정되었습니다.");
     } else {
-      await reportBadUser(form.value, files.value);
+      await reportBadUser(form.value, files.value as any);
       alert("등록되었습니다.");
     }
     router.push("/blacklist");
@@ -169,7 +171,7 @@ const submit = async () => {
         <common-image-uploader
           :existing-images="existingImages"
           :max-count="20"
-          @update:files="(f: File[]) => (files = f)"
+          @update:image-pairs="(f: any[]) => (files = f)"
           @update:delete-ids="(ids: number[]) => (deleteImageIds = ids)"
           @update:processing="(state: boolean) => (processingImages = state)"
         />

@@ -25,14 +25,14 @@ data class BadUserResponse(
 
 @Serializable
 data class BadUserImageResponse(
-    val url: String,
+    val imageUrl: String,
     val thumbnailUrl: String
 )
 
 @Serializable
 data class BadUserImageDto(
     val id: Long,
-    val url: String
+    val imageUrl: String
 )
 
 @Serializable

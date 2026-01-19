@@ -30,15 +30,26 @@ export const useBlacklist = () => {
     return await fetchClient<BadUser>(`/blacklist/${id}`);
   };
 
-  const reportBadUser = async (data: BadUserCreateRequest, files: File[]) => {
+  interface ImagePair {
+    original: File;
+    blurred: File | null;
+  }
+
+  const reportBadUser = async (
+    data: BadUserCreateRequest,
+    files: ImagePair[],
+  ) => {
     const formData = new FormData();
 
     // JSON Data
     formData.append("data", JSON.stringify(data));
 
     // Files (최대 20장)
-    files.forEach((file) => {
-      formData.append("images", file);
+    files.forEach((pair, index) => {
+      formData.append(`image_${index}`, pair.original);
+      if (pair.blurred) {
+        formData.append(`blur_image_${index}`, pair.blurred);
+      }
     });
 
     return await fetchClient("/blacklist", {
@@ -50,15 +61,18 @@ export const useBlacklist = () => {
   const updateBadUser = async (
     id: number,
     data: BadUserCreateRequest,
-    files: File[],
+    files: ImagePair[],
     deleteImageIds: number[],
   ) => {
     const formData = new FormData();
     formData.append("data", JSON.stringify(data));
     formData.append("deleteImageIds", JSON.stringify(deleteImageIds));
 
-    files.forEach((file) => {
-      formData.append("images", file);
+    files.forEach((pair, index) => {
+      formData.append(`image_${index}`, pair.original);
+      if (pair.blurred) {
+        formData.append(`blur_image_${index}`, pair.blurred);
+      }
     });
 
     return await fetchClient(`/blacklist/${id}`, {

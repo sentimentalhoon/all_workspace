@@ -37,7 +37,7 @@ const form = ref<ProductCreateRequest>({
 });
 
 const isStoreTrading = computed(() => form.value.category === "PC_BUSINESS");
-const files = ref<File[]>([]);
+const files = ref<{ original: File; blurred: File | null }[]>([]);
 const previewUrls = ref<string[]>([]);
 const existingImages = ref<{ id: number; url: string }[]>([]); // Existing images
 const deleteImageIds = ref<number[]>([]); // IDs to delete
@@ -122,13 +122,13 @@ const submit = async () => {
       await updateProduct(
         productId.value,
         payload,
-        files.value,
+        files.value as any,
         deleteImageIds.value,
       );
       alert("수정되었습니다.");
     } else {
       // Create
-      await createProduct(payload, files.value);
+      await createProduct(payload, files.value as any);
       alert("등록되었습니다.");
     }
     router.push("/market");
@@ -389,7 +389,7 @@ const submit = async () => {
         <common-image-uploader
           :existing-images="existingImages"
           :max-count="20"
-          @update:files="(f: File[]) => (files = f)"
+          @update:image-pairs="(f: any[]) => (files = f)"
           @update:delete-ids="(ids: number[]) => (deleteImageIds = ids)"
           @update:processing="(state: boolean) => (processingImages = state)"
         />

@@ -43,7 +43,7 @@ data class ProductRealEstateDto(
 
 data class ProductImageDto(
     val id: Long,
-    val url: String,
+    val imageUrl: String,
     val thumbnailUrl: String,
     val type: ProductMediaType,
     val orderIndex: Int
@@ -84,7 +84,9 @@ data class ProductUpdateRequest(
     val realEstate: ProductRealEstateDto? = null
 )
 
-fun Product.toResponse(seller: UserResponse): ProductResponse {
+fun Product.toResponse(seller: UserResponse, viewerId: Long?): ProductResponse {
+    val showOriginal = viewerId != null // Logged-in users see original
+    
     return ProductResponse(
         id = this.id,
         title = this.title,
@@ -106,7 +108,10 @@ fun Product.toResponse(seller: UserResponse): ProductResponse {
              )
         },
         images = this.images.map {
-            ProductImageDto(it.id, it.url, it.thumbnailUrl, it.type, it.orderIndex)
+            val finalUrl = if (showOriginal) it.url else (it.blurUrl ?: it.url)
+            val finalThumb = if (showOriginal) it.thumbnailUrl else (it.blurThumbnailUrl ?: it.thumbnailUrl)
+            
+            ProductImageDto(it.id, finalUrl, finalThumb, it.type, it.orderIndex)
         }
     )
 }

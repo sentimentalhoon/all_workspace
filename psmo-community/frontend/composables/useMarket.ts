@@ -92,11 +92,22 @@ export const useMarket = () => {
     );
   };
 
-  const createProduct = async (data: ProductCreateRequest, files: File[]) => {
+  interface ImagePair {
+    original: File;
+    blurred: File | null;
+  }
+
+  const createProduct = async (
+    data: ProductCreateRequest,
+    files: ImagePair[],
+  ) => {
     const formData = new FormData();
     formData.append("product", JSON.stringify(data));
-    files.forEach((file) => {
-      formData.append("file", file);
+    files.forEach((pair, index) => {
+      formData.append(`image_${index}`, pair.original);
+      if (pair.blurred) {
+        formData.append(`blur_image_${index}`, pair.blurred);
+      }
     });
 
     return await fetchClient<{ status: string; data: Product }>(
@@ -111,7 +122,7 @@ export const useMarket = () => {
   const updateProduct = async (
     id: number,
     data: ProductUpdateRequest,
-    files: File[] = [],
+    files: ImagePair[] = [],
     deleteImageIds: number[] = [],
   ) => {
     const formData = new FormData();
@@ -121,8 +132,11 @@ export const useMarket = () => {
       formData.append("deleteImageIds", JSON.stringify(deleteImageIds));
     }
 
-    files.forEach((file) => {
-      formData.append("file", file);
+    files.forEach((pair, index) => {
+      formData.append(`image_${index}`, pair.original);
+      if (pair.blurred) {
+        formData.append(`blur_image_${index}`, pair.blurred);
+      }
     });
 
     return await fetchClient<{ status: string; data: Product }>(
