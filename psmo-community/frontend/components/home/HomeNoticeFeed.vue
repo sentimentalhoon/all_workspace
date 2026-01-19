@@ -1,3 +1,62 @@
+<script setup lang="ts">
+import { onMounted, ref } from "vue";
+import { useRouter } from "vue-router";
+import {
+  BoardCategory,
+  BoardSubCategory,
+  useBoard,
+  type Post,
+} from "~/composables/useBoard";
+
+const router = useRouter();
+const { fetchPosts } = useBoard();
+const notices = ref<Post[]>([]);
+
+onMounted(async () => {
+  try {
+    const res = await fetchPosts(1, 5, BoardCategory.NOTICE);
+    notices.value = res.data;
+  } catch (e) {
+    console.error("Failed to load notices", e);
+  }
+});
+
+const navigateTo = (path: string) => {
+  router.push(path);
+};
+
+const goToDetail = (id: number) => {
+  router.push(`/community/${id}`);
+};
+
+const getNoticeStyle = (sub?: BoardSubCategory) => {
+  switch (sub) {
+    case BoardSubCategory.MUST_READ:
+      return "important";
+    case BoardSubCategory.EVENT:
+      return "event";
+    case BoardSubCategory.UPDATE:
+      return "system";
+    default:
+      return "system";
+  }
+};
+
+const getNoticeLabel = (sub?: BoardSubCategory) => {
+  const map: Record<string, string> = {
+    MUST_READ: "필독",
+    UPDATE: "업데이트",
+    EVENT: "이벤트",
+  };
+  return map[sub as string] || "공지";
+};
+
+const formatDate = (dateStr: string) => {
+  const date = new Date(dateStr);
+  return `${date.getMonth() + 1}.${date.getDate()}`;
+};
+</script>
+
 <template>
   <section class="content-section">
     <div class="section-header">
@@ -5,10 +64,26 @@
       <NuxtLink to="/community" class="more-btn">전체보기</NuxtLink>
     </div>
     <div class="notice-feed glass-panel">
-      <!-- Item 1: Important -->
-      <div class="feed-item" @click="navigateTo('/community')">
-        <div class="feed-icon important">
+      <!-- Loading State -->
+      <div
+        v-if="notices.length === 0"
+        class="feed-item"
+        style="justify-content: center; color: #888"
+      >
+        등록된 공지사항이 없습니다.
+      </div>
+
+      <!-- Feed Items -->
+      <div
+        v-for="notice in notices"
+        :key="notice.id"
+        class="feed-item"
+        @click="goToDetail(notice.id)"
+      >
+        <div class="feed-icon" :class="getNoticeStyle(notice.subCategory)">
+          <!-- Icon: Important (Alert) -->
           <svg
+            v-if="notice.subCategory === BoardSubCategory.MUST_READ"
             xmlns="http://www.w3.org/2000/svg"
             width="20"
             height="20"
@@ -25,18 +100,10 @@
             <line x1="12" y1="9" x2="12" y2="13"></line>
             <line x1="12" y1="17" x2="12.01" y2="17"></line>
           </svg>
-        </div>
-        <div class="feed-content">
-          <span class="feed-title">커뮤니티 이용 수칙 안내</span>
-          <span class="feed-meta">필독 · 4.20</span>
-        </div>
-        <div class="feed-arrow">›</div>
-      </div>
 
-      <!-- Item 2: Event -->
-      <div class="feed-item" @click="navigateTo('/community')">
-        <div class="feed-icon event">
+          <!-- Icon: Event (Gift) -->
           <svg
+            v-else-if="notice.subCategory === BoardSubCategory.EVENT"
             xmlns="http://www.w3.org/2000/svg"
             width="20"
             height="20"
@@ -58,18 +125,10 @@
             ></path>
             <path d="M18 2H6v7a6 6 0 0 0 12 0V2z"></path>
           </svg>
-        </div>
-        <div class="feed-content">
-          <span class="feed-title">[오픈기념] 포인트 2배 적립 이벤트</span>
-          <span class="feed-meta">이벤트 · 4.18</span>
-        </div>
-        <div class="feed-arrow">›</div>
-      </div>
 
-      <!-- Item 3: System -->
-      <div class="feed-item" @click="navigateTo('/community')">
-        <div class="feed-icon system">
+          <!-- Icon: System/Update (Cog) -->
           <svg
+            v-else
             xmlns="http://www.w3.org/2000/svg"
             width="20"
             height="20"
@@ -87,8 +146,11 @@
           </svg>
         </div>
         <div class="feed-content">
-          <span class="feed-title">서버 안정화 작업 안내 (02:00 ~ 04:00)</span>
-          <span class="feed-meta">점검 · 4.15</span>
+          <span class="feed-title">{{ notice.title }}</span>
+          <span class="feed-meta"
+            >{{ getNoticeLabel(notice.subCategory) }} ·
+            {{ formatDate(notice.createdAt) }}</span
+          >
         </div>
         <div class="feed-arrow">›</div>
       </div>
