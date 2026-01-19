@@ -134,6 +134,47 @@ class BoardRepository(private val config: ApplicationConfig) {
         PostLikes.selectAll().where { (PostLikes.postId eq postId) and (PostLikes.userId eq userId) }.count() > 0
     }
 
+    suspend fun updatePost(id: Long, request: PostCreateRequest): PostResponse? = newSuspendedTransaction(Dispatchers.IO) {
+        val post = Post.findById(id) ?: return@newSuspendedTransaction null
+        
+        post.title = request.title
+        post.content = request.content
+        post.category = request.category
+        post.subCategory = request.subCategory
+        
+        // Update images
+        if (request.imageUrls.isNotEmpty()) {
+             PostImages.deleteWhere { PostImages.postId eq id }
+             request.imageUrls.forEachIndexed { index, url ->
+                PostImage.new {
+                    this.post = post
+                    this.url = url
+                    this.orderIndex = index
+                }
+            }
+        }
+
+        PostResponse(
+            post.id.value, post.title, post.content, post.category, post.subCategory, 
+            post.author.toDomain().toResponse(),
+            post.viewCount, post.likeCount, post.comments.count(), post.createdAt.toString(),
+            post.images.sortedBy { it.orderIndex }.map { it.url },
+            false
+        )
+    }
+
+    suspend fun deletePost(id: Long): Boolean = newSuspendedTransaction(Dispatchers.IO) {
+        val post = Post.findById(id) ?: return@newSuspendedTransaction false
+        
+        // Manual Cascade Delete
+        PostImages.deleteWhere { PostImages.postId eq id }
+        Comments.deleteWhere { Comments.postId eq id }
+        PostLikes.deleteWhere { PostLikes.postId eq id }
+        
+        post.delete()
+        true
+    }
+
     suspend fun incrementViewCount(postId: Long) = newSuspendedTransaction(Dispatchers.IO) {
         Posts.update({ Posts.id eq postId }) {
             with(SqlExpressionBuilder) {

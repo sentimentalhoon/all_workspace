@@ -35,4 +35,25 @@ class BoardService(private val repository: BoardRepository) {
     suspend fun toggleLike(postId: Long, userId: Long): Boolean {
         return repository.toggleLike(postId, userId)
     }
+
+    suspend fun updatePost(postId: Long, userId: Long, role: String, request: PostCreateRequest): PostResponse {
+        val post = repository.findPostById(postId) ?: throw IllegalArgumentException("Post not found")
+        
+        // Permission Check
+        if (post.author.id != userId && role != "ADMIN") {
+             throw IllegalStateException("Forbidden")
+        }
+        
+        return repository.updatePost(postId, request) ?: throw IllegalArgumentException("Post not found")
+    }
+
+    suspend fun deletePost(postId: Long, userId: Long, role: String) {
+        val post = repository.findPostById(postId) ?: throw IllegalArgumentException("Post not found")
+        
+        if (post.author.id != userId && role != "ADMIN") {
+             throw IllegalStateException("Forbidden")
+        }
+        
+        repository.deletePost(postId)
+    }
 }

@@ -1,6 +1,7 @@
+```typescript
 <script setup lang="ts">
-import { computed, ref, watch } from "vue";
-import { useRouter } from "vue-router";
+import { computed, onMounted, ref, watch } from "vue";
+import { useRoute, useRouter } from "vue-router";
 import type { PostCreateRequest } from "~/composables/useBoard";
 import {
   BoardCategory,
@@ -9,11 +10,14 @@ import {
 } from "~/composables/useBoard";
 import { useAuthStore } from "~/stores/auth";
 
-const { createPost } = useBoard();
+const { createPost, updatePost, fetchPostById } = useBoard();
 const router = useRouter();
+const route = useRoute();
 const authStore = useAuthStore();
 
 const isAdmin = computed(() => authStore.user?.role === "ADMIN");
+const editId = computed(() => (route.query.id ? Number(route.query.id) : null));
+const isEditMode = computed(() => !!editId.value);
 
 definePageMeta({
   auth: true,
@@ -56,11 +60,36 @@ const availableSubCategories = computed(() => {
 watch(
   () => form.value.category,
   () => {
-    form.value.subCategory = undefined;
+    // Only reset if not currently loading data for edit mode
+    if (!loading.value) {
+      form.value.subCategory = undefined;
+    }
   },
 );
 
 const loading = ref(false);
+
+onMounted(async () => {
+  if (isEditMode.value) {
+    loading.value = true;
+    try {
+      const res = await fetchPostById(editId.value!);
+      const data = res.data;
+      form.value = {
+        title: data.title,
+        content: data.content,
+        category: data.category,
+        subCategory: data.subCategory,
+        imageUrls: data.imageUrls || [],
+      };
+    } catch (e) {
+      alert("글 정보를 불러오지 못했습니다.");
+      router.back();
+    } finally {
+      loading.value = false;
+    }
+  }
+});
 
 const submit = async () => {
   if (!form.value.title || !form.value.content) {
@@ -76,8 +105,12 @@ const submit = async () => {
 
   loading.value = true;
   try {
-    // TODO: Implement image upload here if needed, similar to Market/Blacklist
-    await createPost(form.value);
+    if (isEditMode.value) {
+      await updatePost(editId.value!, form.value);
+      alert("수정되었습니다.");
+    } else {
+      await createPost(form.value);
+    }
     router.push("/community");
   } catch (e: any) {
     alert("등록 실패: " + (e.response?.data?.message || e.message));
@@ -90,7 +123,22 @@ const submit = async () => {
 <template>
   <div class="page-container fade-in">
     <div class="header">
-      <h2 class="page-title">글쓰기</h2>
+      [
+  {
+    "TargetContent": "<h2 class=\"page-title\">글쓰기</h2>",
+    "ReplacementContent": "<h2 class=\"page-title\">{{ isEditMode ? '글 수정' : '글쓰기' }}</h2>",
+    "StartLine": 93,
+    "EndLine": 93,
+    "AllowMultiple": false
+  },
+  {
+    "TargetContent": "{{ loading ? \"등록 중...\" : \"등록\" }}",
+    "ReplacementContent": "{{ loading ? \"처리 중...\" : (isEditMode ? \"수정완료\" : \"등록\") }}",
+    "StartLine": 158,
+    "EndLine": 158,
+    "AllowMultiple": false
+  }
+]
       <p class="page-desc">소중한 의견을 공유해주세요.</p>
     </div>
 

@@ -111,6 +111,25 @@ export const useBoard = () => {
     );
   };
 
+  const updatePost = async (id: number, data: PostCreateRequest) => {
+    return await fetchClient<{ status: string; data: Post }>(
+      `/board/posts/${id}`,
+      {
+        method: "PUT",
+        body: data,
+      },
+    );
+  };
+
+  const deletePost = async (id: number) => {
+    return await fetchClient<{ status: string; message: string }>(
+      `/board/posts/${id}`,
+      {
+        method: "DELETE",
+      },
+    );
+  };
+
   return {
     fetchPosts,
     fetchPostById,
@@ -118,5 +137,7 @@ export const useBoard = () => {
     fetchComments,
     createComment,
     toggleLike,
+    updatePost,
+    deletePost,
   };
 };

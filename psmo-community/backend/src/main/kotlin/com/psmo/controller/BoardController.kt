@@ -11,6 +11,8 @@ import io.ktor.server.auth.jwt.*
 import io.ktor.server.request.*
 import io.ktor.server.resources.*
 import io.ktor.server.resources.post
+import io.ktor.server.resources.put
+import io.ktor.server.resources.delete
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
 
@@ -92,6 +94,48 @@ fun Route.boardRoutes(service: BoardService) {
             
             val isLiked = service.toggleLike(params.parent.id, userId)
             call.respond(mapOf("status" to "success", "isLiked" to isLiked))
+        }
+
+        put<BoardResources.Posts.Id> { params ->
+             val principal = call.principal<JWTPrincipal>()
+             val userId = principal?.subject?.toLongOrNull()
+             val role = principal?.payload?.getClaim("role")?.asString() ?: "MEMBER"
+
+             if (userId == null) {
+                 call.respond(HttpStatusCode.Unauthorized, mapOf("status" to "error", "message" to "Invalid Token"))
+                 return@put
+             }
+
+             val request = call.receive<PostCreateRequest>()
+             
+             try {
+                 val updated = service.updatePost(params.id, userId, role, request)
+                 call.respond(mapOf("status" to "success", "data" to updated))
+             } catch (e: IllegalStateException) {
+                 call.respond(HttpStatusCode.Forbidden, mapOf("status" to "error", "message" to e.message))
+             } catch (e: IllegalArgumentException) {
+                 call.respond(HttpStatusCode.NotFound, mapOf("status" to "error", "message" to e.message))
+             }
+        }
+
+        delete<BoardResources.Posts.Id> { params ->
+             val principal = call.principal<JWTPrincipal>()
+             val userId = principal?.subject?.toLongOrNull()
+             val role = principal?.payload?.getClaim("role")?.asString() ?: "MEMBER"
+
+             if (userId == null) {
+                 call.respond(HttpStatusCode.Unauthorized, mapOf("status" to "error", "message" to "Invalid Token"))
+                 return@delete
+             }
+             
+             try {
+                 service.deletePost(params.id, userId, role)
+                 call.respond(mapOf("status" to "success", "message" to "Deleted successfully"))
+             } catch (e: IllegalStateException) {
+                 call.respond(HttpStatusCode.Forbidden, mapOf("status" to "error", "message" to e.message))
+             } catch (e: IllegalArgumentException) {
+                 call.respond(HttpStatusCode.NotFound, mapOf("status" to "error", "message" to e.message))
+             }
         }
     }
 }
